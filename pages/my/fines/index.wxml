@@ -1,0 +1,33 @@
+<scroll-view class="page-shell" scroll-y>
+  <view class="hero-card">
+    <view class="hero-title">罚款中心</view>
+    <view class="hero-subtitle">当前待支付罚款合计</view>
+    <view class="summary-row" style="margin-top: 20rpx;">
+      <view class="summary-item">
+        <view class="summary-label">待支付金额</view>
+        <view class="summary-value">¥{{totalPendingAmount}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="panel">
+    <view class="section-title">罚款记录</view>
+    <view wx:if="{{loading}}" class="empty-card">正在加载罚款记录...</view>
+    <view wx:elif="{{errorMessage}}" class="empty-card danger-text">{{errorMessage}}</view>
+    <view wx:elif="{{!items.length}}" class="empty-card">当前没有罚款记录。</view>
+
+    <view wx:for="{{items}}" wx:key="fineId" class="notice-card">
+      <view class="toolbar-spread">
+        <view class="notice-title">{{item.bookTitle}}</view>
+        <view class="{{item.statusClass}}">{{item.statusLabel}}</view>
+      </view>
+      <view class="amount-text">¥{{item.amount}}</view>
+      <view class="notice-content">{{item.reason}}</view>
+      <view class="notice-meta">生成日期 {{item.createTime}}</view>
+      <view wx:if="{{item.paidTime}}" class="notice-meta">支付日期 {{item.paidTime}}</view>
+      <view wx:if="{{item.status === 'PENDING'}}" class="inline-actions">
+        <view class="button-danger" bindtap="payFine" data-fine-id="{{item.fineId}}">立即支付</view>
+      </view>
+    </view>
+  </view>
+</scroll-view>

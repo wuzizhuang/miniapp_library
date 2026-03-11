@@ -1,0 +1,64 @@
+<scroll-view class="page-shell" scroll-y>
+  <view class="panel">
+    <view class="section-title">发布推荐动态</view>
+    <view class="field-stack">
+      <input class="text-input" placeholder="搜索要推荐的图书" value="{{bookKeyword}}" bindinput="onBookKeywordInput" />
+      <view wx:if="{{selectedBook}}" class="chip-primary">已选图书：{{selectedBook.title}}</view>
+      <view wx:for="{{searchResults}}" wx:key="bookId" class="list-card" data-book-id="{{item.bookId}}" bindtap="selectBook">
+        <image class="book-cover book-cover--small" src="{{item.coverUrl}}" mode="aspectFill"></image>
+        <view class="book-info">
+          <view class="book-title">{{item.title}}</view>
+          <view class="book-meta">{{item.authorNames.join(' / ')}}</view>
+        </view>
+      </view>
+      <textarea class="textarea" placeholder="写下推荐理由或阅读观察" value="{{content}}" bindinput="onContentInput"></textarea>
+      <view class="button-primary" bindtap="createPost">{{submitting ? '发布中...' : '发布动态'}}</view>
+    </view>
+  </view>
+
+  <view class="panel">
+    <view class="section-title">推荐流</view>
+    <view class="pill-switch">
+      <view
+        wx:for="{{scopeOptions}}"
+        wx:key="value"
+        class="pill-item {{scope === item.value ? 'pill-item--active' : ''}}"
+        data-scope="{{item.value}}"
+        bindtap="pickScope"
+      >
+        {{item.label}}
+      </view>
+    </view>
+
+    <view wx:if="{{loading}}" class="empty-card">正在加载推荐动态...</view>
+    <view wx:elif="{{errorMessage}}" class="empty-card danger-text">{{errorMessage}}</view>
+    <view wx:elif="{{!items.length}}" class="empty-card">当前范围下没有推荐动态。</view>
+
+    <view wx:for="{{items}}" wx:key="postId" class="feed-card">
+      <view class="feed-header">
+        <view>
+          <view class="feed-author">{{item.authorFullName}}</view>
+          <view class="feed-meta">{{item.authorDepartment}} · {{item.createDate}}</view>
+        </view>
+        <view class="chip">{{item.authorIdentityType}}</view>
+      </view>
+      <view class="list-card" data-book-id="{{item.bookId}}" bindtap="openBook">
+        <image class="book-cover book-cover--small" src="{{item.bookCoverUrl}}" mode="aspectFill"></image>
+        <view class="book-info">
+          <view class="book-title">{{item.bookTitle}}</view>
+          <view class="book-meta">{{item.bookIsbn}}</view>
+        </view>
+      </view>
+      <view class="feed-content">{{item.content}}</view>
+      <view class="inline-actions">
+        <view class="button-secondary" bindtap="toggleLike" data-post-id="{{item.postId}}">
+          {{item.likedByMe ? '取消点赞' : '点赞'}} {{item.likeCount}}
+        </view>
+        <view class="button-ghost" bindtap="toggleFollow" data-post-id="{{item.postId}}">
+          {{item.followingAuthor ? '取消关注' : '关注作者'}}
+        </view>
+        <view wx:if="{{item.canManage}}" class="button-danger" bindtap="deletePost" data-post-id="{{item.postId}}">删除</view>
+      </view>
+    </view>
+  </view>
+</scroll-view>

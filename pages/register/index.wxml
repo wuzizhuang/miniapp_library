@@ -1,0 +1,14 @@
+<scroll-view class="page-shell" scroll-y>
+  <view class="panel">
+    <view class="section-title">注册读者账号</view>
+    <view class="section-subtitle">注册成功后会自动登录，并进入当前小程序首页。</view>
+    <view class="field-stack">
+      <input class="text-input" placeholder="用户名" data-field="username" value="{{username}}" bindinput="onInput" />
+      <input class="text-input" placeholder="密码（至少 6 位）" password data-field="password" value="{{password}}" bindinput="onInput" />
+      <input class="text-input" placeholder="姓名" data-field="fullName" value="{{fullName}}" bindinput="onInput" />
+      <input class="text-input" placeholder="邮箱" data-field="email" value="{{email}}" bindinput="onInput" />
+      <view wx:if="{{errorMessage}}" class="danger-text">{{errorMessage}}</view>
+      <view class="button-primary" bindtap="submit">{{loading ? '注册中...' : '完成注册'}}</view>
+    </view>
+  </view>
+</scroll-view>

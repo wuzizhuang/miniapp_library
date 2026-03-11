@@ -1,0 +1,30 @@
+<scroll-view class="page-shell" scroll-y>
+  <view class="panel">
+    <view class="section-title">个人资料</view>
+    <view class="section-subtitle">资料变更会同步刷新当前登录用户信息。</view>
+
+    <view wx:if="{{loading}}" class="empty-card">正在加载资料...</view>
+    <view wx:elif="{{errorMessage}}" class="empty-card danger-text">{{errorMessage}}</view>
+    <view wx:else class="field-stack">
+      <view class="field-label">姓名</view>
+      <input class="text-input" value="{{form.fullName}}" data-field="fullName" bindinput="onFieldInput" />
+
+      <view class="field-label">邮箱</view>
+      <input class="text-input" value="{{form.email}}" data-field="email" bindinput="onFieldInput" />
+
+      <view class="field-label">院系</view>
+      <input class="text-input" value="{{form.department}}" data-field="department" bindinput="onFieldInput" />
+
+      <view class="field-label">专业</view>
+      <input class="text-input" value="{{form.major}}" data-field="major" bindinput="onFieldInput" />
+
+      <view class="field-label">入学年份</view>
+      <input class="text-input" value="{{form.enrollmentYear}}" data-field="enrollmentYear" bindinput="onFieldInput" />
+
+      <view class="field-label">兴趣标签</view>
+      <textarea class="textarea" value="{{form.interestTags}}" data-field="interestTags" bindinput="onFieldInput"></textarea>
+
+      <view class="button-primary" bindtap="saveProfile">{{saving ? '保存中...' : '保存资料'}}</view>
+    </view>
+  </view>
+</scroll-view>

@@ -1,0 +1,108 @@
+<scroll-view class="page-shell" scroll-y>
+  <view wx:if="{{loading}}" class="panel">
+    <view class="empty-card">正在加载图书详情...</view>
+  </view>
+
+  <view wx:elif="{{errorMessage}}" class="panel">
+    <view class="empty-card danger-text">{{errorMessage}}</view>
+  </view>
+
+  <block wx:elif="{{detail}}">
+    <view class="hero-card">
+      <view class="cover-hero">
+        <image class="book-cover" src="{{detail.book.coverUrl}}" mode="aspectFill"></image>
+        <view class="book-info">
+          <view class="book-title">{{detail.book.title}}</view>
+          <view class="book-meta">{{detail.book.authorNames.join(' / ')}}</view>
+          <view class="book-meta">{{detail.book.publisherName}} · {{detail.book.publishYear}}</view>
+          <view class="chip-row" style="margin-top: 18rpx;">
+            <view class="{{detail.book.availableCount > 0 ? 'chip-success' : 'chip-warning'}}">
+              {{detail.book.availableCount > 0 ? '馆内可借' : '当前需预约'}}
+            </view>
+            <view class="chip">{{detail.book.categoryName}}</view>
+            <view wx:if="{{detail.isFavorite}}" class="chip-primary">已收藏</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="summary-row" style="margin-top: 24rpx;">
+        <view class="summary-item">
+          <view class="summary-label">在馆副本</view>
+          <view class="summary-value">{{detail.book.availableCount}}</view>
+        </view>
+        <view class="summary-item">
+          <view class="summary-label">总册数</view>
+          <view class="summary-value">{{detail.book.totalCopies}}</view>
+        </view>
+        <view class="summary-item">
+          <view class="summary-label">资源模式</view>
+          <view class="summary-value" style="font-size: 28rpx;">{{detail.book.resourceMode}}</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="panel">
+      <view class="section-title">借阅动作</view>
+      <view class="button-row">
+        <view class="button-primary" bindtap="borrowBook">{{actionLoading ? '处理中...' : '立即借阅'}}</view>
+        <view class="button-secondary" bindtap="reserveBook">预约排队</view>
+        <view class="button-ghost" bindtap="toggleFavorite">{{detail.isFavorite ? '取消收藏' : '加入收藏'}}</view>
+      </view>
+      <view wx:if="{{detail.activeLoan}}" class="inline-actions">
+        <view class="chip-warning">你已借阅本书</view>
+        <view class="button-secondary" bindtap="goLoanTracking">查看借阅追踪</view>
+      </view>
+      <view wx:if="{{detail.activeReservation}}" class="inline-actions">
+        <view class="chip-danger">当前已有预约</view>
+        <view class="button-secondary" bindtap="goReservations">查看预约</view>
+      </view>
+    </view>
+
+    <view class="panel">
+      <view class="section-title">内容简介</view>
+      <view class="muted-text">{{detail.book.description}}</view>
+      <view class="divider"></view>
+      <view class="meta-list">
+        <view class="meta-item">ISBN：{{detail.book.isbn}}</view>
+        <view class="meta-item">语言：{{detail.book.language}}</view>
+        <view class="meta-item">线上访问：{{detail.book.onlineAccessType || '无'}}</view>
+      </view>
+      <view class="inline-actions">
+        <view class="button-secondary" bindtap="copyOnlineAccess">复制线上资源链接</view>
+      </view>
+    </view>
+
+    <view class="panel">
+      <view class="section-title">馆藏位置</view>
+      <view wx:if="{{detail.availableLocations.length}}" class="chip-row">
+        <view wx:for="{{detail.availableLocations}}" wx:key="*this" class="chip-primary">{{item}}</view>
+      </view>
+      <view wx:else class="empty-card">当前主要提供线上资源访问，暂无实体上架位置。</view>
+    </view>
+
+    <view class="panel">
+      <view class="section-title">读者评论</view>
+      <view class="section-subtitle">保留评分与评论动作，提交后会刷新详情页状态。</view>
+      <view class="field-stack">
+        <view class="field-label">我的评分</view>
+        <view class="chip-row">
+          <view wx:for="{{ratingOptions}}" wx:key="*this" class="pill-item {{reviewRating === item ? 'pill-item--active' : ''}}" data-rating="{{item}}" bindtap="pickRating">{{item}} 分</view>
+        </view>
+        <textarea class="textarea" placeholder="写下你的阅读感受" value="{{reviewContent}}" bindinput="onReviewInput"></textarea>
+        <view class="button-primary" bindtap="submitReview">提交评论</view>
+      </view>
+      <view class="divider"></view>
+      <view wx:if="{{!detail.reviews.length}}" class="empty-card">还没有读者评论，你可以成为第一个留言的人。</view>
+      <view wx:for="{{detail.reviews}}" wx:key="reviewId" class="feed-card">
+        <view class="feed-header">
+          <view>
+            <view class="feed-author">{{item.username}}</view>
+            <view class="feed-meta">{{item.createDate}}</view>
+          </view>
+          <view class="chip-primary">{{item.ratingText}}</view>
+        </view>
+        <view class="feed-content">{{item.commentText}}</view>
+      </view>
+    </view>
+  </block>
+</scroll-view>

@@ -1,0 +1,74 @@
+<scroll-view class="page-shell" scroll-y>
+  <view class="hero-card">
+    <view class="hero-title">让馆藏与读者更高效地相遇</view>
+    <view class="hero-subtitle">
+      当前首页、馆藏、详情和我的主链路都直接联调后端接口。
+    </view>
+    <view class="button-row">
+      <view wx:if="{{!user}}" class="button-primary" bindtap="goLogin">进入登录</view>
+      <view wx:else class="button-primary" bindtap="goBooks">浏览馆藏</view>
+      <view wx:if="{{user}}" class="button-ghost" bindtap="goMy">打开我的</view>
+      <view wx:if="{{user}}" class="button-secondary" bindtap="logout">退出登录</view>
+    </view>
+  </view>
+
+  <view class="panel">
+    <view class="section-title">读者快照</view>
+    <view wx:if="{{user}}" class="muted-text">{{user.fullName}} · {{user.department}}</view>
+    <view wx:if="{{overview}}" class="stat-grid">
+      <view class="stat-card">
+        <view class="stat-value">{{overview.activeLoanCount}}</view>
+        <view class="stat-label">当前借阅</view>
+      </view>
+      <view class="stat-card">
+        <view class="stat-value">{{overview.readyReservationCount}}</view>
+        <view class="stat-label">待取预约</view>
+      </view>
+      <view class="stat-card">
+        <view class="stat-value">{{overview.unreadNotificationCount}}</view>
+        <view class="stat-label">未读通知</view>
+      </view>
+      <view class="stat-card">
+        <view class="stat-value">{{overview.pendingFineCount}}</view>
+        <view class="stat-label">待缴罚款</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="panel">
+    <view class="section-title">馆藏速览</view>
+    <view wx:if="{{loading}}" class="muted-text">正在加载首页数据...</view>
+    <view wx:elif="{{errorMessage}}" class="danger-text">{{errorMessage}}</view>
+    <block wx:elif="{{homeData}}">
+      <view class="stat-grid">
+        <view class="stat-card" wx:for="{{homeData.heroStats}}" wx:key="label">
+          <view class="stat-value">{{item.value}}</view>
+          <view class="stat-label">{{item.label}}</view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <view wx:if="{{homeData}}" class="panel">
+    <view class="section-title">热门推荐书单</view>
+    <view class="list-card" wx:for="{{homeData.featuredBooks}}" wx:key="id" data-book-id="{{item.id}}" bindtap="openBook">
+      <image class="book-cover book-cover--small" src="{{item.cover}}" mode="aspectFill"></image>
+      <view class="book-info">
+        <view class="book-title">{{item.title}}</view>
+        <view class="book-meta">{{item.author}}</view>
+        <view class="chip-row">
+          <view class="chip-primary">{{item.tag}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{homeData}}" class="panel">
+    <view class="section-title">分类概览</view>
+    <view class="chip-row">
+      <view class="chip" wx:for="{{homeData.categories}}" wx:key="categoryId">
+        {{item.label}} {{item.count}}
+      </view>
+    </view>
+  </view>
+</scroll-view>
