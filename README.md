@@ -1,87 +1,104 @@
 # 智慧图书馆微信小程序
 
-`miniapp/` 是智慧图书馆系统当前在用的微信小程序读者端，已经切换到真实后端接口，不再依赖旧的本地 mock 数据。
+`miniapp/` 是智慧图书馆系统的微信小程序读者端，当前已接入真实后端接口，不再依赖旧的本地 mock 数据。
 
-## 项目定位
+## 模块职责
 
-这个小程序面向读者使用，目标是提供一套轻量但完整的移动端图书馆使用入口，覆盖登录、馆藏浏览、借阅相关查询和个人中心等核心流程。
+- 提供微信端读者功能：登录、注册、首页、馆藏、图书详情、书架、预约、罚款、通知、反馈、推荐、服务预约
+- 负责小程序端登录态恢复、页面跳转、接口调用和微信端交互
+- 只面向读者侧，不包含后台管理能力
 
-## 当前已实现功能
+## 基础结构
 
-- 登录
-- 注册
-- 找回密码请求
-- 首页聚合
-- 馆藏目录
-- 图书详情
-- 我的书架
-- 我的预约
-- 我的罚款
-- 我的通知
-- 帮助与反馈
-- 推荐动态
-- 服务预约
+- `app.js`：小程序启动入口和全局登录态恢复
+- `app.json`：页面注册、TabBar、窗口配置
+- `app.wxss`：全局样式
+- `pages/`：各业务页面
+- `services/`：按业务拆分的 API 服务层
+- `utils/`：请求封装、存储和通用工具
+- `config/env.js`：后端地址、自动登录开关等环境配置
+- `project.config.json`：微信开发者工具配置
 
-## 运行方式
+## 页面结构
 
-推荐直接在微信开发者工具中打开 `miniapp/` 目录。
+主要页面包括：
 
-如果你已经打开仓库根目录，也可以继续使用；根目录的 `project.config.json` 已经指向 `miniapp/`。
+- `pages/index/index`
+- `pages/books/index`
+- `pages/books/detail/index`
+- `pages/login/index`
+- `pages/register/index`
+- `pages/forgot-password/index`
+- `pages/my/index`
+- `pages/my/shelf/index`
+- `pages/my/loan-tracking/index`
+- `pages/my/reservations/index`
+- `pages/my/fines/index`
+- `pages/my/notifications/index`
+- `pages/my/profile/index`
+- `pages/my/appointments/index`
+- `pages/my/recommendations/index`
+- `pages/my/reviews/index`
+- `pages/my/search-history/index`
+- `pages/help-feedback/index`
 
-## 运行前准备
-
-请先确保以下环境已经准备好：
+## 运行环境
 
 - 微信开发者工具
 - 已启动的后端服务
-- 当前可访问的后端 API 地址
+- 可访问的后端 API 地址
+
+## 启动方式
+
+推荐直接在微信开发者工具中打开：
+
+```text
+e:\001-a-kese\1\miniapp
+```
+
+如果你打开的是仓库根目录，也可以继续使用，因为根目录的 `project.config.json` 已指向小程序目录。
 
 ## 联调配置
 
-后端地址从 `config/env.js` 读取，当前默认值为：
+小程序后端地址来自 [config/env.js](/e:/001-a-kese/1/miniapp/config/env.js)，当前默认值为：
 
-```js
-http://127.0.0.1:8089/api
+```text
+http://154.19.43.33:8089/api
 ```
 
-如果你使用真机调试，请把它改成局域网可访问的后端地址，不要继续使用 `127.0.0.1`。
+关键配置项：
 
-默认配置项：
+- `DEFAULT_API_BASE_URL`：默认后端 API 地址
+- `DEFAULT_AUTO_LOGIN_ENABLED`：是否启用默认自动登录
+- `DEFAULT_AUTO_LOGIN_USERNAME`：自动登录用户名
+- `DEFAULT_AUTO_LOGIN_PASSWORD`：自动登录密码
 
-- `DEFAULT_API_BASE_URL`：后端 API 地址
-- `DEFAULT_AUTO_LOGIN_ENABLED`：是否开启默认自动登录
-- `DEFAULT_AUTO_LOGIN_USERNAME`：默认联调用户名
-- `DEFAULT_AUTO_LOGIN_PASSWORD`：默认联调密码
+说明：
 
-## 目录结构
+- 模拟器联调可直接使用当前可访问地址
+- 真机调试必须使用手机可访问的局域网或公网地址
+- 不要在真机环境继续使用 `127.0.0.1` 或 `localhost`
 
-- `app.js`：小程序启动与登录态恢复入口
-- `pages/`：业务页面
-- `services/`：按业务拆分的 API 服务
-- `utils/`：请求、存储、工具函数
-- `config/`：环境配置
-- `project.config.json`：微信开发者工具项目配置
+## 启动建议
 
-## 页面范围
+推荐联调顺序：
 
-当前主要页面包括：
+```powershell
+cd backend-library
+.\mvnw.cmd spring-boot:run
+```
 
-- `pages/login/`
-- `pages/register/`
-- `pages/forgot-password/`
-- `pages/index/`
-- `pages/books/`
-- `pages/my/`
-- `pages/help-feedback/`
+然后在微信开发者工具中编译并预览 `miniapp/`。
 
 ## 开发说明
 
-- 当前所有主链路都以真实后端为准
-- 默认关闭自动登录，避免误导联调
-- 历史兼容入口 `services/mock-library.js` 仍保留，但已经转发到真实服务层
+- 当前主链路以真实后端接口为准
+- 默认关闭自动登录，避免影响真实联调
+- 历史兼容入口仍可保留，但不应再回退到 mock 数据
+- 页面改动要注意微信小程序导航和生命周期差异
 
-## 当前限制
+## 当前边界
 
-- 找回密码目前仍是联调请求，不是完整邮件投递闭环
-- 真机环境必须手动切换 API 地址
-- 当前是读者端，不包含后台管理能力
+- 找回密码当前仍是联调请求，不是完整邮件闭环
+- 真机环境必须手动确认 API 地址
+- 当前只覆盖读者端

@@ -25,6 +25,17 @@ Page({
     searchResults: [],
     selectedBook: null,
     content: '',
+    highlightId: 0,
+    highlightAnchor: '',
+  },
+
+  onLoad(options) {
+    const highlightId = Number((options && options.highlight) || 0)
+
+    this.setData({
+      highlightId,
+      highlightAnchor: highlightId ? `recommendation-${highlightId}` : '',
+    })
   },
 
   onShow() {
@@ -41,7 +52,10 @@ Page({
       const scope = this.data.scope === 'all' ? '' : this.data.scope
       const items = await libraryService.getRecommendations(scope)
       this.setData({
-        items: (items || []).map(decoratePost),
+        items: (items || []).map((item) => ({
+          ...decoratePost(item),
+          isHighlighted: Number(item.postId) === Number(this.data.highlightId || 0),
+        })),
       })
     } catch (error) {
       this.setData({

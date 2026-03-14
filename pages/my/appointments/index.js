@@ -38,6 +38,21 @@ function decorateAppointment(item) {
   }
 }
 
+function padNumber(value) {
+  return String(value).padStart(2, '0')
+}
+
+function getDefaultAppointmentDate() {
+  const date = new Date()
+  date.setDate(date.getDate() + 1)
+
+  return `${date.getFullYear()}-${padNumber(date.getMonth() + 1)}-${padNumber(date.getDate())}`
+}
+
+function getDefaultAppointmentTime() {
+  return '14:00'
+}
+
 Page({
   data: {
     items: [],
@@ -45,19 +60,37 @@ Page({
     methodOptions: METHOD_OPTIONS,
     serviceType: 'CONSULTATION',
     method: 'COUNTER',
-    scheduledTime: '2026-03-12T14:00:00',
+    appointmentDate: getDefaultAppointmentDate(),
+    appointmentTime: getDefaultAppointmentTime(),
     bookTitle: '',
     notes: '',
     loading: true,
     submitting: false,
     errorMessage: '',
+    highlightId: 0,
+    highlightAnchor: '',
+  },
+
+  onLoad(options) {
+    const highlightId = Number((options && options.highlight) || 0)
+
+    this.setData({
+      highlightId,
+      highlightAnchor: highlightId ? `appointment-${highlightId}` : '',
+    })
   },
 
   onShow() {
     this.loadAppointments()
   },
 
-  async loadAppointments() {
+  onPullDownRefresh() {
+    this.loadAppointments({ stopPullDownRefresh: true })
+  },
+
+  async loadAppointments(options) {
+    const nextOptions = options || {}
+
     this.setData({
       loading: true,
       errorMessage: '',
@@ -66,7 +99,10 @@ Page({
     try {
       const items = await libraryService.getAppointments()
       this.setData({
-        items: (items || []).map(decorateAppointment),
+        items: (items || []).map((item) => ({
+          ...decorateAppointment(item),
+          isHighlighted: Number(item.appointmentId) === Number(this.data.highlightId || 0),
+        })),
       })
     } catch (error) {
       this.setData({
@@ -76,6 +112,10 @@ Page({
       this.setData({
         loading: false,
       })
+
+      if (nextOptions.stopPullDownRefresh) {
+        wx.stopPullDownRefresh()
+      }
     }
   },
 
@@ -97,6 +137,26 @@ Page({
     })
   },
 
+  onDateChange(event) {
+    this.setData({
+      appointmentDate: event.detail.value,
+    })
+  },
+
+  onTimeChange(event) {
+    this.setData({
+      appointmentTime: event.detail.value,
+    })
+  },
+
+  getScheduledTimeValue() {
+    return `${this.data.appointmentDate}T${this.data.appointmentTime}:00`
+  },
+
+  retryLoadAppointments() {
+    this.loadAppointments()
+  },
+
   async createAppointment() {
     this.setData({
       submitting: true,
@@ -106,7 +166,7 @@ Page({
       await libraryService.createAppointment({
         serviceType: this.data.serviceType,
         method: this.data.method,
-        scheduledTime: this.data.scheduledTime,
+        scheduledTime: this.getScheduledTimeValue(),
         notes: this.data.notes,
         bookTitle: this.data.bookTitle,
       })
@@ -119,6 +179,8 @@ Page({
       this.setData({
         bookTitle: '',
         notes: '',
+        appointmentDate: getDefaultAppointmentDate(),
+        appointmentTime: getDefaultAppointmentTime(),
       })
 
       await this.loadAppointments()

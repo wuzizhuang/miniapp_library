@@ -1,0 +1,47 @@
+<scroll-view class="page-shell" scroll-y>
+  <view class="panel">
+    <view class="section-title">搜索历史</view>
+    <view class="section-subtitle">查看最近检索记录，并一键回到对应的书目结果页。</view>
+    <view wx:if="{{hotKeywordError}}" class="empty-card danger-text">{{hotKeywordError}}</view>
+    <view wx:elif="{{!hotKeywords.length}}" class="empty-card">当前没有热门关键词。</view>
+    <view wx:else class="chip-row">
+      <view wx:for="{{hotKeywords}}" wx:key="*this" class="button-secondary" data-keyword="{{item}}" bindtap="applyKeyword">
+        {{item}}
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="panel">
+    <view class="empty-card">正在加载搜索历史...</view>
+  </view>
+
+  <view wx:elif="{{errorMessage}}" class="panel">
+    <view class="empty-card danger-text">
+      <view>{{errorMessage}}</view>
+      <view class="inline-actions">
+        <view class="button-secondary" bindtap="retryLoadPageData">重新加载</view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:elif="{{!items.length}}" class="panel">
+    <view class="empty-card">
+      <view>还没有搜索历史。</view>
+      <view class="card-note">从馆藏页发起检索后，记录会自动出现在这里。</view>
+    </view>
+  </view>
+
+  <view wx:else class="panel">
+    <view class="section-title">最近检索</view>
+    <view wx:for="{{items}}" wx:key="searchId" class="notice-card">
+      <view class="toolbar-spread">
+        <view class="notice-title">{{item.keyword}}</view>
+        <view class="chip-primary">{{item.resultLabel}}</view>
+      </view>
+      <view class="notice-meta">{{item.searchDate}}</view>
+      <view class="inline-actions">
+        <view class="button-primary" data-keyword="{{item.keyword}}" bindtap="applyKeyword">再搜一次</view>
+      </view>
+    </view>
+  </view>
+</scroll-view>

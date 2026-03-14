@@ -3,7 +3,7 @@
     <view class="toolbar-spread">
       <view>
         <view class="section-title">通知中心</view>
-        <view class="section-subtitle">支持单条已读、全部已读、删除单条和清空已读。</view>
+        <view class="section-subtitle">支持单条已读、全部已读、删除单条和按业务跳转。</view>
       </view>
       <view class="button-row">
         <view class="button-secondary" bindtap="markAllRead">全部已读</view>
@@ -24,7 +24,7 @@
       <view class="notice-meta">{{item.createDate}}</view>
       <view class="inline-actions">
         <view wx:if="{{!item.isRead}}" class="button-secondary" data-notification-id="{{item.notificationId}}" bindtap="markRead">标记已读</view>
-        <view class="button-primary" data-notification-id="{{item.notificationId}}" bindtap="openTarget">查看业务</view>
+        <view wx:if="{{item.targetUrl}}" class="button-primary" data-notification-id="{{item.notificationId}}" bindtap="openTarget">{{item.actionLabel}}</view>
         <view class="button-ghost" data-notification-id="{{item.notificationId}}" bindtap="deleteOne">删除</view>
       </view>
     </view>

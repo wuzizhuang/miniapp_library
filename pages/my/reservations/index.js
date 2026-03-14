@@ -4,13 +4,17 @@ function decorateReservation(item) {
   const labelMap = {
     PENDING: '排队中',
     AWAITING_PICKUP: '待取书',
+    FULFILLED: '已取书',
     CANCELLED: '已取消',
+    EXPIRED: '已过期',
   }
 
   const classMap = {
     PENDING: 'chip-warning',
     AWAITING_PICKUP: 'chip-primary',
+    FULFILLED: 'chip-success',
     CANCELLED: 'chip-danger',
+    EXPIRED: 'chip-danger',
   }
 
   return {
@@ -25,6 +29,17 @@ Page({
     items: [],
     loading: true,
     errorMessage: '',
+    highlightId: 0,
+    highlightAnchor: '',
+  },
+
+  onLoad(options) {
+    const highlightId = Number((options && options.highlight) || 0)
+
+    this.setData({
+      highlightId,
+      highlightAnchor: highlightId ? `reservation-${highlightId}` : '',
+    })
   },
 
   onShow() {
@@ -40,7 +55,10 @@ Page({
     try {
       const items = await libraryService.getReservations()
       this.setData({
-        items: (items || []).map(decorateReservation),
+        items: (items || []).map((item) => ({
+          ...decorateReservation(item),
+          isHighlighted: Number(item.reservationId) === Number(this.data.highlightId || 0),
+        })),
       })
     } catch (error) {
       this.setData({

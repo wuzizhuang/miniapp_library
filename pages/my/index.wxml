@@ -4,7 +4,12 @@
   </view>
 
   <view wx:elif="{{errorMessage}}" class="panel">
-    <view class="empty-card danger-text">{{errorMessage}}</view>
+    <view class="empty-card danger-text">
+      <view>{{errorMessage}}</view>
+      <view class="inline-actions">
+        <view class="button-secondary" bindtap="retryLoadPageData">重新加载</view>
+      </view>
+    </view>
   </view>
 
   <block wx:elif="{{user && overview}}">
@@ -38,7 +43,10 @@
       <view class="section-title">读者入口</view>
       <view class="entry-grid">
         <view wx:for="{{entries}}" wx:key="url" class="entry-card" data-url="{{item.url}}" bindtap="openPage">
-          <view class="entry-title">{{item.title}}</view>
+          <view class="toolbar-spread">
+            <view class="entry-title">{{item.title}}</view>
+            <view wx:if="{{item.badge}}" class="entry-badge">{{item.badge}}</view>
+          </view>
           <view class="entry-desc">{{item.desc}}</view>
         </view>
       </view>

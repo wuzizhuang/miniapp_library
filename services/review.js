@@ -21,6 +21,34 @@ const reviewService = {
       auth: true,
     })
   },
+
+  getMyReviews(page, size) {
+    return request({
+      url: '/reviews/me',
+      query: {
+        page: page || 0,
+        size: size || 20,
+      },
+      auth: true,
+    })
+  },
+
+  updateReview(reviewId, payload) {
+    return request({
+      url: `/reviews/${reviewId}`,
+      method: 'PUT',
+      data: payload,
+      auth: true,
+    })
+  },
+
+  deleteReview(reviewId) {
+    return request({
+      url: `/reviews/${reviewId}`,
+      method: 'DELETE',
+      auth: true,
+    })
+  },
 }
 
 module.exports = {

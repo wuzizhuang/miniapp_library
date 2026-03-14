@@ -15,7 +15,32 @@ function decorateLoans(items) {
         : item.status === 'OVERDUE'
           ? 'chip-danger'
           : 'chip-success',
+    hasCover: Boolean(item.bookCover),
   }))
+}
+
+function decorateFavorites(items) {
+  return (items || []).map((item) => ({
+    ...item,
+    authorText: (item.authorNames || []).join(' / ') || '作者信息待补充',
+    categoryLabel: item.categoryName || '未分类',
+    statusLabel: Number(item.availableCount || 0) > 0 ? '可借阅' : '需预约',
+    statusClass:
+      Number(item.availableCount || 0) > 0 ? 'chip-success' : 'chip-warning',
+    hasCover: Boolean(item.coverUrl),
+  }))
+}
+
+function buildShelfSummary(shelf) {
+  const activeLoans = shelf.activeLoans || []
+  const historyLoans = shelf.historyLoans || []
+
+  return {
+    favoriteCount: (shelf.favorites || []).length,
+    activeLoanCount: activeLoans.length,
+    overdueCount: activeLoans.filter((item) => item.status === 'OVERDUE').length,
+    historyCount: historyLoans.length,
+  }
 }
 
 Page({
@@ -23,14 +48,30 @@ Page({
     section: 'favorites',
     loading: true,
     errorMessage: '',
-    shelf: null,
+    shelf: {
+      favorites: [],
+      activeLoans: [],
+      historyLoans: [],
+    },
+    summary: {
+      favoriteCount: 0,
+      activeLoanCount: 0,
+      overdueCount: 0,
+      historyCount: 0,
+    },
   },
 
   onShow() {
     this.loadShelf()
   },
 
-  async loadShelf() {
+  onPullDownRefresh() {
+    this.loadShelf({ stopPullDownRefresh: true })
+  },
+
+  async loadShelf(options) {
+    const nextOptions = options || {}
+
     this.setData({
       loading: true,
       errorMessage: '',
@@ -38,12 +79,15 @@ Page({
 
     try {
       const shelf = await libraryService.getShelf()
+      const nextShelf = {
+        favorites: decorateFavorites(shelf.favorites),
+        activeLoans: decorateLoans(shelf.activeLoans),
+        historyLoans: decorateLoans(shelf.historyLoans),
+      }
+
       this.setData({
-        shelf: {
-          favorites: shelf.favorites || [],
-          activeLoans: decorateLoans(shelf.activeLoans),
-          historyLoans: decorateLoans(shelf.historyLoans),
-        },
+        shelf: nextShelf,
+        summary: buildShelfSummary(nextShelf),
       })
     } catch (error) {
       this.setData({
@@ -53,6 +97,10 @@ Page({
       this.setData({
         loading: false,
       })
+
+      if (nextOptions.stopPullDownRefresh) {
+        wx.stopPullDownRefresh()
+      }
     }
   },
 
@@ -72,5 +120,15 @@ Page({
     wx.navigateTo({
       url: `/pages/my/loan-tracking/index?loanId=${event.currentTarget.dataset.loanId}`,
     })
+  },
+
+  goCatalog() {
+    wx.switchTab({
+      url: '/pages/index/index',
+    })
+  },
+
+  retryLoadShelf() {
+    this.loadShelf()
   },
 })

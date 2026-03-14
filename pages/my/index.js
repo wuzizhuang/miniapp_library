@@ -1,15 +1,69 @@
 const { libraryService } = require('../../services/library')
 
 const ENTRY_LIST = [
-  { title: '我的书架', desc: '收藏、当前借阅和历史借阅', url: '/pages/my/shelf/index' },
-  { title: '我的预约', desc: '查看排队与待取书', url: '/pages/my/reservations/index' },
-  { title: '我的罚款', desc: '处理待缴罚款', url: '/pages/my/fines/index' },
-  { title: '我的通知', desc: '阅读与清理通知中心', url: '/pages/my/notifications/index' },
-  { title: '帮助反馈', desc: '提交建议与查看回复', url: '/pages/help-feedback/index' },
-  { title: '个人资料', desc: '维护基础信息与兴趣标签', url: '/pages/my/profile/index' },
-  { title: '服务预约', desc: '咨询、取书与服务排期', url: '/pages/my/appointments/index' },
-  { title: '推荐动态', desc: '老师荐书与我的分享', url: '/pages/my/recommendations/index' },
+  { key: 'shelf', title: '我的书架', desc: '收藏、当前借阅和历史借阅', url: '/pages/my/shelf/index' },
+  { key: 'reservation', title: '我的预约', desc: '查看排队与待取书', url: '/pages/my/reservations/index' },
+  { key: 'review', title: '我的评论', desc: '管理已提交书评与审核状态', url: '/pages/my/reviews/index' },
+  { key: 'searchHistory', title: '搜索历史', desc: '回看最近检索记录与热门关键词', url: '/pages/my/search-history/index' },
+  { key: 'fine', title: '我的罚款', desc: '处理待缴罚款', url: '/pages/my/fines/index' },
+  { key: 'notification', title: '我的通知', desc: '阅读与清理通知中心', url: '/pages/my/notifications/index' },
+  { key: 'feedback', title: '帮助反馈', desc: '提交建议与查看回复', url: '/pages/help-feedback/index' },
+  { key: 'profile', title: '个人资料', desc: '维护基础信息与兴趣标签', url: '/pages/my/profile/index' },
+  { key: 'appointment', title: '服务预约', desc: '咨询、取书与服务排期', url: '/pages/my/appointments/index' },
+  { key: 'recommendation', title: '推荐动态', desc: '老师荐书与我的分享', url: '/pages/my/recommendations/index' },
 ]
+
+function buildEntries(overview) {
+  return ENTRY_LIST.map((entry) => {
+    if (!overview) {
+      return entry
+    }
+
+    if (entry.key === 'shelf') {
+      return {
+        ...entry,
+        badge: overview.activeLoanCount > 0 ? `${overview.activeLoanCount} 本在借` : `${overview.favoriteCount} 个收藏`,
+      }
+    }
+
+    if (entry.key === 'reservation') {
+      return {
+        ...entry,
+        badge: overview.readyReservationCount > 0 ? `${overview.readyReservationCount} 条待取` : `${overview.activeReservationCount} 条预约`,
+      }
+    }
+
+    if (entry.key === 'fine') {
+      return {
+        ...entry,
+        badge: overview.pendingFineCount > 0 ? `${overview.pendingFineCount} 条待缴` : '无待缴记录',
+      }
+    }
+
+    if (entry.key === 'notification') {
+      return {
+        ...entry,
+        badge: overview.unreadNotificationCount > 0 ? `${overview.unreadNotificationCount} 条未读` : '已读完',
+      }
+    }
+
+    if (entry.key === 'review') {
+      return {
+        ...entry,
+        badge: '查看我的书评',
+      }
+    }
+
+    if (entry.key === 'appointment') {
+      return {
+        ...entry,
+        badge: overview.pendingServiceAppointmentCount > 0 ? `${overview.pendingServiceAppointmentCount} 条处理中` : '当前空闲',
+      }
+    }
+
+    return entry
+  })
+}
 
 Page({
   data: {
@@ -24,7 +78,13 @@ Page({
     this.loadPageData()
   },
 
-  async loadPageData() {
+  onPullDownRefresh() {
+    this.loadPageData({ stopPullDownRefresh: true })
+  },
+
+  async loadPageData(options) {
+    const nextOptions = options || {}
+
     this.setData({
       loading: true,
       errorMessage: '',
@@ -39,6 +99,7 @@ Page({
       this.setData({
         user,
         overview,
+        entries: buildEntries(overview),
       })
     } catch (error) {
       this.setData({
@@ -48,6 +109,10 @@ Page({
       this.setData({
         loading: false,
       })
+
+      if (nextOptions.stopPullDownRefresh) {
+        wx.stopPullDownRefresh()
+      }
     }
   },
 
@@ -68,5 +133,9 @@ Page({
     wx.reLaunch({
       url: '/pages/login/index',
     })
+  },
+
+  retryLoadPageData() {
+    this.loadPageData()
   },
 })

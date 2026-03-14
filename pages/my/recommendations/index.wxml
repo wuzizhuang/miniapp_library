@@ -1,4 +1,4 @@
-<scroll-view class="page-shell" scroll-y>
+<scroll-view class="page-shell" scroll-y scroll-into-view="{{highlightAnchor}}">
   <view class="panel">
     <view class="section-title">发布推荐动态</view>
     <view class="field-stack">
@@ -34,7 +34,12 @@
     <view wx:elif="{{errorMessage}}" class="empty-card danger-text">{{errorMessage}}</view>
     <view wx:elif="{{!items.length}}" class="empty-card">当前范围下没有推荐动态。</view>
 
-    <view wx:for="{{items}}" wx:key="postId" class="feed-card">
+    <view
+      wx:for="{{items}}"
+      wx:key="postId"
+      id="recommendation-{{item.postId}}"
+      class="feed-card {{item.isHighlighted ? 'feed-card--highlight' : ''}}"
+    >
       <view class="feed-header">
         <view>
           <view class="feed-author">{{item.authorFullName}}</view>

@@ -30,6 +30,17 @@ Page({
     loading: true,
     submitting: false,
     errorMessage: '',
+    highlightId: 0,
+    highlightAnchor: '',
+  },
+
+  onLoad(options) {
+    const highlightId = Number((options && options.highlight) || 0)
+
+    this.setData({
+      highlightId,
+      highlightAnchor: highlightId ? `feedback-${highlightId}` : '',
+    })
   },
 
   onShow() {
@@ -45,7 +56,10 @@ Page({
     try {
       const items = await libraryService.getFeedback()
       this.setData({
-        items: (items || []).map(decorateFeedback),
+        items: (items || []).map((item) => ({
+          ...decorateFeedback(item),
+          isHighlighted: Number(item.feedbackId) === Number(this.data.highlightId || 0),
+        })),
       })
     } catch (error) {
       this.setData({

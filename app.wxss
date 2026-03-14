@@ -428,6 +428,14 @@ page {
   border-color: #9ad0c1;
 }
 
+.notice-card--highlight,
+.feed-card--highlight,
+.list-card--highlight {
+  background: #eef9f4;
+  border-color: #89c7b3;
+  box-shadow: 0 10rpx 30rpx rgba(13, 138, 114, 0.1);
+}
+
 .notice-title {
   font-size: 30rpx;
   font-weight: 700;
@@ -461,4 +469,34 @@ page {
   border: 1rpx solid #d4c3ab;
   color: #6f6559;
   font-size: 23rpx;
+}
+
+.rating-row {
+  display: flex;
+  gap: 12rpx;
+  flex-wrap: wrap;
+}
+
+.rating-pill {
+  min-width: 84rpx;
+  padding: 14rpx 20rpx;
+  border-radius: 999rpx;
+  background: #efe4d2;
+  color: #6f6559;
+  font-size: 24rpx;
+  line-height: 1;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.rating-pill--active {
+  background: #123c38;
+  color: #ffffff;
+}
+
+.card-note {
+  margin-top: 12rpx;
+  color: #6f6559;
+  font-size: 24rpx;
+  line-height: 1.6;
 }

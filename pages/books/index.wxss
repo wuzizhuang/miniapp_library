@@ -1,1 +1,119 @@
-/* use global styles */
+.catalog-summary-text {
+  font-size: 28rpx;
+  line-height: 1.4;
+}
+
+.catalog-search {
+  margin-top: 24rpx;
+}
+
+.catalog-search-input {
+  background: rgba(255, 255, 255, 0.96);
+  color: #1f1a14;
+}
+
+.catalog-search-actions {
+  display: flex;
+  gap: 14rpx;
+  flex-wrap: wrap;
+  margin-top: 16rpx;
+}
+
+.catalog-toolbar-button {
+  min-width: 168rpx;
+}
+
+.catalog-block + .catalog-block {
+  margin-top: 20rpx;
+}
+
+.catalog-block-title {
+  margin-bottom: 14rpx;
+  color: #4b4339;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.catalog-helper-text {
+  margin-top: 10rpx;
+  color: #6f6559;
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+.catalog-list-card {
+  align-items: flex-start;
+}
+
+.catalog-book-cover {
+  overflow: hidden;
+}
+
+.catalog-book-cover--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, #eadfce 0%, #d8cab0 100%);
+  color: #6f6559;
+  font-size: 24rpx;
+  text-align: center;
+  padding: 0 12rpx;
+  box-sizing: border-box;
+}
+
+.catalog-book-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.catalog-book-title {
+  flex: 1;
+}
+
+.catalog-action-chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  background: #efe4d2;
+  color: #4b4339;
+  font-size: 23rpx;
+  font-weight: 600;
+}
+
+.catalog-action-chip--primary {
+  background: #dff4ee;
+  color: #0d6e5c;
+}
+
+.catalog-action-chip--danger {
+  background: #f8ddd7;
+  color: #b54035;
+}
+
+.catalog-action-chip--success {
+  background: #e4f6ec;
+  color: #2e8050;
+}
+
+.catalog-action-chip--warning {
+  background: #fff0d8;
+  color: #bb7a2b;
+}
+
+.catalog-card-link {
+  margin-top: 14rpx;
+  color: #0d8a72;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.catalog-tail-panel {
+  margin-bottom: 40rpx;
+  background: linear-gradient(180deg, #fffaf2 0%, #f7efe2 100%);
+}

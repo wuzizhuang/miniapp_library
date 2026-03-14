@@ -1,4 +1,8 @@
 const { libraryService } = require('../../../services/library')
+const {
+  resolveNotificationTarget,
+  getNotificationActionLabel,
+} = require('../../../services/notification')
 
 function decorateNotification(item) {
   const typeLabelMap = {
@@ -12,6 +16,8 @@ function decorateNotification(item) {
     ...item,
     typeLabel: typeLabelMap[item.type] || item.type,
     createDate: String(item.createTime || '').replace('T', ' ').slice(0, 16),
+    actionLabel: getNotificationActionLabel(item),
+    targetUrl: resolveNotificationTarget(item),
   }
 }
 
@@ -50,24 +56,54 @@ Page({
 
   async markRead(event) {
     const notificationId = event.currentTarget.dataset.notificationId
-    await libraryService.markNotificationRead(notificationId)
-    this.loadNotifications()
+
+    try {
+      await libraryService.markNotificationRead(notificationId)
+      this.loadNotifications()
+    } catch (error) {
+      wx.showToast({
+        title: error && error.message ? error.message : '标记失败',
+        icon: 'none',
+      })
+    }
   },
 
   async markAllRead() {
-    await libraryService.markAllNotificationsRead()
-    this.loadNotifications()
+    try {
+      await libraryService.markAllNotificationsRead()
+      this.loadNotifications()
+    } catch (error) {
+      wx.showToast({
+        title: error && error.message ? error.message : '操作失败',
+        icon: 'none',
+      })
+    }
   },
 
   async deleteOne(event) {
     const notificationId = event.currentTarget.dataset.notificationId
-    await libraryService.deleteNotification(notificationId)
-    this.loadNotifications()
+
+    try {
+      await libraryService.deleteNotification(notificationId)
+      this.loadNotifications()
+    } catch (error) {
+      wx.showToast({
+        title: error && error.message ? error.message : '删除失败',
+        icon: 'none',
+      })
+    }
   },
 
   async clearRead() {
-    await libraryService.clearReadNotifications()
-    this.loadNotifications()
+    try {
+      await libraryService.clearReadNotifications()
+      this.loadNotifications()
+    } catch (error) {
+      wx.showToast({
+        title: error && error.message ? error.message : '清理失败',
+        icon: 'none',
+      })
+    }
   },
 
   async openTarget(event) {
@@ -78,38 +114,28 @@ Page({
       return
     }
 
-    if (!item.isRead) {
-      await libraryService.markNotificationRead(item.notificationId)
-    }
+    try {
+      if (!item.isRead) {
+        await libraryService.markNotificationRead(item.notificationId)
+      }
 
-    if (item.targetType === 'LOAN') {
+      if (!item.targetUrl) {
+        wx.showToast({
+          title: '当前通知暂未提供可跳转页面',
+          icon: 'none',
+        })
+        this.loadNotifications()
+        return
+      }
+
       wx.navigateTo({
-        url: `/pages/my/loan-tracking/index?loanId=${item.targetId}`,
+        url: item.targetUrl,
       })
-      return
-    }
-
-    if (item.targetType === 'RESERVATION') {
-      wx.navigateTo({
-        url: '/pages/my/reservations/index',
+    } catch (error) {
+      wx.showToast({
+        title: error && error.message ? error.message : '通知跳转失败',
+        icon: 'none',
       })
-      return
     }
-
-    if (item.targetType === 'RECOMMENDATION') {
-      wx.navigateTo({
-        url: '/pages/my/recommendations/index',
-      })
-      return
-    }
-
-    if (item.targetType === 'FEEDBACK') {
-      wx.navigateTo({
-        url: '/pages/help-feedback/index',
-      })
-      return
-    }
-
-    this.loadNotifications()
   },
 })

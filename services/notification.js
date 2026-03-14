@@ -16,9 +16,153 @@ function mapNotification(dto) {
   }
 }
 
+function buildTargetWithHighlight(basePath, key, value) {
+  if (!value) {
+    return basePath
+  }
+
+  const separator = basePath.indexOf('?') >= 0 ? '&' : '?'
+
+  return `${basePath}${separator}${key}=${encodeURIComponent(String(value))}`
+}
+
 function resolveNotificationTarget(notification) {
-  // Reader business pages are not registered in app.json yet, so avoid returning invalid routes.
+  if (!notification) {
+    return null
+  }
+
+  if (notification.targetType === 'RECOMMENDATION') {
+    return buildTargetWithHighlight(
+      '/pages/my/recommendations/index',
+      'highlight',
+      notification.targetId,
+    )
+  }
+
+  if (notification.targetType === 'LOAN') {
+    return notification.targetId
+      ? `/pages/my/loan-tracking/index?loanId=${encodeURIComponent(
+          String(notification.targetId),
+        )}`
+      : '/pages/my/shelf/index'
+  }
+
+  if (notification.targetType === 'RESERVATION') {
+    return buildTargetWithHighlight(
+      '/pages/my/reservations/index',
+      'highlight',
+      notification.targetId,
+    )
+  }
+
+  if (notification.targetType === 'SERVICE_APPOINTMENT') {
+    return buildTargetWithHighlight(
+      '/pages/my/appointments/index',
+      'highlight',
+      notification.targetId,
+    )
+  }
+
+  if (notification.targetType === 'FINE') {
+    return buildTargetWithHighlight(
+      '/pages/my/fines/index',
+      'highlight',
+      notification.targetId,
+    )
+  }
+
+  if (notification.targetType === 'FEEDBACK') {
+    return buildTargetWithHighlight(
+      '/pages/help-feedback/index',
+      'highlight',
+      notification.targetId,
+    )
+  }
+
+  if (notification.routeHint) {
+    return notification.routeHint
+  }
+
+  if (notification.type === 'ARRIVAL_NOTICE') {
+    return '/pages/my/reservations/index'
+  }
+
+  if (notification.type === 'NEW_BOOK_RECOMMEND') {
+    return buildTargetWithHighlight(
+      '/pages/my/recommendations/index',
+      'highlight',
+      notification.targetId,
+    )
+  }
+
+  if (notification.type === 'DUE_REMINDER') {
+    return notification.targetId
+      ? `/pages/my/loan-tracking/index?loanId=${encodeURIComponent(
+          String(notification.targetId),
+        )}`
+      : '/pages/my/shelf/index'
+  }
+
+  const joinedText = `${notification.title || ''} ${notification.content || ''}`
+
+  if (joinedText.indexOf('罚款') >= 0) {
+    return '/pages/my/fines/index'
+  }
+
+  if (joinedText.indexOf('反馈') >= 0) {
+    return '/pages/help-feedback/index'
+  }
+
+  if (joinedText.indexOf('预约') >= 0) {
+    return '/pages/my/reservations/index'
+  }
+
+  if (joinedText.indexOf('借阅') >= 0) {
+    return notification.targetId
+      ? `/pages/my/loan-tracking/index?loanId=${encodeURIComponent(
+          String(notification.targetId),
+        )}`
+      : '/pages/my/shelf/index'
+  }
+
   return null
+}
+
+function getNotificationActionLabel(notification) {
+  if (!notification) {
+    return '查看相关'
+  }
+
+  const targetType = notification && notification.targetType
+  const joinedText = `${notification && notification.title ? notification.title : ''} ${
+    notification && notification.content ? notification.content : ''
+  }`
+
+  if (targetType === 'RECOMMENDATION' || notification.type === 'NEW_BOOK_RECOMMEND') {
+    return '查看推荐'
+  }
+
+  if (targetType === 'RESERVATION' || notification.type === 'ARRIVAL_NOTICE') {
+    return '查看预约'
+  }
+
+  if (targetType === 'SERVICE_APPOINTMENT') {
+    return '查看服务预约'
+  }
+
+  if (targetType === 'FINE' || joinedText.indexOf('罚款') >= 0) {
+    return '查看罚款'
+  }
+
+  if (targetType === 'LOAN' || notification.type === 'DUE_REMINDER') {
+    return '查看借阅'
+  }
+
+  if (targetType === 'FEEDBACK' || joinedText.indexOf('反馈') >= 0) {
+    return '查看反馈'
+  }
+
+  return '查看相关'
 }
 
 const notificationService = {
@@ -81,4 +225,5 @@ const notificationService = {
 module.exports = {
   notificationService,
   resolveNotificationTarget,
+  getNotificationActionLabel,
 }

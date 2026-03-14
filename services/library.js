@@ -102,22 +102,37 @@ function toSearchHistoryKeywords(response) {
   return extractPageContent(response)
     .map((item) => item && item.keyword)
     .filter(Boolean)
+    .filter((keyword, index, list) => list.indexOf(keyword) === index)
 }
 
 function isActiveReservation(item) {
-  return Boolean(item && item.status && item.status !== 'CANCELLED')
+  return Boolean(
+    item &&
+      (item.status === 'PENDING' || item.status === 'AWAITING_PICKUP'),
+  )
 }
 
 function isActiveLoan(item) {
-  return Boolean(item && item.status && item.status !== 'RETURNED')
+  return Boolean(
+    item &&
+      (item.status === 'ACTIVE' ||
+        item.status === 'BORROWED' ||
+        item.status === 'OVERDUE'),
+  )
 }
 
 function mapReview(review) {
   return {
     reviewId: review.reviewId,
+    userId: review.userId,
     username: review.username || review.userFullName || '匿名读者',
+    userFullName: review.userFullName,
+    bookId: review.bookId,
+    bookTitle: review.bookTitle,
+    bookIsbn: review.bookIsbn,
     rating: Number(review.rating || 0),
     commentText: review.commentText || '',
+    status: review.status || 'PENDING',
     createTime: review.createTime,
   }
 }
@@ -195,7 +210,6 @@ const libraryService = {
   async updateProfile(payload) {
     const profile = await authService.updateProfile({
       fullName: payload.fullName,
-      email: payload.email,
       department: payload.department,
       major: payload.major,
       enrollmentYear: Number.isFinite(payload.enrollmentYear) && payload.enrollmentYear > 0
@@ -399,6 +413,38 @@ const libraryService = {
   async getFeedback() {
     const response = await feedbackService.getMyFeedback(0, 50)
     return extractPageContent(response)
+  },
+
+  async getSearchHistory(page, size) {
+    const response = await searchService.getMyHistory(page || 0, size || 50)
+    return {
+      ...response,
+      content: extractPageContent(response),
+    }
+  },
+
+  getHotKeywords(limit) {
+    return searchService.getHotKeywords(limit || 8)
+  },
+
+  async getMyReviews(page, size) {
+    const response = await reviewService.getMyReviews(page || 0, size || 20)
+    return {
+      ...response,
+      content: extractPageContent(response).map(mapReview),
+    }
+  },
+
+  updateReview(reviewId, payload) {
+    return reviewService.updateReview(Number(reviewId), {
+      bookId: Number(payload.bookId),
+      rating: Number(payload.rating || 0),
+      commentText: payload.commentText ? String(payload.commentText).trim() : '',
+    })
+  },
+
+  deleteReview(reviewId) {
+    return reviewService.deleteReview(Number(reviewId))
   },
 
   submitFeedback(payload) {

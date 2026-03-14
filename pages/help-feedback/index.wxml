@@ -1,4 +1,4 @@
-<scroll-view class="page-shell" scroll-y>
+<scroll-view class="page-shell" scroll-y scroll-into-view="{{highlightAnchor}}">
   <view class="panel">
     <view class="section-title">提交反馈</view>
     <view class="section-subtitle">保留建议、问题反馈和服务投诉的真实业务语义。</view>
@@ -25,7 +25,12 @@
     <view wx:if="{{loading}}" class="empty-card">正在加载反馈记录...</view>
     <view wx:elif="{{errorMessage}}" class="empty-card danger-text">{{errorMessage}}</view>
     <view wx:elif="{{!items.length}}" class="empty-card">还没有提交过反馈。</view>
-    <view wx:for="{{items}}" wx:key="feedbackId" class="feed-card">
+    <view
+      wx:for="{{items}}"
+      wx:key="feedbackId"
+      id="feedback-{{item.feedbackId}}"
+      class="feed-card {{item.isHighlighted ? 'feed-card--highlight' : ''}}"
+    >
       <view class="feed-header">
         <view>
           <view class="feed-author">{{item.subject}}</view>
