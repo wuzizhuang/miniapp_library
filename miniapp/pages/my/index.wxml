@@ -1,0 +1,80 @@
+<scroll-view class="page-shell" scroll-y>
+  <view wx:if="{{notLoggedIn}}" class="panel">
+    <view class="empty-card">
+      <view>你还未登录，请先登录后查看个人中心。</view>
+      <view class="inline-actions">
+        <view class="button-primary" bindtap="goLogin">去登录</view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:elif="{{loading}}" class="panel">
+    <view class="empty-card">正在加载我的中心...</view>
+  </view>
+
+  <view wx:elif="{{errorMessage}}" class="panel">
+    <view class="empty-card danger-text">
+      <view>{{errorMessage}}</view>
+      <view class="inline-actions">
+        <view class="button-secondary" bindtap="retryLoadPageData">重新加载</view>
+      </view>
+    </view>
+  </view>
+
+  <block wx:elif="{{user && overview}}">
+    <view class="hero-card">
+      <view class="hero-title">{{user.fullName}}</view>
+      <view class="hero-subtitle">{{user.department}} · {{user.major}} · {{user.identityType}}</view>
+      <view class="summary-row" style="margin-top: 24rpx;">
+        <view class="summary-item">
+          <view class="summary-label">当前借阅</view>
+          <view class="summary-value">{{overview.activeLoanCount}}</view>
+        </view>
+        <view class="summary-item">
+          <view class="summary-label">待取预约</view>
+          <view class="summary-value">{{overview.readyReservationCount}}</view>
+        </view>
+        <view class="summary-item">
+          <view class="summary-label">未读通知</view>
+          <view class="summary-value">{{overview.unreadNotificationCount}}</view>
+        </view>
+        <view class="summary-item">
+          <view class="summary-label">待缴罚款</view>
+          <view class="summary-value">{{overview.pendingFineCount}}</view>
+        </view>
+      </view>
+      <view class="inline-actions">
+        <view class="button-ghost" bindtap="logout">退出当前账号</view>
+      </view>
+    </view>
+
+    <view class="panel">
+      <view class="section-title">读者入口</view>
+      <view class="entry-grid">
+        <view wx:for="{{entries}}" wx:key="url" class="entry-card" data-url="{{item.url}}" bindtap="openPage">
+          <view class="toolbar-spread">
+            <view class="entry-title">{{item.title}}</view>
+            <view wx:if="{{item.badge}}" class="entry-badge">{{item.badge}}</view>
+          </view>
+          <view class="entry-desc">{{item.desc}}</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="panel">
+      <view class="section-title">即将到期</view>
+      <view wx:if="{{!overview.dueSoonLoans.length}}" class="empty-card">当前没有临近到期的借阅。</view>
+      <view wx:for="{{overview.dueSoonLoans}}" wx:key="loanId" class="list-card" data-loan-id="{{item.loanId}}" bindtap="openLoan">
+        <view class="book-info">
+          <view class="book-title">{{item.bookTitle}}</view>
+          <view class="book-meta">到期日 {{item.dueDate}}</view>
+          <view class="chip-row" style="margin-top: 12rpx;">
+            <view class="{{item.status === 'OVERDUE' ? 'chip-danger' : 'chip-warning'}}">
+              {{item.status === 'OVERDUE' ? '已逾期' : '剩余 ' + item.daysRemaining + ' 天'}}
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </block>
+</scroll-view>

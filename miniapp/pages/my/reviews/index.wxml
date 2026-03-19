@@ -1,0 +1,80 @@
+<scroll-view class="page-shell" scroll-y>
+  <view class="panel">
+    <view class="toolbar-spread">
+      <view>
+        <view class="section-title">我的评论</view>
+        <view class="section-subtitle">查看审核状态，并继续编辑或删除你的书评。</view>
+      </view>
+      <view class="button-secondary" bindtap="goCatalog">去找书</view>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="panel">
+    <view class="empty-card">正在加载评论...</view>
+  </view>
+
+  <view wx:elif="{{errorMessage}}" class="panel">
+    <view class="empty-card danger-text">
+      <view>{{errorMessage}}</view>
+      <view class="inline-actions">
+        <view class="button-secondary" bindtap="retryLoadReviews">重新加载</view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:elif="{{!items.length}}" class="panel">
+    <view class="empty-card">
+      <view>你还没有提交任何评论。</view>
+      <view class="card-note">进入图书详情页后，可以直接写下第一条书评。</view>
+    </view>
+  </view>
+
+  <block wx:else>
+    <view wx:for="{{items}}" wx:key="reviewId" class="panel">
+      <view class="toolbar-spread">
+        <view>
+          <view class="section-title" style="margin-bottom: 8rpx;">{{item.bookTitle || '未知图书'}}</view>
+          <view class="muted-text">ISBN：{{item.bookIsbn || '-'}}</view>
+        </view>
+        <view class="chip-row">
+          <view class="{{item.statusClass}}">{{item.statusLabel}}</view>
+          <view class="chip">{{item.createDate}}</view>
+        </view>
+      </view>
+
+      <view class="card-note">评分：{{item.ratingText}}</view>
+      <view class="feed-content">{{item.commentText || '该评论未填写文字内容。'}}</view>
+
+      <view class="inline-actions">
+        <view wx:if="{{item.bookId}}" class="button-secondary" data-book-id="{{item.bookId}}" bindtap="openBook">查看图书</view>
+        <view class="button-primary" data-review-id="{{item.reviewId}}" bindtap="startEdit">编辑评论</view>
+        <view class="button-danger" data-review-id="{{item.reviewId}}" bindtap="deleteReview">
+          {{deletingReviewId === item.reviewId ? '删除中...' : '删除评论'}}
+        </view>
+      </view>
+
+      <view wx:if="{{editingReviewId === item.reviewId}}" class="divider"></view>
+      <view wx:if="{{editingReviewId === item.reviewId}}" class="field-stack">
+        <view class="field-label">修改评分</view>
+        <view class="rating-row">
+          <view
+            wx:for="{{ratingOptions}}"
+            wx:key="*this"
+            class="rating-pill {{editRating === item ? 'rating-pill--active' : ''}}"
+            data-rating="{{item}}"
+            bindtap="pickRating"
+          >
+            {{item}} 分
+          </view>
+        </view>
+        <textarea class="textarea" placeholder="继续完善你的阅读体验..." value="{{editCommentText}}" bindinput="onCommentInput"></textarea>
+        <view class="inline-actions">
+          <view class="button-ghost" bindtap="cancelEdit">取消</view>
+          <view class="button-primary" bindtap="submitEdit">
+            {{submittingReviewId === item.reviewId ? '保存中...' : '保存修改'}}
+          </view>
+        </view>
+      </view>
+    </view>
+  </block>
+</scroll-view>

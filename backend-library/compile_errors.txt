@@ -1,0 +1,638 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------< com.example:library-management >-------------------
+[INFO] Building library-management 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.4.1:clean (default-clean) @ library-management ---
+[INFO] Deleting E:\001-a-kese\library-management-backend-master\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ library-management ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ library-management ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 140 source files with javac [debug parameters release 17] to target\classes
+[INFO] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/security/AuthTokenFilter.java: E:\001-a-kese\library-management-backend-master\src\main\java\com\example\library\security\AuthTokenFilter.java使用了未经检查或不安全的操作。
+[INFO] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/security/AuthTokenFilter.java: 有关详细信息, 请使用 -Xlint:unchecked 重新编译。
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/DataInitializer.java:[35,22] 找不到符号
+  符号:   方法 setUsername(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/DataInitializer.java:[36,22] 找不到符号
+  符号:   方法 setPasswordHash(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/DataInitializer.java:[37,22] 找不到符号
+  符号:   方法 setEmail(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/DataInitializer.java:[38,22] 找不到符号
+  符号:   方法 setFullName(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/DataInitializer.java:[39,22] 找不到符号
+  符号:   方法 setRole(com.example.library.entity.User.UserRole)
+  位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/InitialAdminSetup.java:[37,26] 找不到符号
+  符号:   方法 setUsername(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/InitialAdminSetup.java:[38,26] 找不到符号
+  符号:   方法 setPasswordHash(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/InitialAdminSetup.java:[39,26] 找不到符号
+  符号:   方法 setEmail(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/InitialAdminSetup.java:[40,26] 找不到符号
+  符号:   方法 setFullName(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/InitialAdminSetup.java:[41,26] 找不到符号
+  符号:   方法 setRole(com.example.library.entity.User.UserRole)
+  位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/InitialAdminSetup.java:[42,26] 找不到符号
+  符号:   方法 setStatus(com.example.library.entity.User.UserStatus)
+  位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/InitialAdminSetup.java:[53,25] 找不到符号
+  符号:   方法 setUsername(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 testUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/InitialAdminSetup.java:[54,25] 找不到符号
+  符号:   方法 setPasswordHash(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 testUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/InitialAdminSetup.java:[55,25] 找不到符号
+  符号:   方法 setEmail(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 testUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/InitialAdminSetup.java:[56,25] 找不到符号
+  符号:   方法 setFullName(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 testUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/InitialAdminSetup.java:[57,25] 找不到符号
+  符号:   方法 setRole(com.example.library.entity.User.UserRole)
+  位置: 类型为com.example.library.entity.User的变量 testUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/InitialAdminSetup.java:[58,25] 找不到符号
+  符号:   方法 setStatus(com.example.library.entity.User.UserStatus)
+  位置: 类型为com.example.library.entity.User的变量 testUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/controller/AuthController.java:[63,17] 找不到符号
+  符号:   变量 log
+  位置: 类 com.example.library.controller.AuthController
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/controller/AuthController.java:[87,37] 找不到符号
+  符号:   方法 getUsername()
+  位置: 类型为com.example.library.dto.user.UserLoginDto的变量 loginRequest
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/controller/AuthController.java:[88,37] 找不到符号
+  符号:   方法 getPassword()
+  位置: 类型为com.example.library.dto.user.UserLoginDto的变量 loginRequest
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/controller/AuthController.java:[105,28] 找不到符号
+  符号:   方法 getId()
+  位置: 类型为com.example.library.security.UserDetailsImpl的变量 userDetails
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/controller/AuthController.java:[119,9] 找不到符号
+  符号:   变量 log
+  位置: 类 com.example.library.controller.AuthController
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[69,58] 找不到符号
+  符号:   方法 getUsername()
+  位置: 类型为com.example.library.dto.user.UserCreateDto的变量 userCreateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[73,55] 找不到符号
+  符号:   方法 getEmail()
+  位置: 类型为com.example.library.dto.user.UserCreateDto的变量 userCreateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[78,39] 找不到符号
+  符号:   方法 getUsername()
+  位置: 类型为com.example.library.dto.user.UserCreateDto的变量 userCreateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[79,36] 找不到符号
+  符号:   方法 getEmail()
+  位置: 类型为com.example.library.dto.user.UserCreateDto的变量 userCreateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[80,39] 找不到符号
+  符号:   方法 getFullName()
+  位置: 类型为com.example.library.dto.user.UserCreateDto的变量 userCreateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[81,66] 找不到符号
+  符号:   方法 getPassword()
+  位置: 类型为com.example.library.dto.user.UserCreateDto的变量 userCreateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[82,13] 找不到符号
+  符号:   方法 setRole(com.example.library.entity.User.UserRole)
+  位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[83,13] 找不到符号
+  符号:   方法 setStatus(com.example.library.entity.User.UserStatus)
+  位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[97,26] 找不到符号
+  符号:   方法 getFullName()
+  位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[98,43] 找不到符号
+  符号:   方法 getFullName()
+  位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[101,26] 找不到符号
+  符号:   方法 getEmail()
+  位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[101,54] 找不到符号
+  符号:   方法 getEmail()
+  位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[101,86] 找不到符号
+  符号:   方法 getEmail()
+  位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[102,59] 找不到符号
+  符号:   方法 getEmail()
+  位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[105,40] 找不到符号
+  符号:   方法 getEmail()
+  位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[108,26] 找不到符号
+  符号:   方法 getPassword()
+  位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[109,70] 找不到符号
+  符号:   方法 getPassword()
+  位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[112,26] 找不到符号
+  符号:   方法 getRole()
+  位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[113,39] 找不到符号
+  符号:   方法 getRole()
+  位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[116,26] 找不到符号
+  符号:   方法 getStatus()
+  位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[117,41] 找不到符号
+  符号:   方法 getStatus()
+  位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[120,26] 找不到符号
+  符号:   方法 getPassword()
+  位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[121,30] 找不到符号
+  符号:   方法 getPassword()
+  位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[124,30] 找不到符号
+  符号:   方法 getOldPassword()
+  位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[127,55] 找不到符号
+  符号:   方法 getOldPassword()
+  位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[127,78] 找不到符号
+  符号:   方法 getPasswordHash()
+  位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[131,70] 找不到符号
+  符号:   方法 getPassword()
+  位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[146,13] 找不到符号
+  符号:   方法 setStatus(com.example.library.entity.User.UserStatus)
+  位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[152,27] 找不到符号
+  符号:   方法 getUserId()
+  位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[153,29] 找不到符号
+  符号:   方法 getUsername()
+  位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[154,26] 找不到符号
+  符号:   方法 getEmail()
+  位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[155,29] 找不到符号
+  符号:   方法 getFullName()
+  位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[156,25] 找不到符号
+  符号:   方法 getRole()
+  位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[157,27] 找不到符号
+  符号:   方法 getStatus()
+  位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[158,31] 找不到符号
+  符号:   方法 getCreateTime()
+  位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[159,31] 找不到符号
+  符号:   方法 getUpdateTime()
+  位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/controller/DevController.java:[74,22] 找不到符号
+  符号:   方法 setUsername(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/controller/DevController.java:[75,22] 找不到符号
+  符号:   方法 setPasswordHash(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/controller/DevController.java:[76,22] 找不到符号
+  符号:   方法 setEmail(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/controller/DevController.java:[77,22] 找不到符号
+  符号:   方法 setFullName(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/controller/DevController.java:[78,22] 找不到符号
+  符号:   方法 setRole(com.example.library.entity.User.UserRole)
+  位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/controller/DevController.java:[88,13] 找不到符号
+  符号:   变量 log
+  位置: 类 com.example.library.controller.DevController
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/controller/DevController.java:[109,13] 找不到符号
+  符号:   变量 log
+  位置: 类 com.example.library.controller.DevController
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[48,9] 找不到符号
+  符号:   变量 log
+  位置: 类 com.example.library.service.DataSeederService
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[65,9] 找不到符号
+  符号:   变量 log
+  位置: 类 com.example.library.service.DataSeederService
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[77,18] 找不到符号
+  符号:   方法 setUsername(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 admin
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[78,18] 找不到符号
+  符号:   方法 setPasswordHash(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 admin
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[79,18] 找不到符号
+  符号:   方法 setEmail(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 admin
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[80,18] 找不到符号
+  符号:   方法 setFullName(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 admin
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[81,18] 找不到符号
+  符号:   方法 setRole(com.example.library.entity.User.UserRole)
+  位置: 类型为com.example.library.entity.User的变量 admin
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[88,17] 找不到符号
+  符号:   方法 setUsername(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[89,17] 找不到符号
+  符号:   方法 setPasswordHash(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[90,17] 找不到符号
+  符号:   方法 setEmail(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[91,17] 找不到符号
+  符号:   方法 setFullName(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[92,17] 找不到符号
+  符号:   方法 setRole(com.example.library.entity.User.UserRole)
+  位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[95,17] 找不到符号
+  符号:   方法 setIdentityType(com.example.library.entity.User.IdentityType)
+  位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[96,17] 找不到符号
+  符号:   方法 setDepartment(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[97,17] 找不到符号
+  符号:   方法 setEnrollmentYear(int)
+  位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[98,17] 找不到符号
+  符号:   方法 setInterestTags(java.lang.String)
+  位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[112,17] 找不到符号
+  符号:   方法 setIsbn(java.lang.String)
+  位置: 类型为com.example.library.entity.Book的变量 book
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[113,17] 找不到符号
+  符号:   方法 setTitle(java.lang.String)
+  位置: 类型为com.example.library.entity.Book的变量 book
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[114,17] 找不到符号
+  符号:   方法 setDescription(java.lang.String)
+  位置: 类型为com.example.library.entity.Book的变量 book
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[115,17] 找不到符号
+  符号:   方法 setPageCount(int)
+  位置: 类型为com.example.library.entity.Book的变量 book
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[116,17] 找不到符号
+  符号:   方法 setPublishedYear(int)
+  位置: 类型为com.example.library.entity.Book的变量 book
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[117,17] 找不到符号
+  符号:   方法 setLanguage(java.lang.String)
+  位置: 类型为com.example.library.entity.Book的变量 book
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[118,17] 找不到符号
+  符号:   方法 setCategory(com.example.library.entity.Category)
+  位置: 类型为com.example.library.entity.Book的变量 book
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[119,17] 找不到符号
+  符号:   方法 setPublisher(com.example.library.entity.Publisher)
+  位置: 类型为com.example.library.entity.Book的变量 book
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[120,66] 找不到符号
+  符号:   方法 getIsbn()
+  位置: 类型为com.example.library.entity.Book的变量 book
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[121,17] 找不到符号
+  符号:   方法 setStatus(com.example.library.entity.Book.BookStatus)
+  位置: 类型为com.example.library.entity.Book的变量 book
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[135,21] 找不到符号
+  符号:   方法 setBook(com.example.library.entity.Book)
+  位置: 类型为com.example.library.entity.BookCopy的变量 copy
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[136,21] 找不到符号
+  符号:   方法 setStatus(com.example.library.entity.BookCopy.CopyStatus)
+  位置: 类型为com.example.library.entity.BookCopy的变量 copy
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[137,21] 找不到符号
+  符号:   方法 setAcquisitionDate(java.time.LocalDate)
+  位置: 类型为com.example.library.entity.BookCopy的变量 copy
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[138,21] 找不到符号
+  符号:   方法 setPrice(java.math.BigDecimal)
+  位置: 类型为com.example.library.entity.BookCopy的变量 copy
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[139,21] 找不到符号
+  符号:   方法 setLocationCode(java.lang.String)
+  位置: 类型为com.example.library.entity.BookCopy的变量 copy
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[140,21] 找不到符号
+  符号:   方法 setRfidTag(java.lang.String)
+  位置: 类型为com.example.library.entity.BookCopy的变量 copy
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[170,13] 找不到符号
+  符号:   方法 setCopy(com.example.library.entity.BookCopy)
+  位置: 类型为com.example.library.entity.Loan的变量 loan
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[171,13] 找不到符号
+  符号:   方法 setUser(com.example.library.entity.User)
+  位置: 类型为com.example.library.entity.Loan的变量 loan
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[174,13] 找不到符号
+  符号:   方法 setBorrowDate(java.time.LocalDate)
+  位置: 类型为com.example.library.entity.Loan的变量 loan
+[INFO] 100 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  12.917 s
+[INFO] Finished at: 2026-02-28T21:12:21+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.13.0:compile (default-compile) on project library-management: Compilation failure: Compilation failure: 
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/DataInitializer.java:[35,22] 找不到符号
+[ERROR]   符号:   方法 setUsername(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/DataInitializer.java:[36,22] 找不到符号
+[ERROR]   符号:   方法 setPasswordHash(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/DataInitializer.java:[37,22] 找不到符号
+[ERROR]   符号:   方法 setEmail(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/DataInitializer.java:[38,22] 找不到符号
+[ERROR]   符号:   方法 setFullName(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/DataInitializer.java:[39,22] 找不到符号
+[ERROR]   符号:   方法 setRole(com.example.library.entity.User.UserRole)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/InitialAdminSetup.java:[37,26] 找不到符号
+[ERROR]   符号:   方法 setUsername(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/InitialAdminSetup.java:[38,26] 找不到符号
+[ERROR]   符号:   方法 setPasswordHash(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/InitialAdminSetup.java:[39,26] 找不到符号
+[ERROR]   符号:   方法 setEmail(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/InitialAdminSetup.java:[40,26] 找不到符号
+[ERROR]   符号:   方法 setFullName(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/InitialAdminSetup.java:[41,26] 找不到符号
+[ERROR]   符号:   方法 setRole(com.example.library.entity.User.UserRole)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/InitialAdminSetup.java:[42,26] 找不到符号
+[ERROR]   符号:   方法 setStatus(com.example.library.entity.User.UserStatus)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/InitialAdminSetup.java:[53,25] 找不到符号
+[ERROR]   符号:   方法 setUsername(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 testUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/InitialAdminSetup.java:[54,25] 找不到符号
+[ERROR]   符号:   方法 setPasswordHash(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 testUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/InitialAdminSetup.java:[55,25] 找不到符号
+[ERROR]   符号:   方法 setEmail(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 testUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/InitialAdminSetup.java:[56,25] 找不到符号
+[ERROR]   符号:   方法 setFullName(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 testUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/InitialAdminSetup.java:[57,25] 找不到符号
+[ERROR]   符号:   方法 setRole(com.example.library.entity.User.UserRole)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 testUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/config/InitialAdminSetup.java:[58,25] 找不到符号
+[ERROR]   符号:   方法 setStatus(com.example.library.entity.User.UserStatus)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 testUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/controller/AuthController.java:[63,17] 找不到符号
+[ERROR]   符号:   变量 log
+[ERROR]   位置: 类 com.example.library.controller.AuthController
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/controller/AuthController.java:[87,37] 找不到符号
+[ERROR]   符号:   方法 getUsername()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserLoginDto的变量 loginRequest
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/controller/AuthController.java:[88,37] 找不到符号
+[ERROR]   符号:   方法 getPassword()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserLoginDto的变量 loginRequest
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/controller/AuthController.java:[105,28] 找不到符号
+[ERROR]   符号:   方法 getId()
+[ERROR]   位置: 类型为com.example.library.security.UserDetailsImpl的变量 userDetails
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/controller/AuthController.java:[119,9] 找不到符号
+[ERROR]   符号:   变量 log
+[ERROR]   位置: 类 com.example.library.controller.AuthController
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[69,58] 找不到符号
+[ERROR]   符号:   方法 getUsername()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserCreateDto的变量 userCreateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[73,55] 找不到符号
+[ERROR]   符号:   方法 getEmail()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserCreateDto的变量 userCreateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[78,39] 找不到符号
+[ERROR]   符号:   方法 getUsername()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserCreateDto的变量 userCreateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[79,36] 找不到符号
+[ERROR]   符号:   方法 getEmail()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserCreateDto的变量 userCreateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[80,39] 找不到符号
+[ERROR]   符号:   方法 getFullName()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserCreateDto的变量 userCreateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[81,66] 找不到符号
+[ERROR]   符号:   方法 getPassword()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserCreateDto的变量 userCreateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[82,13] 找不到符号
+[ERROR]   符号:   方法 setRole(com.example.library.entity.User.UserRole)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[83,13] 找不到符号
+[ERROR]   符号:   方法 setStatus(com.example.library.entity.User.UserStatus)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[97,26] 找不到符号
+[ERROR]   符号:   方法 getFullName()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[98,43] 找不到符号
+[ERROR]   符号:   方法 getFullName()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[101,26] 找不到符号
+[ERROR]   符号:   方法 getEmail()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[101,54] 找不到符号
+[ERROR]   符号:   方法 getEmail()
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[101,86] 找不到符号
+[ERROR]   符号:   方法 getEmail()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[102,59] 找不到符号
+[ERROR]   符号:   方法 getEmail()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[105,40] 找不到符号
+[ERROR]   符号:   方法 getEmail()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[108,26] 找不到符号
+[ERROR]   符号:   方法 getPassword()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[109,70] 找不到符号
+[ERROR]   符号:   方法 getPassword()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[112,26] 找不到符号
+[ERROR]   符号:   方法 getRole()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[113,39] 找不到符号
+[ERROR]   符号:   方法 getRole()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[116,26] 找不到符号
+[ERROR]   符号:   方法 getStatus()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[117,41] 找不到符号
+[ERROR]   符号:   方法 getStatus()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[120,26] 找不到符号
+[ERROR]   符号:   方法 getPassword()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[121,30] 找不到符号
+[ERROR]   符号:   方法 getPassword()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[124,30] 找不到符号
+[ERROR]   符号:   方法 getOldPassword()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[127,55] 找不到符号
+[ERROR]   符号:   方法 getOldPassword()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[127,78] 找不到符号
+[ERROR]   符号:   方法 getPasswordHash()
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[131,70] 找不到符号
+[ERROR]   符号:   方法 getPassword()
+[ERROR]   位置: 类型为com.example.library.dto.user.UserUpdateDto的变量 userUpdateDto
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[146,13] 找不到符号
+[ERROR]   符号:   方法 setStatus(com.example.library.entity.User.UserStatus)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[152,27] 找不到符号
+[ERROR]   符号:   方法 getUserId()
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[153,29] 找不到符号
+[ERROR]   符号:   方法 getUsername()
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[154,26] 找不到符号
+[ERROR]   符号:   方法 getEmail()
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[155,29] 找不到符号
+[ERROR]   符号:   方法 getFullName()
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[156,25] 找不到符号
+[ERROR]   符号:   方法 getRole()
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[157,27] 找不到符号
+[ERROR]   符号:   方法 getStatus()
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[158,31] 找不到符号
+[ERROR]   符号:   方法 getCreateTime()
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/UserService.java:[159,31] 找不到符号
+[ERROR]   符号:   方法 getUpdateTime()
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/controller/DevController.java:[74,22] 找不到符号
+[ERROR]   符号:   方法 setUsername(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/controller/DevController.java:[75,22] 找不到符号
+[ERROR]   符号:   方法 setPasswordHash(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/controller/DevController.java:[76,22] 找不到符号
+[ERROR]   符号:   方法 setEmail(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/controller/DevController.java:[77,22] 找不到符号
+[ERROR]   符号:   方法 setFullName(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/controller/DevController.java:[78,22] 找不到符号
+[ERROR]   符号:   方法 setRole(com.example.library.entity.User.UserRole)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 adminUser
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/controller/DevController.java:[88,13] 找不到符号
+[ERROR]   符号:   变量 log
+[ERROR]   位置: 类 com.example.library.controller.DevController
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/controller/DevController.java:[109,13] 找不到符号
+[ERROR]   符号:   变量 log
+[ERROR]   位置: 类 com.example.library.controller.DevController
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[48,9] 找不到符号
+[ERROR]   符号:   变量 log
+[ERROR]   位置: 类 com.example.library.service.DataSeederService
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[65,9] 找不到符号
+[ERROR]   符号:   变量 log
+[ERROR]   位置: 类 com.example.library.service.DataSeederService
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[77,18] 找不到符号
+[ERROR]   符号:   方法 setUsername(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 admin
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[78,18] 找不到符号
+[ERROR]   符号:   方法 setPasswordHash(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 admin
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[79,18] 找不到符号
+[ERROR]   符号:   方法 setEmail(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 admin
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[80,18] 找不到符号
+[ERROR]   符号:   方法 setFullName(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 admin
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[81,18] 找不到符号
+[ERROR]   符号:   方法 setRole(com.example.library.entity.User.UserRole)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 admin
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[88,17] 找不到符号
+[ERROR]   符号:   方法 setUsername(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[89,17] 找不到符号
+[ERROR]   符号:   方法 setPasswordHash(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[90,17] 找不到符号
+[ERROR]   符号:   方法 setEmail(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[91,17] 找不到符号
+[ERROR]   符号:   方法 setFullName(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[92,17] 找不到符号
+[ERROR]   符号:   方法 setRole(com.example.library.entity.User.UserRole)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[95,17] 找不到符号
+[ERROR]   符号:   方法 setIdentityType(com.example.library.entity.User.IdentityType)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[96,17] 找不到符号
+[ERROR]   符号:   方法 setDepartment(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[97,17] 找不到符号
+[ERROR]   符号:   方法 setEnrollmentYear(int)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[98,17] 找不到符号
+[ERROR]   符号:   方法 setInterestTags(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[112,17] 找不到符号
+[ERROR]   符号:   方法 setIsbn(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.Book的变量 book
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[113,17] 找不到符号
+[ERROR]   符号:   方法 setTitle(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.Book的变量 book
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[114,17] 找不到符号
+[ERROR]   符号:   方法 setDescription(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.Book的变量 book
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[115,17] 找不到符号
+[ERROR]   符号:   方法 setPageCount(int)
+[ERROR]   位置: 类型为com.example.library.entity.Book的变量 book
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[116,17] 找不到符号
+[ERROR]   符号:   方法 setPublishedYear(int)
+[ERROR]   位置: 类型为com.example.library.entity.Book的变量 book
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[117,17] 找不到符号
+[ERROR]   符号:   方法 setLanguage(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.Book的变量 book
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[118,17] 找不到符号
+[ERROR]   符号:   方法 setCategory(com.example.library.entity.Category)
+[ERROR]   位置: 类型为com.example.library.entity.Book的变量 book
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[119,17] 找不到符号
+[ERROR]   符号:   方法 setPublisher(com.example.library.entity.Publisher)
+[ERROR]   位置: 类型为com.example.library.entity.Book的变量 book
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[120,66] 找不到符号
+[ERROR]   符号:   方法 getIsbn()
+[ERROR]   位置: 类型为com.example.library.entity.Book的变量 book
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[121,17] 找不到符号
+[ERROR]   符号:   方法 setStatus(com.example.library.entity.Book.BookStatus)
+[ERROR]   位置: 类型为com.example.library.entity.Book的变量 book
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[135,21] 找不到符号
+[ERROR]   符号:   方法 setBook(com.example.library.entity.Book)
+[ERROR]   位置: 类型为com.example.library.entity.BookCopy的变量 copy
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[136,21] 找不到符号
+[ERROR]   符号:   方法 setStatus(com.example.library.entity.BookCopy.CopyStatus)
+[ERROR]   位置: 类型为com.example.library.entity.BookCopy的变量 copy
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[137,21] 找不到符号
+[ERROR]   符号:   方法 setAcquisitionDate(java.time.LocalDate)
+[ERROR]   位置: 类型为com.example.library.entity.BookCopy的变量 copy
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[138,21] 找不到符号
+[ERROR]   符号:   方法 setPrice(java.math.BigDecimal)
+[ERROR]   位置: 类型为com.example.library.entity.BookCopy的变量 copy
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[139,21] 找不到符号
+[ERROR]   符号:   方法 setLocationCode(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.BookCopy的变量 copy
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[140,21] 找不到符号
+[ERROR]   符号:   方法 setRfidTag(java.lang.String)
+[ERROR]   位置: 类型为com.example.library.entity.BookCopy的变量 copy
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[170,13] 找不到符号
+[ERROR]   符号:   方法 setCopy(com.example.library.entity.BookCopy)
+[ERROR]   位置: 类型为com.example.library.entity.Loan的变量 loan
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[171,13] 找不到符号
+[ERROR]   符号:   方法 setUser(com.example.library.entity.User)
+[ERROR]   位置: 类型为com.example.library.entity.Loan的变量 loan
+[ERROR] /E:/001-a-kese/library-management-backend-master/src/main/java/com/example/library/service/DataSeederService.java:[174,13] 找不到符号
+[ERROR]   符号:   方法 setBorrowDate(java.time.LocalDate)
+[ERROR]   位置: 类型为com.example.library.entity.Loan的变量 loan
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

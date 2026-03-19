@@ -1,0 +1,195 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------< com.example:library-management >-------------------
+[INFO] Building library-management 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.4.1:clean (default-clean) @ library-management ---
+[INFO] Deleting E:\001-a-kese\1\backend-library\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ library-management ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ library-management ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 153 source files with javac [debug parameters release 17] to target\classes
+[WARNING] /E:/001-a-kese/1/backend-library/src/main/java/com/example/library/exception/ApiResponse.java:[19,26] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /E:/001-a-kese/1/backend-library/src/main/java/com/example/library/dto/BorrowingResultDto.java:[18,26] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /E:/001-a-kese/1/backend-library/src/main/java/com/example/library/dto/book/BookCopyCreateDto.java:[24,33] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[INFO] /E:/001-a-kese/1/backend-library/src/main/java/com/example/library/security/AuthTokenFilter.java: E:\001-a-kese\1\backend-library\src\main\java\com\example\library\security\AuthTokenFilter.java使用了未经检查或不安全的操作。
+[INFO] /E:/001-a-kese/1/backend-library/src/main/java/com/example/library/security/AuthTokenFilter.java: 有关详细信息, 请使用 -Xlint:unchecked 重新编译。
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ library-management ---
+[INFO] skip non existing resourceDirectory E:\001-a-kese\1\backend-library\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ library-management ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 31 source files with javac [debug parameters release 17] to target\test-classes
+[INFO] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/CategoryControllerTest.java: 某些输入文件额外使用或覆盖了标记为待删除的已过时 API。
+[INFO] 某些消息已经过简化; 请使用 -Xdiags:verbose 重新编译以获得完整输出
+[INFO] -------------------------------------------------------------
+[WARNING] COMPILATION WARNING : 
+[INFO] -------------------------------------------------------------
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminReviewControllerTest.java:[49,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminReviewControllerTest.java:[49,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminReviewControllerTest.java:[49,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminReviewControllerTest.java:[49,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminReviewControllerTest.java:[49,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminReviewControllerTest.java:[52,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminReviewControllerTest.java:[52,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminReviewControllerTest.java:[52,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminReviewControllerTest.java:[52,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminReviewControllerTest.java:[52,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminReviewControllerTest.java:[55,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminReviewControllerTest.java:[55,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminReviewControllerTest.java:[55,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminReviewControllerTest.java:[55,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminReviewControllerTest.java:[55,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminRoleControllerTest.java:[55,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminRoleControllerTest.java:[55,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminRoleControllerTest.java:[55,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminRoleControllerTest.java:[55,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminRoleControllerTest.java:[55,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminRoleControllerTest.java:[58,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminRoleControllerTest.java:[58,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminRoleControllerTest.java:[58,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminRoleControllerTest.java:[58,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminRoleControllerTest.java:[58,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminRoleControllerTest.java:[61,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminRoleControllerTest.java:[61,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminRoleControllerTest.java:[61,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminRoleControllerTest.java:[61,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AdminRoleControllerTest.java:[61,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthControllerTest.java:[59,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthControllerTest.java:[59,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthControllerTest.java:[59,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthControllerTest.java:[59,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthControllerTest.java:[59,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthControllerTest.java:[62,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthControllerTest.java:[62,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthControllerTest.java:[62,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthControllerTest.java:[62,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthControllerTest.java:[62,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthControllerTest.java:[65,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthControllerTest.java:[65,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthControllerTest.java:[65,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthControllerTest.java:[65,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthControllerTest.java:[65,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthorControllerTest.java:[59,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthorControllerTest.java:[59,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthorControllerTest.java:[59,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthorControllerTest.java:[59,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthorControllerTest.java:[59,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthorControllerTest.java:[62,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthorControllerTest.java:[62,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthorControllerTest.java:[62,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthorControllerTest.java:[62,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthorControllerTest.java:[62,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthorControllerTest.java:[65,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthorControllerTest.java:[65,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthorControllerTest.java:[65,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthorControllerTest.java:[65,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/AuthorControllerTest.java:[65,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookControllerTest.java:[62,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookControllerTest.java:[62,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookControllerTest.java:[62,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookControllerTest.java:[62,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookControllerTest.java:[62,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookControllerTest.java:[65,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookControllerTest.java:[65,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookControllerTest.java:[65,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookControllerTest.java:[65,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookControllerTest.java:[65,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookControllerTest.java:[68,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookControllerTest.java:[68,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookControllerTest.java:[68,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookControllerTest.java:[68,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookControllerTest.java:[68,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookCopyControllerTest.java:[65,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookCopyControllerTest.java:[65,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookCopyControllerTest.java:[65,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookCopyControllerTest.java:[65,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookCopyControllerTest.java:[65,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookCopyControllerTest.java:[68,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookCopyControllerTest.java:[68,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookCopyControllerTest.java:[68,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookCopyControllerTest.java:[68,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookCopyControllerTest.java:[68,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookCopyControllerTest.java:[71,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookCopyControllerTest.java:[71,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookCopyControllerTest.java:[71,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookCopyControllerTest.java:[71,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/BookCopyControllerTest.java:[71,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/CategoryControllerTest.java:[53,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/CategoryControllerTest.java:[53,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/CategoryControllerTest.java:[53,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/CategoryControllerTest.java:[53,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/CategoryControllerTest.java:[53,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/CategoryControllerTest.java:[56,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/CategoryControllerTest.java:[56,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/CategoryControllerTest.java:[56,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/CategoryControllerTest.java:[56,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/CategoryControllerTest.java:[56,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[INFO] 100 warnings 
+[INFO] -------------------------------------------------------------
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/CategoryControllerTest.java:[86,29] 无法将接口 com.example.library.service.CategoryService中的方法 getAllCategories应用到给定类型;
+  需要: org.springframework.data.domain.Pageable
+  找到:    没有参数
+  原因: 实际参数列表和形式参数列表长度不同
+[ERROR] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/CategoryControllerTest.java:[93,32] 无法将接口 com.example.library.service.CategoryService中的方法 getAllCategories应用到给定类型;
+  需要: org.springframework.data.domain.Pageable
+  找到:    没有参数
+  原因: 实际参数列表和形式参数列表长度不同
+[ERROR] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/ReservationControllerTest.java:[76,20] 无法将类 com.example.library.security.UserDetailsImpl中的构造器 UserDetailsImpl应用到给定类型;
+  需要: java.lang.Integer,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.util.Collection<? extends org.springframework.security.core.GrantedAuthority>
+  找到:    int,java.lang.String,java.lang.String,java.lang.String,java.util.List<org.springframework.security.core.authority.SimpleGrantedAuthority>
+  原因: 实际参数列表和形式参数列表长度不同
+[ERROR] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/service/CategoryServiceImplTest.java:[185,38] 找不到符号
+  符号:   方法 isDeleted()
+  位置: 类型为com.example.library.entity.Category的变量 parentCategory
+[ERROR] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/support/TestDataFactory.java:[28,13] 找不到符号
+  符号:   方法 setEnabled(boolean)
+  位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/support/TestDataFactory.java:[42,42] 不兼容的类型: 无法推断java.util.ArrayList<>的类型参数
+    原因: 不存在类型变量E的实例, 以使java.util.ArrayList<E>与java.util.Set<com.example.library.entity.BookAuthor>一致
+[INFO] 6 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  21.171 s
+[INFO] Finished at: 2026-03-03T01:26:20+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.13.0:testCompile (default-testCompile) on project library-management: Compilation failure: Compilation failure: 
+[ERROR] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/CategoryControllerTest.java:[86,29] 无法将接口 com.example.library.service.CategoryService中的方法 getAllCategories应用到给定类型;
+[ERROR]   需要: org.springframework.data.domain.Pageable
+[ERROR]   找到:    没有参数
+[ERROR]   原因: 实际参数列表和形式参数列表长度不同
+[ERROR] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/CategoryControllerTest.java:[93,32] 无法将接口 com.example.library.service.CategoryService中的方法 getAllCategories应用到给定类型;
+[ERROR]   需要: org.springframework.data.domain.Pageable
+[ERROR]   找到:    没有参数
+[ERROR]   原因: 实际参数列表和形式参数列表长度不同
+[ERROR] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/controller/ReservationControllerTest.java:[76,20] 无法将类 com.example.library.security.UserDetailsImpl中的构造器 UserDetailsImpl应用到给定类型;
+[ERROR]   需要: java.lang.Integer,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.util.Collection<? extends org.springframework.security.core.GrantedAuthority>
+[ERROR]   找到:    int,java.lang.String,java.lang.String,java.lang.String,java.util.List<org.springframework.security.core.authority.SimpleGrantedAuthority>
+[ERROR]   原因: 实际参数列表和形式参数列表长度不同
+[ERROR] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/service/CategoryServiceImplTest.java:[185,38] 找不到符号
+[ERROR]   符号:   方法 isDeleted()
+[ERROR]   位置: 类型为com.example.library.entity.Category的变量 parentCategory
+[ERROR] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/support/TestDataFactory.java:[28,13] 找不到符号
+[ERROR]   符号:   方法 setEnabled(boolean)
+[ERROR]   位置: 类型为com.example.library.entity.User的变量 user
+[ERROR] /E:/001-a-kese/1/backend-library/src/test/java/com/example/library/support/TestDataFactory.java:[42,42] 不兼容的类型: 无法推断java.util.ArrayList<>的类型参数
+[ERROR]     原因: 不存在类型变量E的实例, 以使java.util.ArrayList<E>与java.util.Set<com.example.library.entity.BookAuthor>一致
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

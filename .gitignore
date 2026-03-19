@@ -1,0 +1,21 @@
+# 本地环境变量（不提交到 Git）
+.env
+
+# Docker 相关
+.dockerignore
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.iml
+.agp/
+.gemini/
+
+# Miniapp
+miniapp/node_modules/
+miniapp/dist/
+miniapp/.temp/

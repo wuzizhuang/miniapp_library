@@ -1,0 +1,121 @@
+<scroll-view class="page-shell" scroll-y scroll-into-view="{{highlightAnchor}}">
+  <view class="hero-card">
+    <view class="hero-title">座位预约</view>
+    <view class="hero-subtitle">按时间段筛选馆内座位，直接在小程序完成预约与取消。</view>
+  </view>
+
+  <view class="panel">
+    <view class="section-title">预约条件</view>
+    <view class="field-stack">
+      <view class="field-label">开始时间</view>
+      <view class="picker-stack">
+        <picker mode="date" value="{{startDate}}" bindchange="onDateChange" data-field="startDate">
+          <view class="picker-field">{{startDate}}</view>
+        </picker>
+        <picker mode="time" value="{{startTime}}" bindchange="onTimeChange" data-field="startTime">
+          <view class="picker-field">{{startTime}}</view>
+        </picker>
+      </view>
+
+      <view class="field-label">结束时间</view>
+      <view class="picker-stack">
+        <picker mode="date" value="{{endDate}}" bindchange="onDateChange" data-field="endDate">
+          <view class="picker-field">{{endDate}}</view>
+        </picker>
+        <picker mode="time" value="{{endTime}}" bindchange="onTimeChange" data-field="endTime">
+          <view class="picker-field">{{endTime}}</view>
+        </picker>
+      </view>
+
+      <view class="field-label">楼层筛选</view>
+      <input class="text-input" value="{{floorName}}" data-field="floorName" bindinput="onFieldInput" placeholder="可选，例如 2F" />
+
+      <view class="field-label">分区筛选</view>
+      <input class="text-input" value="{{zoneName}}" data-field="zoneName" bindinput="onFieldInput" placeholder="可选，例如 东侧静音区" />
+
+      <view class="field-label">预约备注</view>
+      <textarea class="textarea" value="{{notes}}" data-field="notes" bindinput="onFieldInput" placeholder="可选，填写临时说明"></textarea>
+
+      <view class="button-row">
+        <view class="button-primary button-inline" bindtap="refreshSeats">{{searching || loading ? '查询中...' : '查询座位'}}</view>
+        <view class="button-secondary button-inline" bindtap="resetTimeWindow">重置时间</view>
+      </view>
+
+      <view class="field-helper-text">后端会校验时间段冲突、最短 30 分钟和最长 8 小时。</view>
+      <view wx:if="{{errorMessage}}" class="danger-text">{{errorMessage}}</view>
+    </view>
+  </view>
+
+  <view class="panel">
+    <view class="section-title">可选座位</view>
+    <view wx:if="{{loading}}" class="empty-card">正在加载座位与预约记录...</view>
+    <view wx:elif="{{!seats.length}}" class="empty-card">当前没有匹配的座位，可调整时间或筛选条件后重试。</view>
+
+    <view wx:for="{{seats}}" wx:key="seatId" class="notice-card">
+      <view class="toolbar-spread">
+        <view class="notice-title">{{item.seatCode}}</view>
+        <view class="{{item.statusClass}}">{{item.statusLabel}}</view>
+      </view>
+      <view class="notice-content">{{item.floorName}}{{item.zoneName ? ' · ' + item.zoneName : ''}}{{item.areaName ? ' · ' + item.areaName : ''}}</view>
+      <view class="chip-row" style="margin-top: 12rpx;">
+        <view wx:for="{{item.tagTexts}}" wx:for-item="tagText" wx:key="*this" class="chip">{{tagText}}</view>
+      </view>
+      <view wx:if="{{item.description}}" class="notice-content">{{item.description}}</view>
+      <view class="inline-actions">
+        <view
+          class="{{item.available ? 'button-primary' : 'button-secondary'}}"
+          bindtap="reserveSeat"
+          data-seat-id="{{item.seatId}}"
+          data-available="{{item.available}}"
+        >
+          {{submittingSeatId === item.seatId ? '预约中...' : '预约这个座位'}}
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="panel">
+    <view class="section-title">我的当前预约</view>
+    <view wx:if="{{!activeReservations.length}}" class="empty-card">暂无进行中的座位预约。</view>
+
+    <view
+      wx:for="{{activeReservations}}"
+      wx:key="reservationId"
+      id="seat-reservation-{{item.reservationId}}"
+      class="notice-card {{item.isHighlighted ? 'notice-card--highlight' : ''}}"
+    >
+      <view class="toolbar-spread">
+        <view class="notice-title">{{item.seatCode}}</view>
+        <view class="{{item.statusClass}}">{{item.statusLabel}}</view>
+      </view>
+      <view class="notice-content">{{item.floorName}}{{item.zoneName ? ' · ' + item.zoneName : ''}}{{item.areaName ? ' · ' + item.areaName : ''}}</view>
+      <view class="notice-content">时间：{{item.timeLabel}}</view>
+      <view wx:if="{{item.notes}}" class="notice-content">备注：{{item.notes}}</view>
+      <view class="inline-actions">
+        <view class="button-secondary" bindtap="cancelReservation" data-reservation-id="{{item.reservationId}}">
+          {{cancellingReservationId === item.reservationId ? '取消中...' : '取消预约'}}
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="panel">
+    <view class="section-title">历史预约</view>
+    <view wx:if="{{!historyReservations.length}}" class="empty-card">暂无历史座位预约。</view>
+
+    <view
+      wx:for="{{historyReservations}}"
+      wx:key="reservationId"
+      id="seat-reservation-{{item.reservationId}}"
+      class="notice-card {{item.isHighlighted ? 'notice-card--highlight' : ''}}"
+    >
+      <view class="toolbar-spread">
+        <view class="notice-title">{{item.seatCode}}</view>
+        <view class="{{item.statusClass}}">{{item.statusLabel}}</view>
+      </view>
+      <view class="notice-content">{{item.floorName}}{{item.zoneName ? ' · ' + item.zoneName : ''}}{{item.areaName ? ' · ' + item.areaName : ''}}</view>
+      <view class="notice-content">时间：{{item.timeLabel}}</view>
+      <view wx:if="{{item.notes}}" class="notice-content">备注：{{item.notes}}</view>
+    </view>
+  </view>
+</scroll-view>

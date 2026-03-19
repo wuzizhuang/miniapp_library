@@ -1,0 +1,43 @@
+.field-static,
+.picker-field {
+  width: 100%;
+  min-height: 82rpx;
+  padding: 20rpx 22rpx;
+  background: #ffffff;
+  border: 1rpx solid #ddceb8;
+  border-radius: 18rpx;
+  box-sizing: border-box;
+  color: #1f1a14;
+  line-height: 1.5;
+}
+
+.field-static {
+  background: #f8f1e5;
+  color: #6f6559;
+}
+
+.field-helper-text {
+  margin-top: -2rpx;
+  color: #6f6559;
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+.inline-input-row {
+  display: flex;
+  gap: 14rpx;
+  align-items: stretch;
+}
+
+.inline-input-main {
+  flex: 1;
+}
+
+.inline-input-action {
+  min-width: 132rpx;
+}
+
+.custom-tag-chip {
+  background: #efe4d2;
+  color: #4b4339;
+}

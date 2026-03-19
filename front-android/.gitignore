@@ -1,0 +1,16 @@
+node_modules
+.expo
+dist
+.idea/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+*.log
+*.apk
+*.jks
+*.keystore
+tsconfig.json.*
+android/.gradle
+android/local.properties
+android/app/build

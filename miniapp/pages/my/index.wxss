@@ -1,0 +1,12 @@
+.entry-badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  background: #dff4ee;
+  color: #0d6e5c;
+  font-size: 22rpx;
+  line-height: 1;
+}

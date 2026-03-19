@@ -1,0 +1,79 @@
+<scroll-view class="page-shell" scroll-y>
+  <view class="hero-card">
+    <view class="hero-title">个人资料</view>
+    <view class="hero-subtitle">把常用资料维护得更稳一些。认证邮箱只做展示，不在小程序里直接修改。</view>
+  </view>
+
+  <view class="panel">
+    <view class="section-title">基础信息</view>
+    <view class="section-subtitle">资料变更会同步刷新当前登录用户信息。</view>
+
+    <view wx:if="{{loading}}" class="empty-card">正在加载资料...</view>
+    <view wx:elif="{{errorMessage}}" class="empty-card danger-text">
+      <view>{{errorMessage}}</view>
+      <view class="inline-actions">
+        <view class="button-secondary" bindtap="retryLoadProfile">重新加载</view>
+      </view>
+    </view>
+    <view wx:else class="field-stack">
+      <view class="field-label">姓名</view>
+      <input class="text-input" value="{{form.fullName}}" data-field="fullName" bindinput="onFieldInput" />
+
+      <view class="field-label">认证邮箱</view>
+      <view class="field-static">{{form.email || '未绑定邮箱'}}</view>
+      <view class="field-helper-text">邮箱作为账号确认信息，小程序端暂不支持直接修改。</view>
+
+      <view class="field-label">院系</view>
+      <input class="text-input" value="{{form.department}}" data-field="department" bindinput="onFieldInput" />
+
+      <view class="field-label">专业</view>
+      <input class="text-input" value="{{form.major}}" data-field="major" bindinput="onFieldInput" />
+
+      <view class="field-label">入学年份</view>
+      <picker mode="selector" range="{{yearOptions}}" value="{{yearIndex}}" bindchange="onYearChange">
+        <view class="picker-field">{{form.enrollmentYear || '请选择入学年份'}}</view>
+      </picker>
+
+      <view class="field-label">兴趣标签</view>
+      <view class="section-subtitle">先点选常用标签，补充标签再单独填写。</view>
+      <view class="chip-row">
+        <view
+          wx:for="{{interestTagOptions}}"
+          wx:key="label"
+          class="pill-item {{item.active ? 'pill-item--active' : ''}}"
+          data-value="{{item.label}}"
+          bindtap="toggleInterestTag"
+        >
+          {{item.label}}
+        </view>
+      </view>
+
+      <view class="field-label">补充兴趣标签</view>
+      <view class="inline-input-row">
+        <input
+          class="text-input inline-input-main"
+          value="{{customInterestInputValue}}"
+          bindinput="onCustomInterestInput"
+          confirm-type="done"
+          bindconfirm="addCustomInterestTag"
+          placeholder="输入后点添加，例如：古籍、城市文化"
+        />
+        <view class="button-secondary inline-input-action" bindtap="addCustomInterestTag">添加</view>
+      </view>
+      <view class="field-helper-text">点“添加”后会变成标签；点击下面的补充标签可以移除。</view>
+      <view wx:if="{{customInterestTags.length}}" class="chip-row">
+        <view
+          wx:for="{{customInterestTags}}"
+          wx:key="*this"
+          class="chip custom-tag-chip"
+          data-value="{{item}}"
+          bindtap="removeCustomInterestTag"
+        >
+          {{item}} ×
+        </view>
+      </view>
+
+      <view class="button-primary" bindtap="saveProfile">{{saving ? '保存中...' : '保存资料'}}</view>
+    </view>
+  </view>
+</scroll-view>

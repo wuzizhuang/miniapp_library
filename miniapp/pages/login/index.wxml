@@ -1,0 +1,35 @@
+<view class="page">
+  <view class="card">
+    <view class="title">进入智慧图书馆</view>
+    <view class="subtitle">当前直接使用后端认证接口登录读者端。</view>
+    <view wx:if="{{autoLoginEnabled}}" class="notice">
+      已开启默认自动登录。当前默认联调账号：{{username}} / {{password}}
+    </view>
+
+    <input
+      class="input"
+      placeholder="用户名"
+      value="{{username}}"
+      bindinput="onUsernameInput"
+    />
+
+    <input
+      class="input"
+      password
+      placeholder="密码"
+      value="{{password}}"
+      bindinput="onPasswordInput"
+    />
+
+    <view wx:if="{{errorMessage}}" class="error">{{errorMessage}}</view>
+
+    <button class="button" loading="{{loading}}" bindtap="onSubmit">
+      {{loading ? '登录中...' : '立即登录'}}
+    </button>
+
+    <view class="link-row">
+      <view class="link" bindtap="goRegister">注册账号</view>
+      <view class="link" bindtap="goForgotPassword">找回密码</view>
+    </view>
+  </view>
+</view>
