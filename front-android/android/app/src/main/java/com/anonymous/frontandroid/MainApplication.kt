@@ -1,4 +1,4 @@
-package com.library.frontandroid
+package com.anonymous.frontandroid
 
 import android.app.Application
 import android.content.res.Configuration

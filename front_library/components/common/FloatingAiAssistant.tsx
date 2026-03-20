@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { getApiErrorMessage } from "@/lib/apiError";
 import { publicService } from "@/services/api/publicService";
+import type { ApiChatMessageItem } from "@/types/api";
 
 type ChatMessage = {
   id: string;
@@ -31,7 +32,6 @@ const welcomeMessage: ChatMessage = {
 export function FloatingAiAssistant() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([welcomeMessage]);
-  const [previousResponseId, setPreviousResponseId] = useState<string | undefined>(undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -73,7 +73,6 @@ export function FloatingAiAssistant() {
 
   const resetConversation = () => {
     setMessages([welcomeMessage]);
-    setPreviousResponseId(undefined);
     setErrorMessage("");
   };
 
@@ -91,22 +90,27 @@ export function FloatingAiAssistant() {
     };
 
     setIsOpen(true);
-    setMessages((current) => [...current, userMessage]);
     setInput("");
     setErrorMessage("");
     setIsSubmitting(true);
 
-    try {
-      const response = await publicService.chatWithAi({
-        message: normalized,
-        previousResponseId,
-      });
+    // Build the full conversation history for the backend
+    const updatedMessages = [...messages, userMessage];
 
-      setPreviousResponseId(response.responseId);
+    setMessages(updatedMessages);
+
+    try {
+      // Convert local messages (excluding the welcome message) to API format
+      const apiMessages: ApiChatMessageItem[] = updatedMessages
+        .filter((msg) => msg.id !== "welcome")
+        .map((msg) => ({ role: msg.role, content: msg.content }));
+
+      const response = await publicService.chatWithAi({ messages: apiMessages });
+
       setMessages((current) => [
         ...current,
         {
-          id: response.responseId || `assistant-${Date.now()}`,
+          id: `assistant-${Date.now()}`,
           role: "assistant",
           content: response.reply,
         },

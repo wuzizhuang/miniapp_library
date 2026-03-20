@@ -1,8 +1,9 @@
 import React from "react";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Card } from "../../components/Screen";
-import { colors, spacing } from "../../theme";
+import { colors, radius, spacing } from "../../theme";
 import type { DiscoveryKeywordGroup } from "./useBooksCatalog";
 
 interface CatalogTagSectionProps {
@@ -20,11 +21,17 @@ export function CatalogTagSection({
 }: CatalogTagSectionProps) {
   if (items && items.length > 0) {
     return (
-      <Card>
-        {title ? <Text style={styles.discoveryTitle}>{title}</Text> : null}
+      <Card style={styles.card}>
+        {title ? (
+          <View style={styles.headerRow}>
+            <Text style={styles.discoveryTitle}>{title}</Text>
+            <MaterialCommunityIcons name="filter-variant" size={16} color={colors.textSoft} />
+          </View>
+        ) : null}
         <View style={styles.discoveryWrap}>
           {items.map((item) => (
             <View key={item} style={styles.discoveryChip}>
+              <MaterialCommunityIcons name="label-outline" size={14} color={colors.primaryDark} />
               <Text style={styles.discoveryChipText}>{item}</Text>
             </View>
           ))}
@@ -35,17 +42,24 @@ export function CatalogTagSection({
 
   if (groups && groups.length > 0) {
     return (
-      <Card>
+      <Card style={styles.card}>
         {groups.map((group) => (
           <View key={group.group} style={styles.discoveryGroup}>
-            <Text style={styles.discoveryTitle}>{group.group}</Text>
+            <View style={styles.headerRow}>
+              <Text style={styles.discoveryTitle}>{group.group}</Text>
+              <MaterialCommunityIcons name="lightning-bolt-outline" size={16} color={colors.textSoft} />
+            </View>
             <View style={styles.discoveryWrap}>
               {group.items.map((item) => (
                 <Pressable
                   key={`${group.group}-${item}`}
-                  style={styles.discoveryChip}
+                  style={({ pressed }) => [
+                    styles.discoveryChip,
+                    pressed ? styles.discoveryChipPressed : undefined,
+                  ]}
                   onPress={() => onKeywordPress?.(item)}
                 >
+                  <MaterialCommunityIcons name="magnify" size={14} color={colors.primaryDark} />
                   <Text style={styles.discoveryChipText}>{item}</Text>
                 </Pressable>
               ))}
@@ -60,13 +74,22 @@ export function CatalogTagSection({
 }
 
 const styles = StyleSheet.create({
+  card: {
+    gap: spacing.md,
+  },
   discoveryGroup: {
+    gap: spacing.sm,
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     gap: spacing.sm,
   },
   discoveryTitle: {
     color: colors.text,
     fontSize: 14,
-    fontWeight: "700",
+    fontWeight: "800",
   },
   discoveryWrap: {
     flexDirection: "row",
@@ -77,7 +100,15 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: colors.surfaceAlt,
     paddingHorizontal: spacing.md,
-    paddingVertical: 8,
+    paddingVertical: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  discoveryChipPressed: {
+    opacity: 0.88,
   },
   discoveryChipText: {
     color: colors.text,

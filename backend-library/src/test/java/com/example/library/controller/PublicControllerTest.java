@@ -124,17 +124,20 @@ public class PublicControllerTest {
     void testPublicAiChat_NoAuthRequired() throws Exception {
         PublicAiChatResponseDto responseDto = PublicAiChatResponseDto.builder()
                 .reply("可以先从《数据库系统概论》开始。")
-                .responseId("resp_123")
                 .provider("openai")
                 .model("gpt-4.1-mini")
                 .build();
-        when(aiChatService.chat(eq("推荐一本数据库入门书"), eq(null))).thenReturn(responseDto);
+        when(aiChatService.chat(any())).thenReturn(responseDto);
+
+        String requestBody = objectMapper.writeValueAsString(java.util.Map.of(
+                "messages", java.util.List.of(
+                        java.util.Map.of("role", "user", "content", "推荐一本数据库入门书")
+                )));
 
         mockMvc.perform(post("/api/public/ai/chat")
                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(java.util.Map.of("message", "推荐一本数据库入门书"))))
+                .content(requestBody))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.reply", is("可以先从《数据库系统概论》开始。")))
-                .andExpect(jsonPath("$.responseId", is("resp_123")));
+                .andExpect(jsonPath("$.reply", is("可以先从《数据库系统概论》开始。")));
     }
 }

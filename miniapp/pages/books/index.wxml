@@ -1,7 +1,7 @@
 <scroll-view class="page-shell" scroll-y>
   <view class="hero-card">
     <view class="hero-title">馆藏目录</view>
-    <view class="hero-subtitle">参考 Web 端目录体验，把搜索、分类、联想词和我的借阅状态都收拢到一个更顺手的小程序入口。</view>
+    <view class="hero-subtitle">搜索馆藏、筛选分类，一步到位</view>
     <view class="summary-row" style="margin-top: 24rpx;">
       <view class="summary-item">
         <view class="summary-label">结果总数</view>
@@ -41,7 +41,7 @@
     <view class="toolbar-spread">
       <view>
         <view class="section-title" style="margin-bottom: 8rpx;">分类筛选</view>
-        <view class="section-subtitle">切分类时会保留你的关键词和可借状态筛选。</view>
+        <view class="section-subtitle">选择分类查看对应图书</view>
       </view>
       <view class="chip">{{catalogSummary.availabilityLabel}}</view>
     </view>
@@ -71,7 +71,7 @@
 
   <view wx:if="{{catalog || displaySuggestions.length || suggestionLoading}}" class="panel">
     <view class="section-title">搜索发现</view>
-    <view class="section-subtitle">热门搜索、联想词和最近搜索都会跟随后端真实数据刷新。</view>
+    <view class="section-subtitle">热门搜索和联想词帮你更快找到好书</view>
     <view wx:if="{{suggestionLoading}}" class="catalog-helper-text">正在更新联想词...</view>
     <view wx:if="{{displaySuggestions.length}}" class="catalog-block">
       <view class="catalog-block-title">联想词</view>
@@ -145,7 +145,7 @@
 
   <view class="panel catalog-tail-panel">
     <view class="section-title">继续探索</view>
-    <view class="section-subtitle">可以回到我的中心查看借阅和预约，也可以一键清空筛选继续浏览更多馆藏。</view>
+    <view class="section-subtitle">更多馆藏等你发现</view>
     <view class="chip-row" style="margin-bottom: 18rpx;">
       <view class="chip">关键词：{{catalogSummary.keywordLabel}}</view>
       <view class="chip">{{catalogSummary.availabilityLabel}}</view>

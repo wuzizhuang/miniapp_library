@@ -82,7 +82,7 @@
 
     <view class="panel">
       <view class="section-title">读者评论</view>
-      <view class="section-subtitle">保留评分与评论动作，提交后会刷新详情页状态。</view>
+      <view class="section-subtitle">分享你的阅读感受，为其他读者提供参考</view>
       <view class="field-stack">
         <view class="field-label">我的评分</view>
         <view class="chip-row">

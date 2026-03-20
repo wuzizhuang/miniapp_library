@@ -3,16 +3,6 @@ apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
 def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
-def getConfigValue = { String key ->
-    return findProperty(key) ?: System.getenv(key)
-}
-def allowDebugSigningForRelease = (getConfigValue("LIBRARY_ALLOW_DEBUG_SIGNING_FOR_RELEASE") ?: "false").toBoolean()
-def releaseStoreFile = getConfigValue("LIBRARY_UPLOAD_STORE_FILE")
-def releaseStorePassword = getConfigValue("LIBRARY_UPLOAD_STORE_PASSWORD")
-def releaseKeyAlias = getConfigValue("LIBRARY_UPLOAD_KEY_ALIAS")
-def releaseKeyPassword = getConfigValue("LIBRARY_UPLOAD_KEY_PASSWORD")
-def hasReleaseSigning = releaseStoreFile && releaseStorePassword && releaseKeyAlias && releaseKeyPassword
-def isReleaseTask = gradle.startParameter.taskNames.any { it.toLowerCase().contains("release") }
 
 /**
  * This is the configuration block to customize your React Native Android app.
@@ -97,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.library.frontandroid'
+    namespace 'com.anonymous.frontandroid'
     defaultConfig {
-        applicationId 'com.library.frontandroid'
+        applicationId 'com.anonymous.frontandroid'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -112,25 +102,15 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
-        if (hasReleaseSigning) {
-            release {
-                storeFile file(releaseStoreFile)
-                storePassword releaseStorePassword
-                keyAlias releaseKeyAlias
-                keyPassword releaseKeyPassword
-            }
-        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            if (hasReleaseSigning) {
-                signingConfig signingConfigs.release
-            } else if (allowDebugSigningForRelease) {
-                signingConfig signingConfigs.debug
-            }
+            // Caution! In production, you need to generate your own keystore file.
+            // see https://reactnative.dev/docs/signed-apk-android.
+            signingConfig signingConfigs.debug
             shrinkResources (findProperty('android.enableShrinkResourcesInReleaseBuilds')?.toBoolean() ?: false)
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
@@ -145,15 +125,6 @@ android {
     androidResources {
         ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'
     }
-}
-
-if (isReleaseTask && !hasReleaseSigning && !allowDebugSigningForRelease) {
-    throw new GradleException(
-            "Release signing config is missing. Provide LIBRARY_UPLOAD_STORE_FILE, " +
-                    "LIBRARY_UPLOAD_STORE_PASSWORD, LIBRARY_UPLOAD_KEY_ALIAS and " +
-                    "LIBRARY_UPLOAD_KEY_PASSWORD, or set LIBRARY_ALLOW_DEBUG_SIGNING_FOR_RELEASE=true " +
-                    "for local-only release builds."
-    )
 }
 
 // Apply static values from `gradle.properties` to the `android.packagingOptions`

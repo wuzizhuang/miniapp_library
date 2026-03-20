@@ -57,8 +57,12 @@ export function useBooksCatalog(user: unknown) {
       return;
     }
 
-    const response = await searchService.getMyHistory(0, 12);
-    setSearchHistory((response.content ?? []).map((item) => item.keyword));
+    try {
+      const response = await searchService.getMyHistory(0, 12);
+      setSearchHistory((response.content ?? []).map((item) => item.keyword));
+    } catch {
+      setSearchHistory([]);
+    }
   }
 
   async function loadUserStates() {
@@ -69,28 +73,34 @@ export function useBooksCatalog(user: unknown) {
       return;
     }
 
-    const [favorites, loans, reservations] = await Promise.all([
-      favoriteService.getMyFavorites(),
-      loanService.getMyLoans(),
-      reservationService.getMyReservations(),
-    ]);
+    try {
+      const [favorites, loans, reservations] = await Promise.all([
+        favoriteService.getMyFavorites(),
+        loanService.getMyLoans(),
+        reservationService.getMyReservations(),
+      ]);
 
-    setFavoriteIds(new Set(favorites.map((item) => item.bookId)));
-    setLoanedIds(
-      new Set(
-        loans
-          .filter((item) => item.status === "BORROWED" || item.status === "OVERDUE")
-          .map((item) => item.bookId)
-          .filter((value): value is number => typeof value === "number"),
-      ),
-    );
-    setReservedIds(
-      new Set(
-        reservations
-          .filter((item) => item.status === "PENDING" || item.status === "AWAITING_PICKUP")
-          .map((item) => item.bookId),
-      ),
-    );
+      setFavoriteIds(new Set(favorites.map((item) => item.bookId)));
+      setLoanedIds(
+        new Set(
+          loans
+            .filter((item) => item.status === "BORROWED" || item.status === "OVERDUE")
+            .map((item) => item.bookId)
+            .filter((value): value is number => typeof value === "number"),
+        ),
+      );
+      setReservedIds(
+        new Set(
+          reservations
+            .filter((item) => item.status === "PENDING" || item.status === "AWAITING_PICKUP")
+            .map((item) => item.bookId),
+        ),
+      );
+    } catch {
+      setFavoriteIds(new Set());
+      setLoanedIds(new Set());
+      setReservedIds(new Set());
+    }
   }
 
   async function loadBooks(isRefresh = false) {
@@ -124,18 +134,12 @@ export function useBooksCatalog(user: unknown) {
   }
 
   async function loadAll(isRefresh = false) {
-    try {
-      await Promise.all([
-        loadDiscovery(),
-        loadSearchHistory(),
-        loadUserStates(),
-      ]);
-      await loadBooks(isRefresh);
-    } catch (error) {
-      setErrorMessage(getErrorMessage(error, "馆藏目录加载失败"));
-      setLoading(false);
-      setRefreshing(false);
-    }
+    await Promise.allSettled([
+      loadDiscovery(),
+      loadSearchHistory(),
+      loadUserStates(),
+    ]);
+    await loadBooks(isRefresh);
   }
 
   useEffect(() => {

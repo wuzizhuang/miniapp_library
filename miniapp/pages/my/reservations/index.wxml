@@ -1,7 +1,7 @@
 <scroll-view class="page-shell" scroll-y scroll-into-view="{{highlightAnchor}}">
   <view class="panel">
     <view class="section-title">我的预约</view>
-    <view class="section-subtitle">保留排队中、待取书和取消后的真实业务语义。</view>
+    <view class="section-subtitle">查看排队中、待取书和已取消的预约</view>
 
     <view wx:if="{{loading}}" class="empty-card">正在加载预约...</view>
     <view wx:elif="{{errorMessage}}" class="empty-card danger-text">{{errorMessage}}</view>

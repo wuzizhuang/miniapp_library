@@ -1,7 +1,7 @@
 <scroll-view class="page-shell" scroll-y scroll-into-view="{{highlightAnchor}}">
   <view class="panel">
     <view class="section-title">提交反馈</view>
-    <view class="section-subtitle">保留建议、问题反馈和服务投诉的真实业务语义。</view>
+    <view class="section-subtitle">有建议、问题或投诉？在这里告诉我们</view>
     <view class="field-stack">
       <view class="chip-row">
         <view

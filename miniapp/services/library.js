@@ -31,8 +31,9 @@ const { createCatalogLibraryService } = require('./library/catalog')
 const { createSupportLibraryService } = require('./library/support')
 const { createAppointmentLibraryService } = require('./library/appointments')
 const { createRecommendationLibraryService } = require('./library/recommendations')
+const { wrapWithFallback } = require('./library-offline')
 
-const libraryService = {
+const _libraryService = {
   ...createSessionLibraryService({
     authService,
     publicService,
@@ -75,6 +76,8 @@ const libraryService = {
     extractPageContent,
   }),
 }
+
+const libraryService = wrapWithFallback(_libraryService)
 
 module.exports = {
   libraryService,

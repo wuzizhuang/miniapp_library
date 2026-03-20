@@ -1,17 +1,19 @@
 import React from "react";
-import { Text } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { StyleSheet, Text, View } from "react-native";
 import { useNavigation, useRoute, type CompositeNavigationProp, type RouteProp } from "@react-navigation/native";
 import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { Card, Screen } from "../components/Screen";
-import { EmptyCard, ErrorCard } from "../components/Ui";
+import { EmptyCard, ErrorCard, InfoPill } from "../components/Ui";
 import { BookCatalogCard } from "../features/books/BookCatalogCard";
 import { BooksFiltersCard } from "../features/books/BooksFiltersCard";
 import { CatalogTagSection } from "../features/books/CatalogTagSection";
 import { useBooksCatalog } from "../features/books/useBooksCatalog";
 import type { MainTabParamList, RootStackParamList } from "../navigation/types";
 import { useAuth } from "../store/auth";
+import { colors, radius, spacing } from "../theme";
 
 export function BooksScreen() {
   const route = useRoute<RouteProp<MainTabParamList, "BooksTab">>();
@@ -71,6 +73,28 @@ export function BooksScreen() {
         void loadAll(true);
       }}
     >
+      <Card tone="tinted" style={styles.summaryCard}>
+        <View style={styles.summaryHeader}>
+          <View style={styles.summaryIconWrap}>
+            <MaterialCommunityIcons name="book-search-outline" size={24} color={colors.primaryDark} />
+          </View>
+          <View style={styles.summaryBody}>
+            <Text style={styles.summaryTitle}>探索馆藏</Text>
+            <Text style={styles.summaryText}>
+              当前展示 {books.length} 本图书，可按分类、作者、出版社和可借状态快速缩小范围。
+            </Text>
+          </View>
+        </View>
+        <View style={styles.summaryPills}>
+          <InfoPill label={`${categories.length} 个分类`} tone="primary" icon="shape-outline" />
+          <InfoPill
+            label={availableOnly ? "仅看可借" : "全量馆藏"}
+            tone={availableOnly ? "success" : "neutral"}
+            icon={availableOnly ? "check-circle-outline" : "bookshelf"}
+          />
+        </View>
+      </Card>
+
       <BooksFiltersCard
         keyword={keyword}
         onKeywordChange={setKeyword}
@@ -106,7 +130,11 @@ export function BooksScreen() {
         <EmptyCard title="未找到相关图书" description="试试调整关键词、作者、出版社、分类或排序方式。" />
       ) : null}
 
-      {loading ? <Card><Text>正在加载馆藏目录...</Text></Card> : null}
+      {loading ? (
+        <Card tone="muted">
+          <Text style={styles.loadingText}>正在加载馆藏目录...</Text>
+        </Card>
+      ) : null}
 
       {!loading && !errorMessage && books.length > 0 ? (
         books.map((book) => (
@@ -123,3 +151,43 @@ export function BooksScreen() {
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  summaryCard: {
+    gap: spacing.md,
+  },
+  summaryHeader: {
+    flexDirection: "row",
+    gap: spacing.md,
+  },
+  summaryIconWrap: {
+    width: 52,
+    height: 52,
+    borderRadius: 20,
+    backgroundColor: colors.primarySoft,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  summaryBody: {
+    flex: 1,
+    gap: 4,
+  },
+  summaryTitle: {
+    color: colors.text,
+    fontSize: 20,
+    fontWeight: "800",
+  },
+  summaryText: {
+    color: colors.textMuted,
+    lineHeight: 21,
+  },
+  summaryPills: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.xs,
+  },
+  loadingText: {
+    color: colors.textMuted,
+    lineHeight: 21,
+  },
+});

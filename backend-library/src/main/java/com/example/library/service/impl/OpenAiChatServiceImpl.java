@@ -1,5 +1,6 @@
 package com.example.library.service.impl;
 
+import com.example.library.dto.publicapi.PublicAiChatRequestDto;
 import com.example.library.dto.publicapi.PublicAiChatResponseDto;
 import com.example.library.exception.ServiceUnavailableException;
 import com.example.library.service.AiGatewaySettingsService;
@@ -19,9 +20,11 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.List;
 
 /**
- * OpenAI-backed AI chat proxy using the official Responses API.
+ * AI chat proxy using the standard OpenAI Chat Completions API,
+ * compatible with one-api and other OpenAI-compatible gateways.
  */
 @Service
 @Slf4j
@@ -48,7 +51,7 @@ public class OpenAiChatServiceImpl implements AiChatService {
     }
 
     @Override
-    public PublicAiChatResponseDto chat(String message, String previousResponseId) {
+    public PublicAiChatResponseDto chat(List<PublicAiChatRequestDto.ChatMessageItem> messages) {
         AiGatewaySettingsService.EffectiveAiGatewaySettings settings = aiGatewaySettingsService.getEffectiveSettings();
         if (!settings.enabled() || settings.apiKey().isBlank()) {
             throw new ServiceUnavailableException("AI 助手当前未启用，请先在后台设置里配置 AI 网关地址和 API Key。");
@@ -56,104 +59,97 @@ public class OpenAiChatServiceImpl implements AiChatService {
 
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(stripTrailingSlash(settings.baseUrl()) + "/responses"))
+                    .uri(URI.create(stripTrailingSlash(settings.baseUrl()) + "/chat/completions"))
                     .timeout(Duration.ofSeconds(45))
                     .header("Content-Type", "application/json")
                     .header("Authorization", "Bearer " + settings.apiKey())
-                    .POST(HttpRequest.BodyPublishers.ofString(buildRequestBody(message, previousResponseId, settings.model())))
+                    .POST(HttpRequest.BodyPublishers.ofString(buildRequestBody(messages, settings.model())))
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() < HttpStatus.OK.value() || response.statusCode() >= HttpStatus.MULTIPLE_CHOICES.value()) {
-                log.warn("OpenAI chat upstream failed with status {}: {}", response.statusCode(), safeSnippet(response.body()));
+                log.warn("AI chat upstream failed with status {}: {}", response.statusCode(), safeSnippet(response.body()));
                 throw new ServiceUnavailableException(resolveUpstreamMessage(response));
             }
 
             JsonNode payload = objectMapper.readTree(response.body());
             String reply = extractReply(payload);
             if (reply.isBlank()) {
-                log.warn("OpenAI chat returned no text output: {}", safeSnippet(response.body()));
+                log.warn("AI chat returned no text output: {}", safeSnippet(response.body()));
                 throw new ServiceUnavailableException("AI 助手暂时没有返回有效内容，请稍后重试。");
             }
 
             return PublicAiChatResponseDto.builder()
                     .reply(reply)
-                    .responseId(payload.path("id").asText(null))
                     .provider(settings.provider())
                     .model(settings.model())
                     .build();
         } catch (IOException ex) {
-            log.warn("Failed to call OpenAI chat API: {}", ex.getMessage());
+            log.warn("Failed to call AI chat API: {}", ex.getMessage());
             throw new ServiceUnavailableException("AI 助手暂时不可用，请稍后重试。");
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-            log.warn("OpenAI chat request interrupted: {}", ex.getMessage());
+            log.warn("AI chat request interrupted: {}", ex.getMessage());
             throw new ServiceUnavailableException("AI 助手请求被中断，请稍后重试。");
         }
     }
 
-    private String buildRequestBody(String message, String previousResponseId, String model) throws IOException {
+    /**
+     * Builds a standard Chat Completions API request body.
+     * <pre>
+     * {
+     *   "model": "gpt-4.1-mini",
+     *   "max_tokens": 700,
+     *   "messages": [
+     *     {"role": "system", "content": "..."},
+     *     {"role": "user", "content": "..."},
+     *     {"role": "assistant", "content": "..."},
+     *     ...
+     *   ]
+     * }
+     * </pre>
+     */
+    private String buildRequestBody(List<PublicAiChatRequestDto.ChatMessageItem> messages, String model) throws IOException {
         ObjectNode payload = objectMapper.createObjectNode();
         payload.put("model", model);
-        payload.put("instructions", systemPrompt);
-        payload.put("max_output_tokens", maxOutputTokens);
+        payload.put("max_tokens", maxOutputTokens);
 
-        if (previousResponseId != null && !previousResponseId.isBlank()) {
-            payload.put("previous_response_id", previousResponseId.trim());
+        ArrayNode messagesArray = payload.putArray("messages");
+
+        // Always prepend the system prompt
+        ObjectNode systemNode = messagesArray.addObject();
+        systemNode.put("role", "system");
+        systemNode.put("content", systemPrompt);
+
+        // Append conversation history from the client
+        for (PublicAiChatRequestDto.ChatMessageItem item : messages) {
+            String role = item.getRole();
+            // Only allow user and assistant roles from the client
+            if (!"user".equals(role) && !"assistant".equals(role)) {
+                continue;
+            }
+            ObjectNode messageNode = messagesArray.addObject();
+            messageNode.put("role", role);
+            messageNode.put("content", item.getContent().trim());
         }
-
-        ArrayNode input = payload.putArray("input");
-        ObjectNode messageNode = input.addObject();
-        messageNode.put("role", "user");
-        ArrayNode content = messageNode.putArray("content");
-        ObjectNode textNode = content.addObject();
-        textNode.put("type", "input_text");
-        textNode.put("text", message.trim());
 
         return objectMapper.writeValueAsString(payload);
     }
 
+    /**
+     * Extracts the reply text from a standard Chat Completions response.
+     * Expected format: { "choices": [{ "message": { "content": "..." } }] }
+     */
     private String extractReply(JsonNode payload) {
-        StringBuilder builder = new StringBuilder();
-        JsonNode output = payload.path("output");
-
-        if (output.isArray()) {
-            for (JsonNode outputItem : output) {
-                JsonNode content = outputItem.path("content");
-                if (!content.isArray()) {
-                    continue;
-                }
-
-                for (JsonNode contentItem : content) {
-                    String type = contentItem.path("type").asText("");
-                    if ("output_text".equals(type)) {
-                        appendLine(builder, contentItem.path("text").asText(""));
-                        continue;
-                    }
-
-                    if ("text".equals(type)) {
-                        appendLine(builder, contentItem.path("value").asText(""));
-                    }
-                }
+        JsonNode choices = payload.path("choices");
+        if (choices.isArray() && !choices.isEmpty()) {
+            JsonNode firstChoice = choices.get(0);
+            String content = firstChoice.path("message").path("content").asText("");
+            if (!content.isBlank()) {
+                return content.trim();
             }
         }
-
-        if (builder.length() == 0) {
-            appendLine(builder, payload.path("output_text").asText(""));
-        }
-
-        return builder.toString().trim();
-    }
-
-    private void appendLine(StringBuilder builder, String text) {
-        if (text == null || text.isBlank()) {
-            return;
-        }
-
-        if (builder.length() > 0) {
-            builder.append('\n');
-        }
-        builder.append(text.trim());
+        return "";
     }
 
     private String resolveUpstreamMessage(HttpResponse<String> response) {

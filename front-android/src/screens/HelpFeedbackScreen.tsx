@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { Card, Screen, SectionTitle } from "../components/Screen";
-import { ActionButton, EmptyCard, ErrorCard } from "../components/Ui";
+import { ActionButton, EmptyCard, ErrorCard, InfoPill, TextField } from "../components/Ui";
 import type { RootStackParamList } from "../navigation/types";
 import { feedbackService } from "../services/feedback";
 import { getErrorMessage } from "../services/http";
@@ -14,27 +15,25 @@ import { colors, radius, spacing } from "../theme";
 import type { ApiFeedbackCategory, ApiFeedbackDto } from "../types/api";
 import { emitAppEvent, subscribeAppEvent } from "../utils/events";
 
-const categories: ApiFeedbackCategory[] = [
-  "BOOK_INFO",
-  "SYSTEM_BUG",
-  "SERVICE_EXPERIENCE",
-  "SUGGESTION",
-  "OTHER",
+const categories: Array<{
+  value: ApiFeedbackCategory;
+  label: string;
+  icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+}> = [
+  { value: "BOOK_INFO", label: "图书信息", icon: "book-edit-outline" },
+  { value: "SYSTEM_BUG", label: "系统缺陷", icon: "bug-outline" },
+  { value: "SERVICE_EXPERIENCE", label: "服务体验", icon: "account-heart-outline" },
+  { value: "SUGGESTION", label: "建议意见", icon: "lightbulb-outline" },
+  { value: "OTHER", label: "其他", icon: "dots-horizontal-circle-outline" },
 ];
-
-const categoryLabelMap: Record<ApiFeedbackCategory, string> = {
-  BOOK_INFO: "图书信息",
-  SYSTEM_BUG: "系统缺陷",
-  SERVICE_EXPERIENCE: "服务体验",
-  SUGGESTION: "建议意见",
-  OTHER: "其他",
-};
 
 const statusLabelMap: Record<string, string> = {
   OPEN: "待处理",
+  SUBMITTED: "待处理",
   IN_PROGRESS: "处理中",
   RESOLVED: "已解决",
   CLOSED: "已关闭",
+  REJECTED: "已驳回",
 };
 
 export function HelpFeedbackScreen() {
@@ -127,48 +126,83 @@ export function HelpFeedbackScreen() {
   }
 
   return (
-    <Screen title="帮助与反馈" subtitle="对应 Web 端帮助与反馈页的真实业务语义。" refreshing={refreshing} onRefresh={() => { void loadData(true); }}>
-      <Card>
+    <Screen
+      title="帮助与反馈"
+      subtitle="对应 Web 端帮助与反馈页的真实业务语义。"
+      refreshing={refreshing}
+      onRefresh={() => {
+        void loadData(true);
+      }}
+    >
+      <Card tone="tinted" style={styles.summaryCard}>
+        <View style={styles.summaryHeader}>
+          <View style={styles.summaryIconWrap}>
+            <MaterialCommunityIcons name="message-alert-outline" size={26} color={colors.primaryDark} />
+          </View>
+          <View style={styles.summaryBody}>
+            <InfoPill label="HELP DESK" tone="primary" icon="headset" />
+            <Text style={styles.summaryTitle}>把问题和建议直接发给系统</Text>
+            <Text style={styles.summaryText}>你可以提交图书信息、系统缺陷、服务体验和其他建议，并在下方查看处理进度。</Text>
+          </View>
+        </View>
+      </Card>
+
+      <Card style={styles.sectionCard}>
         <SectionTitle>提交反馈</SectionTitle>
         <View style={styles.categoryRow}>
           {categories.map((item) => (
-            <ActionButton
-              key={item}
-              label={categoryLabelMap[item] || item}
-              onPress={() => setForm((current) => ({ ...current, category: item }))}
-              tone={form.category === item ? "primary" : "secondary"}
-            />
+            <Pressable
+              key={item.value}
+              style={[
+                styles.categoryChip,
+                form.category === item.value ? styles.categoryChipActive : undefined,
+              ]}
+              onPress={() => setForm((current) => ({ ...current, category: item.value }))}
+            >
+              <MaterialCommunityIcons
+                name={item.icon}
+                size={16}
+                color={form.category === item.value ? colors.white : colors.textMuted}
+              />
+              <Text style={form.category === item.value ? styles.categoryChipActiveText : styles.categoryChipText}>
+                {item.label}
+              </Text>
+            </Pressable>
           ))}
         </View>
-        <TextInput
+
+        <TextField
+          label="联系方式"
+          hint="可选，便于后续联系"
+          icon="email-outline"
           value={form.contactEmail}
           onChangeText={(value) => setForm((current) => ({ ...current, contactEmail: value }))}
           autoCapitalize="none"
           placeholder="联系方式（可选）"
-          placeholderTextColor={colors.textMuted}
-          style={styles.input}
         />
-        <TextInput
+
+        <TextField
+          label="反馈主题"
+          icon="tag-outline"
           value={form.subject}
           onChangeText={(value) => setForm((current) => ({ ...current, subject: value }))}
           placeholder="反馈主题"
-          placeholderTextColor={colors.textMuted}
-          style={styles.input}
         />
-        <TextInput
+
+        <TextField
+          label="详细描述"
+          icon="text-box-outline"
           value={form.content}
           onChangeText={(value) => setForm((current) => ({ ...current, content: value }))}
           multiline
           numberOfLines={5}
           placeholder="详细描述问题、复现步骤或建议"
-          placeholderTextColor={colors.textMuted}
-          style={styles.textarea}
         />
-        {errorMessage ? (
-          <Text style={styles.errorText}>{errorMessage}</Text>
-        ) : null}
+
+        {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
         <ActionButton
           label={submitting ? "提交中..." : user ? "提交反馈" : "登录后提交"}
+          icon="send-outline"
           onPress={() => {
             void handleSubmit();
           }}
@@ -176,7 +210,7 @@ export function HelpFeedbackScreen() {
         />
       </Card>
 
-      <Card>
+      <Card style={styles.sectionCard}>
         <SectionTitle>我的反馈记录</SectionTitle>
         {!user ? (
           <EmptyCard title="登录后可查看历史反馈" />
@@ -200,12 +234,24 @@ export function HelpFeedbackScreen() {
                 route.params?.highlightId === item.feedbackId ? styles.highlightCard : undefined,
               ]}
             >
-              <View style={styles.rowBetween}>
-                <Text style={styles.itemTitle}>{item.subject}</Text>
-                <Text style={styles.itemMeta}>{statusLabelMap[item.status] || item.status}</Text>
+              <View style={styles.itemHeader}>
+                <View style={styles.itemTitleWrap}>
+                  <Text style={styles.itemTitle}>{item.subject}</Text>
+                  <Text style={styles.itemMeta}>
+                    提交时间 {String(item.createTime ?? "").slice(0, 16).replace("T", " ")}
+                  </Text>
+                </View>
+                <InfoPill
+                  label={statusLabelMap[item.status] || item.status}
+                  tone={getFeedbackTone(item.status)}
+                  icon={getFeedbackIcon(item.status)}
+                />
               </View>
+              <InfoPill
+                label={categories.find((entry) => entry.value === item.category)?.label || item.category}
+                icon={categories.find((entry) => entry.value === item.category)?.icon || "tag-outline"}
+              />
               <Text style={styles.itemContent}>{item.content}</Text>
-              <Text style={styles.itemMeta}>提交时间 {String(item.createTime ?? "").slice(0, 16).replace("T", " ")}</Text>
               {item.adminReply ? (
                 <View style={styles.replyBox}>
                   <Text style={styles.replyTitle}>管理员回复</Text>
@@ -220,31 +266,91 @@ export function HelpFeedbackScreen() {
   );
 }
 
+function getFeedbackTone(status: string) {
+  switch (status) {
+    case "RESOLVED":
+      return "success" as const;
+    case "IN_PROGRESS":
+      return "warning" as const;
+    case "REJECTED":
+      return "danger" as const;
+    default:
+      return "neutral" as const;
+  }
+}
+
+function getFeedbackIcon(status: string) {
+  switch (status) {
+    case "RESOLVED":
+      return "check-circle-outline" as const;
+    case "IN_PROGRESS":
+      return "progress-clock" as const;
+    case "REJECTED":
+      return "close-circle-outline" as const;
+    default:
+      return "clock-outline" as const;
+  }
+}
+
 const styles = StyleSheet.create({
+  summaryCard: {
+    gap: spacing.md,
+  },
+  summaryHeader: {
+    flexDirection: "row",
+    gap: spacing.md,
+  },
+  summaryIconWrap: {
+    width: 60,
+    height: 60,
+    borderRadius: 22,
+    backgroundColor: colors.primarySoft,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  summaryBody: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  summaryTitle: {
+    color: colors.text,
+    fontSize: 22,
+    fontWeight: "800",
+  },
+  summaryText: {
+    color: colors.textMuted,
+    lineHeight: 22,
+  },
+  sectionCard: {
+    gap: spacing.md,
+  },
   categoryRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.sm,
   },
-  input: {
+  categoryChip: {
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.sm,
-    backgroundColor: colors.white,
+    borderRadius: 999,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    color: colors.text,
+    paddingVertical: 9,
+    backgroundColor: colors.surface,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
-  textarea: {
-    minHeight: 120,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.sm,
-    backgroundColor: colors.white,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+  categoryChipActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  categoryChipText: {
     color: colors.text,
-    textAlignVertical: "top",
+    fontWeight: "600",
+  },
+  categoryChipActiveText: {
+    color: colors.white,
+    fontWeight: "700",
   },
   errorText: {
     color: colors.danger,
@@ -252,40 +358,47 @@ const styles = StyleSheet.create({
   },
   helperText: {
     color: colors.textMuted,
+    lineHeight: 21,
   },
   itemCard: {
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.sm,
-    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceElevated,
     padding: spacing.md,
-    gap: spacing.xs,
+    gap: spacing.sm,
   },
   highlightCard: {
     borderColor: colors.primary,
-    backgroundColor: "#f1faf7",
+    backgroundColor: colors.primarySoft,
   },
-  rowBetween: {
+  itemHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     gap: spacing.sm,
+    alignItems: "flex-start",
+  },
+  itemTitleWrap: {
+    flex: 1,
+    gap: 4,
   },
   itemTitle: {
-    flex: 1,
     color: colors.text,
     fontSize: 16,
     fontWeight: "800",
+    lineHeight: 22,
   },
   itemMeta: {
     color: colors.textMuted,
+    fontSize: 12,
   },
   itemContent: {
     color: colors.text,
     lineHeight: 22,
   },
   replyBox: {
-    borderRadius: radius.sm,
-    backgroundColor: "#f1faf7",
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceAlt,
     padding: spacing.md,
     gap: spacing.xs,
   },

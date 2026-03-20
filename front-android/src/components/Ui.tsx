@@ -1,32 +1,43 @@
 import React from "react";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   Image,
   Pressable,
   StyleSheet,
   Text,
+  TextInput,
   View,
   type ImageStyle,
   type StyleProp,
+  type TextInputProps,
+  type ViewStyle,
 } from "react-native";
 
-import { colors, radius, spacing } from "../theme";
+import { colors, radius, shadows, spacing } from "../theme";
 
 export function ActionButton({
   label,
   onPress,
   tone = "primary",
   disabled = false,
+  icon,
+  size = "md",
+  style,
 }: {
   label: string;
   onPress: () => void;
-  tone?: "primary" | "secondary" | "danger" | "success";
+  tone?: "primary" | "secondary" | "danger" | "success" | "ghost";
   disabled?: boolean;
+  icon?: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+  size?: "sm" | "md";
+  style?: StyleProp<ViewStyle>;
 }) {
   const styleMap = {
     primary: styles.primaryButton,
     secondary: styles.secondaryButton,
     danger: styles.dangerButton,
     success: styles.successButton,
+    ghost: styles.ghostButton,
   } as const;
 
   const textStyleMap = {
@@ -34,15 +45,40 @@ export function ActionButton({
     secondary: styles.secondaryButtonText,
     danger: styles.primaryButtonText,
     success: styles.primaryButtonText,
+    ghost: styles.ghostButtonText,
+  } as const;
+
+  const iconColorMap = {
+    primary: colors.white,
+    secondary: colors.text,
+    danger: colors.white,
+    success: colors.white,
+    ghost: colors.primaryDark,
   } as const;
 
   return (
     <Pressable
-      style={[styleMap[tone], disabled ? styles.disabledButton : undefined]}
+      style={({ pressed }) => [
+        styles.buttonBase,
+        size === "sm" ? styles.buttonSm : styles.buttonMd,
+        styleMap[tone],
+        disabled ? styles.disabledButton : undefined,
+        pressed && !disabled ? styles.pressedButton : undefined,
+        style,
+      ]}
       onPress={onPress}
       disabled={disabled}
     >
-      <Text style={textStyleMap[tone]}>{label}</Text>
+      <View style={styles.buttonContent}>
+        {icon ? (
+          <MaterialCommunityIcons
+            name={icon}
+            size={size === "sm" ? 16 : 18}
+            color={iconColorMap[tone]}
+          />
+        ) : null}
+        <Text style={textStyleMap[tone]}>{label}</Text>
+      </View>
     </Pressable>
   );
 }
@@ -50,9 +86,11 @@ export function ActionButton({
 export function InfoPill({
   label,
   tone = "neutral",
+  icon,
 }: {
   label: string;
   tone?: "neutral" | "primary" | "warning" | "danger" | "success";
+  icon?: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
 }) {
   const toneStyle = {
     neutral: styles.pillNeutral,
@@ -72,6 +110,13 @@ export function InfoPill({
 
   return (
     <View style={[styles.pill, toneStyle[tone]]}>
+      {icon ? (
+        <MaterialCommunityIcons
+          name={icon}
+          size={14}
+          color={StyleSheet.flatten(textToneStyle[tone]).color}
+        />
+      ) : null}
       <Text style={[styles.pillText, textToneStyle[tone]]}>{label}</Text>
     </View>
   );
@@ -121,7 +166,7 @@ export function ErrorCard({
     <View style={[styles.messageCard, styles.errorCard]}>
       <Text style={styles.errorTitle}>加载失败</Text>
       <Text style={styles.errorMessage}>{message}</Text>
-      {onRetry ? <ActionButton label="重试" onPress={onRetry} tone="secondary" /> : null}
+      {onRetry ? <ActionButton label="重试" onPress={onRetry} tone="secondary" icon="refresh" /> : null}
     </View>
   );
 }
@@ -141,72 +186,145 @@ export function CoverImage({
 
   return (
     <View style={[styles.coverFallback, style]}>
+      <View style={styles.coverFallbackBadge}>
+        <MaterialCommunityIcons name="book-open-variant" size={16} color={colors.primaryDark} />
+      </View>
       <Text style={styles.coverFallbackText}>{title.slice(0, 1) || "书"}</Text>
     </View>
   );
 }
 
+export function TextField({
+  label,
+  hint,
+  icon,
+  containerStyle,
+  inputStyle,
+  multiline = false,
+  numberOfLines,
+  ...props
+}: TextInputProps & {
+  label?: string;
+  hint?: string;
+  icon?: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+  containerStyle?: StyleProp<ViewStyle>;
+  inputStyle?: TextInputProps["style"];
+}) {
+  return (
+    <View style={[styles.fieldGroup, containerStyle]}>
+      {label ? <Text style={styles.fieldLabel}>{label}</Text> : null}
+      {hint ? <Text style={styles.fieldHint}>{hint}</Text> : null}
+      <View style={[styles.fieldWrap, multiline ? styles.fieldWrapMultiline : undefined]}>
+        {icon ? (
+          <MaterialCommunityIcons
+            name={icon}
+            size={18}
+            color={colors.textSoft}
+            style={multiline ? styles.fieldIconTop : undefined}
+          />
+        ) : null}
+        <TextInput
+          placeholderTextColor={colors.textSoft}
+          style={[
+            styles.fieldInput,
+            multiline ? styles.fieldInputMultiline : undefined,
+            inputStyle,
+          ]}
+          multiline={multiline}
+          numberOfLines={numberOfLines}
+          {...props}
+        />
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  primaryButton: {
-    backgroundColor: colors.primary,
+  buttonBase: {
     borderRadius: radius.sm,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  buttonMd: {
+    minHeight: 48,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    alignItems: "center",
+  },
+  buttonSm: {
+    minHeight: 38,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 8,
+  },
+  primaryButton: {
+    backgroundColor: colors.primary,
+    ...shadows.soft,
   },
   successButton: {
     backgroundColor: colors.primaryDark,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    alignItems: "center",
+    ...shadows.soft,
   },
   secondaryButton: {
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surfaceAlt,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    alignItems: "center",
+    borderColor: colors.borderStrong,
+    backgroundColor: colors.surface,
   },
   dangerButton: {
     backgroundColor: colors.danger,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    alignItems: "center",
+    ...shadows.soft,
+  },
+  ghostButton: {
+    backgroundColor: colors.primarySoft,
   },
   disabledButton: {
     opacity: 0.6,
   },
+  pressedButton: {
+    transform: [{ scale: 0.985 }],
+  },
+  buttonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
   primaryButtonText: {
     color: colors.white,
     fontWeight: "700",
+    fontSize: 15,
   },
   secondaryButtonText: {
     color: colors.text,
     fontWeight: "700",
+    fontSize: 15,
+  },
+  ghostButtonText: {
+    color: colors.primaryDark,
+    fontWeight: "700",
+    fontSize: 15,
   },
   pill: {
     borderRadius: 999,
     paddingHorizontal: spacing.sm,
     paddingVertical: 6,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    alignSelf: "flex-start",
   },
   pillNeutral: {
     backgroundColor: colors.surfaceAlt,
   },
   pillPrimary: {
-    backgroundColor: "#dff4ee",
+    backgroundColor: colors.primarySoft,
   },
   pillWarning: {
-    backgroundColor: "#fff0d8",
+    backgroundColor: colors.accentSoft,
   },
   pillDanger: {
-    backgroundColor: "#f8d7d3",
+    backgroundColor: colors.dangerSoft,
   },
   pillSuccess: {
-    backgroundColor: "#dff4ee",
+    backgroundColor: colors.successSoft,
   },
   pillText: {
     fontSize: 12,
@@ -230,10 +348,11 @@ const styles = StyleSheet.create({
   messageCard: {
     borderWidth: 1,
     borderColor: colors.border,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceElevated,
     borderRadius: radius.md,
     padding: spacing.lg,
     gap: spacing.xs,
+    ...shadows.card,
   },
   messageTitle: {
     color: colors.text,
@@ -247,7 +366,7 @@ const styles = StyleSheet.create({
   },
   errorCard: {
     borderColor: "#efb7ae",
-    backgroundColor: "#fff0ed",
+    backgroundColor: "#fff4f2",
   },
   errorTitle: {
     color: colors.danger,
@@ -263,6 +382,7 @@ const styles = StyleSheet.create({
     height: 92,
     borderRadius: radius.sm,
     backgroundColor: colors.surfaceAlt,
+    ...shadows.soft,
   },
   coverFallback: {
     width: 64,
@@ -271,10 +391,60 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceAlt,
     alignItems: "center",
     justifyContent: "center",
+    gap: spacing.xs,
+    ...shadows.soft,
+  },
+  coverFallbackBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: colors.primarySoft,
+    alignItems: "center",
+    justifyContent: "center",
   },
   coverFallbackText: {
     color: colors.primaryDark,
     fontSize: 26,
     fontWeight: "800",
+  },
+  fieldGroup: {
+    gap: 6,
+  },
+  fieldLabel: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  fieldHint: {
+    color: colors.textMuted,
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  fieldWrap: {
+    minHeight: 50,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+  },
+  fieldWrapMultiline: {
+    alignItems: "flex-start",
+    paddingVertical: spacing.sm,
+  },
+  fieldIconTop: {
+    marginTop: 2,
+  },
+  fieldInput: {
+    flex: 1,
+    minHeight: 48,
+    color: colors.text,
+  },
+  fieldInputMultiline: {
+    minHeight: 112,
+    textAlignVertical: "top",
   },
 });

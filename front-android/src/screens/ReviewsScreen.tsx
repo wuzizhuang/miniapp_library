@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 
 import { Card, Screen, SectionTitle } from "../components/Screen";
-import { ActionButton, EmptyCard, ErrorCard, InfoPill, LoginPromptCard } from "../components/Ui";
+import { ActionButton, EmptyCard, ErrorCard, InfoPill, LoginPromptCard, TextField } from "../components/Ui";
 import type { RootStackParamList } from "../navigation/types";
 import { getErrorMessage } from "../services/http";
 import { reviewService } from "../services/review";
@@ -13,10 +14,10 @@ import { colors, radius, spacing } from "../theme";
 import type { ApiReviewDto } from "../types/api";
 import { emitAppEvent, subscribeAppEvent } from "../utils/events";
 
-const statusMap: Record<string, { label: string; tone: "warning" | "success" | "danger" | "neutral" }> = {
-  PENDING: { label: "待审核", tone: "warning" },
-  APPROVED: { label: "已通过", tone: "success" },
-  REJECTED: { label: "已驳回", tone: "danger" },
+const statusMap: Record<string, { label: string; tone: "warning" | "success" | "danger" | "neutral"; icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"] }> = {
+  PENDING: { label: "待审核", tone: "warning", icon: "clock-outline" },
+  APPROVED: { label: "已通过", tone: "success", icon: "check-circle-outline" },
+  REJECTED: { label: "已驳回", tone: "danger", icon: "close-circle-outline" },
 };
 
 export function ReviewsScreen() {
@@ -86,6 +87,11 @@ export function ReviewsScreen() {
 
   const canGoPrev = useMemo(() => page > 0, [page]);
   const canGoNext = useMemo(() => page + 1 < totalPages, [page, totalPages]);
+  const summary = useMemo(() => ({
+    pending: reviews.filter((item) => (item.status || "PENDING") === "PENDING").length,
+    approved: reviews.filter((item) => item.status === "APPROVED").length,
+    rejected: reviews.filter((item) => item.status === "REJECTED").length,
+  }), [reviews]);
 
   function openEdit(review: ApiReviewDto) {
     setEditingReview(review);
@@ -152,8 +158,38 @@ export function ReviewsScreen() {
   }
 
   return (
-    <Screen title="我的评论" subtitle="查看评论审核状态，并继续编辑或删除。" refreshing={refreshing} onRefresh={() => { void loadData(page, true); }}>
-      {loading ? <Card><Text style={styles.helperText}>正在加载评论...</Text></Card> : null}
+    <Screen
+      title="我的评论"
+      subtitle="查看评论审核状态，并继续编辑或删除。"
+      refreshing={refreshing}
+      onRefresh={() => {
+        void loadData(page, true);
+      }}
+    >
+      <Card tone="tinted" style={styles.summaryCard}>
+        <View style={styles.summaryHeader}>
+          <View style={styles.summaryIconWrap}>
+            <MaterialCommunityIcons name="comment-text-outline" size={26} color={colors.primaryDark} />
+          </View>
+          <View style={styles.summaryBody}>
+            <InfoPill label="REVIEW CENTER" tone="primary" icon="star-outline" />
+            <Text style={styles.summaryTitle}>管理你的书评内容</Text>
+            <Text style={styles.summaryText}>在这里查看审核状态、继续编辑文字内容，或删除不再保留的评论。</Text>
+          </View>
+        </View>
+        <View style={styles.statRow}>
+          <StatCard icon="clock-outline" value={summary.pending} label="待审核" />
+          <StatCard icon="check-circle-outline" value={summary.approved} label="已通过" />
+          <StatCard icon="close-circle-outline" value={summary.rejected} label="已驳回" />
+        </View>
+      </Card>
+
+      {loading ? (
+        <Card tone="muted">
+          <Text style={styles.helperText}>正在加载评论...</Text>
+        </Card>
+      ) : null}
+
       {!loading && errorMessage ? (
         <ErrorCard
           message={errorMessage}
@@ -165,7 +201,7 @@ export function ReviewsScreen() {
 
       {!loading && !errorMessage ? (
         <>
-          <Card>
+          <Card style={styles.sectionCard}>
             <SectionTitle>评论列表</SectionTitle>
             {reviews.length === 0 ? (
               <EmptyCard title="你还没有提交任何评论" description="进入图书详情页后即可发布第一条书评。" />
@@ -180,26 +216,38 @@ export function ReviewsScreen() {
                         <Text style={styles.reviewTitle}>{review.bookTitle || "未知图书"}</Text>
                         <Text style={styles.reviewMeta}>ISBN: {review.bookIsbn || "--"}</Text>
                       </View>
-                      <InfoPill label={statusMeta.label} tone={statusMeta.tone} />
+                      <InfoPill label={statusMeta.label} tone={statusMeta.tone} icon={statusMeta.icon} />
                     </View>
-                    <Text style={styles.reviewMeta}>评分 {review.rating} / 5</Text>
+                    <View style={styles.starRow}>
+                      {[1, 2, 3, 4, 5].map((value) => (
+                        <MaterialCommunityIcons
+                          key={`${review.reviewId}-${value}`}
+                          name={value <= (review.rating ?? 0) ? "star" : "star-outline"}
+                          size={18}
+                          color={value <= (review.rating ?? 0) ? colors.accent : colors.borderStrong}
+                        />
+                      ))}
+                    </View>
                     <Text style={styles.reviewContent}>{review.commentText || "该评论未填写文字内容。"}</Text>
                     <Text style={styles.reviewMeta}>提交于 {String(review.createTime || "").slice(0, 10)}</Text>
                     <View style={styles.actionRow}>
                       {review.bookId ? (
                         <ActionButton
                           label="查看图书"
+                          icon="book-open-variant"
                           onPress={() => navigation.navigate("BookDetail", { bookId: review.bookId })}
                           tone="secondary"
                         />
                       ) : null}
                       <ActionButton
                         label="编辑评论"
+                        icon="square-edit-outline"
                         onPress={() => openEdit(review)}
                         tone="secondary"
                       />
                       <ActionButton
                         label={deletingId === Number(review.reviewId) ? "删除中..." : "删除评论"}
+                        icon="trash-can-outline"
                         onPress={() => {
                           void handleDelete(review);
                         }}
@@ -219,6 +267,7 @@ export function ReviewsScreen() {
               <View style={styles.actionRow}>
                 <ActionButton
                   label="上一页"
+                  icon="chevron-left"
                   onPress={() => {
                     void loadData(page - 1);
                   }}
@@ -228,6 +277,7 @@ export function ReviewsScreen() {
                 <Text style={styles.pageText}>第 {page + 1} / {totalPages} 页</Text>
                 <ActionButton
                   label="下一页"
+                  icon="chevron-right"
                   onPress={() => {
                     void loadData(page + 1);
                   }}
@@ -239,29 +289,33 @@ export function ReviewsScreen() {
           ) : null}
 
           {editingReview ? (
-            <Card>
+            <Card style={styles.sectionCard}>
               <SectionTitle>编辑评论</SectionTitle>
               <Text style={styles.reviewTitle}>{editingReview.bookTitle || "未知图书"}</Text>
-              <View style={styles.starRow}>
+              <View style={styles.editStarRow}>
                 {[1, 2, 3, 4, 5].map((value) => (
-                  <Pressable key={value} onPress={() => setRating(value)}>
-                    <Text style={value <= rating ? styles.starActive : styles.star}>★</Text>
+                  <Pressable key={value} style={styles.starChip} onPress={() => setRating(value)}>
+                    <MaterialCommunityIcons
+                      name={value <= rating ? "star" : "star-outline"}
+                      size={22}
+                      color={value <= rating ? colors.accent : colors.borderStrong}
+                    />
                   </Pressable>
                 ))}
               </View>
-              <TextInput
+              <TextField
+                icon="text-box-outline"
                 value={commentText}
                 onChangeText={setCommentText}
                 multiline
                 numberOfLines={4}
                 placeholder="继续完善你的阅读体验..."
-                placeholderTextColor={colors.textMuted}
-                style={styles.textarea}
               />
               <View style={styles.actionRow}>
-                <ActionButton label="取消编辑" onPress={closeEdit} tone="secondary" />
+                <ActionButton label="取消编辑" icon="close" onPress={closeEdit} tone="secondary" />
                 <ActionButton
                   label={submitting ? "保存中..." : "保存修改"}
+                  icon="content-save-outline"
                   onPress={() => {
                     void handleUpdate();
                   }}
@@ -276,16 +330,90 @@ export function ReviewsScreen() {
   );
 }
 
+function StatCard({
+  icon,
+  value,
+  label,
+}: {
+  icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+  value: number;
+  label: string;
+}) {
+  return (
+    <View style={styles.statCard}>
+      <MaterialCommunityIcons name={icon} size={18} color={colors.primaryDark} />
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  summaryCard: {
+    gap: spacing.md,
+  },
+  summaryHeader: {
+    flexDirection: "row",
+    gap: spacing.md,
+  },
+  summaryIconWrap: {
+    width: 60,
+    height: 60,
+    borderRadius: 22,
+    backgroundColor: colors.primarySoft,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  summaryBody: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  summaryTitle: {
+    color: colors.text,
+    fontSize: 22,
+    fontWeight: "800",
+  },
+  summaryText: {
+    color: colors.textMuted,
+    lineHeight: 22,
+  },
+  statRow: {
+    flexDirection: "row",
+    gap: spacing.sm,
+  },
+  statCard: {
+    flex: 1,
+    minWidth: 0,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceElevated,
+    padding: spacing.md,
+    gap: 4,
+  },
+  statValue: {
+    color: colors.primaryDark,
+    fontSize: 22,
+    fontWeight: "800",
+  },
+  statLabel: {
+    color: colors.textMuted,
+    fontSize: 12,
+  },
   helperText: {
     color: colors.textMuted,
+    lineHeight: 21,
+  },
+  sectionCard: {
+    gap: spacing.md,
   },
   reviewCard: {
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.sm,
+    borderRadius: radius.md,
     padding: spacing.md,
     gap: spacing.sm,
+    backgroundColor: colors.surfaceElevated,
   },
   reviewHeader: {
     flexDirection: "row",
@@ -300,6 +428,7 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 16,
     fontWeight: "800",
+    lineHeight: 22,
   },
   reviewMeta: {
     color: colors.textMuted,
@@ -321,25 +450,18 @@ const styles = StyleSheet.create({
   },
   starRow: {
     flexDirection: "row",
+    gap: 4,
+  },
+  editStarRow: {
+    flexDirection: "row",
     gap: spacing.xs,
   },
-  star: {
-    color: colors.border,
-    fontSize: 30,
-  },
-  starActive: {
-    color: colors.accent,
-    fontSize: 30,
-  },
-  textarea: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.white,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    minHeight: 100,
-    color: colors.text,
-    textAlignVertical: "top",
+  starChip: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.surfaceAlt,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

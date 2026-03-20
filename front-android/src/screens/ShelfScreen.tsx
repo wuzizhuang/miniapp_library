@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { Card, Screen, SectionTitle } from "../components/Screen";
-import { CoverImage, EmptyCard, ErrorCard, InfoPill, LoginPromptCard, ActionButton } from "../components/Ui";
+import { CoverImage, EmptyCard, ErrorCard, InfoPill, LoginPromptCard, ActionButton, TextField } from "../components/Ui";
 import type { RootStackParamList } from "../navigation/types";
 import { favoriteService } from "../services/favorite";
 import { getErrorMessage } from "../services/http";
@@ -204,51 +205,60 @@ export function ShelfScreen() {
         void loadData(true);
       }}
     >
-      <Card>
-        <SectionTitle>书架概览</SectionTitle>
+      <Card tone="tinted" style={styles.summaryCard}>
+        <View style={styles.summaryHeader}>
+          <View style={styles.summaryIconWrap}>
+            <MaterialCommunityIcons name="bookshelf" size={26} color={colors.primaryDark} />
+          </View>
+          <View style={styles.summaryBody}>
+            <InfoPill label="READING HUB" tone="primary" icon="book-open-page-variant-outline" />
+            <Text style={styles.summaryTitle}>把你的阅读资产集中起来</Text>
+            <Text style={styles.summaryText}>收藏、当前借阅和历史借阅在这里统一管理，方便继续阅读或回看记录。</Text>
+          </View>
+        </View>
         <View style={styles.statRow}>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{favorites.length}</Text>
-            <Text style={styles.statLabel}>收藏</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{activeLoans.length}</Text>
-            <Text style={styles.statLabel}>当前借阅</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{historyLoans.length}</Text>
-            <Text style={styles.statLabel}>历史借阅</Text>
-          </View>
+          <StatCard icon="heart-outline" value={favorites.length} label="收藏" />
+          <StatCard icon="bookmark-check-outline" value={activeLoans.length} label="当前借阅" />
+          <StatCard icon="history" value={historyLoans.length} label="历史借阅" />
         </View>
       </Card>
 
-      <Card>
-        <TextInput
+      <Card style={styles.filterCard}>
+        <TextField
+          icon="magnify"
           value={query}
           onChangeText={setQuery}
           placeholder="搜索书名、作者、分类"
-          placeholderTextColor={colors.textMuted}
-          style={styles.searchInput}
         />
         <View style={styles.tabRow}>
           {[
-            { key: "all", label: "全部" },
-            { key: "favorites", label: "收藏" },
-            { key: "active", label: "当前借阅" },
-            { key: "history", label: "历史借阅" },
+            { key: "all", label: "全部", icon: "view-grid-outline" },
+            { key: "favorites", label: "收藏", icon: "heart-outline" },
+            { key: "active", label: "当前借阅", icon: "bookmark-check-outline" },
+            { key: "history", label: "历史借阅", icon: "history" },
           ].map((item) => (
             <Pressable
               key={item.key}
               style={[styles.tabChip, section === item.key ? styles.tabChipActive : undefined]}
               onPress={() => setSection(item.key as ShelfSection)}
             >
+              <MaterialCommunityIcons
+                name={item.icon as React.ComponentProps<typeof MaterialCommunityIcons>["name"]}
+                size={16}
+                color={section === item.key ? colors.white : colors.textMuted}
+              />
               <Text style={section === item.key ? styles.tabChipActiveText : styles.tabChipText}>{item.label}</Text>
             </Pressable>
           ))}
         </View>
       </Card>
 
-      {loading ? <Card><Text style={styles.helperText}>正在加载书架...</Text></Card> : null}
+      {loading ? (
+        <Card tone="muted">
+          <Text style={styles.helperText}>正在加载书架...</Text>
+        </Card>
+      ) : null}
+
       {!loading && errorMessage ? (
         <ErrorCard
           message={errorMessage}
@@ -264,14 +274,23 @@ export function ShelfScreen() {
 
       {!loading && !errorMessage && pagedItems.length > 0 ? (
         pagedItems.map((item) => (
-          <Pressable key={item.id} style={styles.itemCard} onPress={item.onPress}>
-            <CoverImage title={item.title} uri={item.cover} />
+          <Pressable
+            key={item.id}
+            style={({ pressed }) => [styles.itemCard, pressed ? styles.itemCardPressed : undefined]}
+            onPress={item.onPress}
+          >
+            <CoverImage title={item.title} uri={item.cover} style={styles.itemCover} />
             <View style={styles.itemBody}>
-              <Text style={styles.itemTitle}>{item.title}</Text>
-              <Text style={styles.itemSubtitle}>{item.subtitle}</Text>
+              <View style={styles.itemHeader}>
+                <View style={styles.itemTitleWrap}>
+                  <Text style={styles.itemTitle} numberOfLines={2}>{item.title}</Text>
+                  <Text style={styles.itemSubtitle}>{item.subtitle}</Text>
+                </View>
+                <MaterialCommunityIcons name="chevron-right" size={20} color={colors.textSoft} />
+              </View>
               <Text style={styles.itemMeta}>{item.meta}</Text>
+              <InfoPill label={item.badge} tone={item.tone} icon={item.type === "favorite" ? "heart-outline" : "bookmark-check-outline"} />
             </View>
-            <InfoPill label={item.badge} tone={item.tone} />
           </Pressable>
         ))
       ) : null}
@@ -281,6 +300,7 @@ export function ShelfScreen() {
           <View style={styles.paginationRow}>
             <ActionButton
               label="上一页"
+              icon="chevron-left"
               onPress={() => setPage((prev) => Math.max(0, prev - 1))}
               tone="secondary"
               disabled={page <= 0}
@@ -288,6 +308,7 @@ export function ShelfScreen() {
             <Text style={styles.helperText}>第 {page + 1} / {totalPages} 页</Text>
             <ActionButton
               label="下一页"
+              icon="chevron-right"
               onPress={() => setPage((prev) => Math.min(totalPages - 1, prev + 1))}
               tone="secondary"
               disabled={page >= totalPages - 1}
@@ -299,18 +320,66 @@ export function ShelfScreen() {
   );
 }
 
+function StatCard({
+  icon,
+  value,
+  label,
+}: {
+  icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+  value: number;
+  label: string;
+}) {
+  return (
+    <View style={styles.statCard}>
+      <MaterialCommunityIcons name={icon} size={18} color={colors.primaryDark} />
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  summaryCard: {
+    gap: spacing.md,
+  },
+  summaryHeader: {
+    flexDirection: "row",
+    gap: spacing.md,
+  },
+  summaryIconWrap: {
+    width: 60,
+    height: 60,
+    borderRadius: 22,
+    backgroundColor: colors.primarySoft,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  summaryBody: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  summaryTitle: {
+    color: colors.text,
+    fontSize: 22,
+    fontWeight: "800",
+  },
+  summaryText: {
+    color: colors.textMuted,
+    lineHeight: 22,
+  },
   statRow: {
     flexDirection: "row",
     gap: spacing.sm,
   },
   statCard: {
     flex: 1,
+    minWidth: 0,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.sm,
-    backgroundColor: colors.surfaceAlt,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceElevated,
     padding: spacing.md,
+    gap: 4,
   },
   statValue: {
     color: colors.primaryDark,
@@ -319,15 +388,10 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     color: colors.textMuted,
+    fontSize: 12,
   },
-  searchInput: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.sm,
-    backgroundColor: colors.white,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    color: colors.text,
+  filterCard: {
+    gap: spacing.md,
   },
   tabRow: {
     flexDirection: "row",
@@ -339,7 +403,11 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: 999,
     paddingHorizontal: spacing.md,
-    paddingVertical: 8,
+    paddingVertical: 9,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: colors.surface,
   },
   tabChipActive: {
     backgroundColor: colors.primary,
@@ -355,6 +423,7 @@ const styles = StyleSheet.create({
   },
   helperText: {
     color: colors.textMuted,
+    lineHeight: 21,
   },
   itemCard: {
     flexDirection: "row",
@@ -362,11 +431,28 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderColor: colors.border,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceElevated,
     borderRadius: radius.md,
     padding: spacing.md,
   },
+  itemCardPressed: {
+    opacity: 0.9,
+    transform: [{ scale: 0.992 }],
+  },
+  itemCover: {
+    width: 70,
+    height: 102,
+  },
   itemBody: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  itemHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: spacing.sm,
+  },
+  itemTitleWrap: {
     flex: 1,
     gap: 4,
   },
@@ -374,6 +460,7 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 16,
     fontWeight: "800",
+    lineHeight: 22,
   },
   itemSubtitle: {
     color: colors.textMuted,

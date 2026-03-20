@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { StyleSheet, Text, View } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
@@ -12,6 +13,8 @@ import { loanService, type MyLoan } from "../services/loan";
 import { useAuth } from "../store/auth";
 import { colors, radius, spacing } from "../theme";
 import { emitAppEvent, subscribeAppEvent } from "../utils/events";
+
+type AppIcon = React.ComponentProps<typeof MaterialCommunityIcons>["name"];
 
 export function LoanTrackingScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -83,8 +86,20 @@ export function LoanTrackingScreen() {
   }
 
   return (
-    <Screen title="借阅追踪" subtitle="对应 Web 端 `/my/loan-tracking/[id]` 的读者借阅详情。" refreshing={refreshing} onRefresh={() => { void loadData(true); }}>
-      {loading ? <Card><Text style={styles.helperText}>正在加载借阅详情...</Text></Card> : null}
+    <Screen
+      title="借阅追踪"
+      subtitle="对应 Web 端 `/my/loan-tracking/[id]` 的读者借阅详情。"
+      refreshing={refreshing}
+      onRefresh={() => {
+        void loadData(true);
+      }}
+    >
+      {loading ? (
+        <Card tone="muted">
+          <Text style={styles.helperText}>正在加载借阅详情...</Text>
+        </Card>
+      ) : null}
+
       {!loading && errorMessage ? (
         <ErrorCard
           message={errorMessage}
@@ -93,61 +108,83 @@ export function LoanTrackingScreen() {
           }}
         />
       ) : null}
+
       {!loading && !errorMessage && !loan ? <EmptyCard title="未找到该借阅记录" /> : null}
 
       {!loading && !errorMessage && loan ? (
         <>
-          <Card>
+          <Card tone="tinted" style={styles.heroCard}>
             <View style={styles.heroRow}>
               <CoverImage title={loan.bookTitle} uri={loan.bookCover} style={styles.cover} />
               <View style={styles.heroBody}>
+                <InfoPill label="LOAN STATUS" tone="primary" icon="book-arrow-right-outline" />
                 <Text style={styles.title}>{loan.bookTitle}</Text>
                 <Text style={styles.meta}>{loan.bookAuthorNames || "未知作者"}</Text>
                 <View style={styles.badgeRow}>
                   <InfoPill
-                    label={loan.status === "BORROWED" ? "借阅中" : loan.status === "OVERDUE" ? "已逾期" : loan.status === "RETURNED" ? "已归还" : "已挂失"}
-                    tone={loan.status === "OVERDUE" ? "danger" : loan.status === "RETURNED" ? "success" : loan.status === "LOST" ? "warning" : "primary"}
+                    label={getLoanStatusLabel(loan.status)}
+                    tone={getLoanStatusTone(loan.status)}
+                    icon={getLoanStatusIcon(loan.status)}
                   />
-                  <InfoPill label={`续借 ${loan.renewalCount} / 2`} />
+                  <InfoPill label={`续借 ${loan.renewalCount} / 2`} icon="repeat" />
+                  {typeof loan.daysRemaining === "number" && loan.status === "BORROWED" ? (
+                    <InfoPill label={`剩余 ${loan.daysRemaining} 天`} tone="success" icon="clock-outline" />
+                  ) : null}
+                  {typeof loan.daysOverdue === "number" && loan.status === "OVERDUE" ? (
+                    <InfoPill label={`逾期 ${loan.daysOverdue} 天`} tone="danger" icon="alert-circle-outline" />
+                  ) : null}
                 </View>
               </View>
             </View>
+
+            <View style={styles.metricRow}>
+              <MiniMetric icon="calendar-arrow-right" label="借出" value={loan.borrowDate} />
+              <MiniMetric icon="calendar-clock" label="应还" value={loan.dueDate} />
+              <MiniMetric icon="bookmark-check-outline" label="续借" value={String(loan.renewalCount)} />
+            </View>
           </Card>
 
-          <Card>
+          <Card style={styles.sectionCard}>
             <SectionTitle>借阅信息</SectionTitle>
-            <InfoRow label="借阅编号" value={`#${loan.loanId}`} />
-            <InfoRow label="副本编号" value={`#${loan.copyId}`} />
-            <InfoRow label="馆藏位置" value={loan.locationCode || "--"} />
-            <InfoRow label="借出日期" value={loan.borrowDate} />
-            <InfoRow label="应还日期" value={loan.dueDate} />
-            <InfoRow label="归还日期" value={loan.returnDate || "--"} />
+            <View style={styles.infoBoard}>
+              <InfoRow icon="identifier" label="借阅编号" value={`#${loan.loanId}`} />
+              <InfoRow icon="archive-outline" label="副本编号" value={`#${loan.copyId}`} />
+              <InfoRow icon="map-marker-outline" label="馆藏位置" value={loan.locationCode || "--"} />
+              <InfoRow icon="calendar-import" label="借出日期" value={loan.borrowDate} />
+              <InfoRow icon="calendar-alert" label="应还日期" value={loan.dueDate} />
+              <InfoRow icon="calendar-check" label="归还日期" value={loan.returnDate || "--"} />
+            </View>
           </Card>
 
           {(loan.status === "BORROWED" || loan.status === "OVERDUE") ? (
-            <Card>
+            <Card style={styles.sectionCard}>
               <SectionTitle>读者自助操作</SectionTitle>
-              <Text style={styles.helperText}>
-                遗失登记需由馆员在后台处理，读者端只保留续借和归还。
-              </Text>
+              <View style={styles.noticeStrip}>
+                <MaterialCommunityIcons name="information-outline" size={18} color={colors.primaryDark} />
+                <Text style={styles.noticeText}>遗失登记需由馆员在后台处理，读者端只保留续借和归还。</Text>
+              </View>
               <View style={styles.actionRow}>
                 {loan.canRenew ? (
                   <ActionButton
                     label={acting === "renew" ? "续借中..." : "续借"}
+                    icon="repeat"
                     onPress={() => {
                       void handleAction("renew");
                     }}
                     tone="secondary"
                     disabled={acting !== null}
+                    style={styles.actionButton}
                   />
                 ) : null}
                 <ActionButton
                   label={acting === "return" ? "归还中..." : "归还"}
+                  icon="check-circle-outline"
                   onPress={() => {
                     void handleAction("return");
                   }}
                   tone="success"
                   disabled={acting !== null}
+                  style={styles.actionButton}
                 />
               </View>
             </Card>
@@ -158,13 +195,81 @@ export function LoanTrackingScreen() {
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+function MiniMetric({
+  icon,
+  label,
+  value,
+}: {
+  icon: AppIcon;
+  label: string;
+  value: string;
+}) {
+  return (
+    <View style={styles.metricCard}>
+      <MaterialCommunityIcons name={icon} size={16} color={colors.primaryDark} />
+      <Text style={styles.metricValue}>{value}</Text>
+      <Text style={styles.metricLabel}>{label}</Text>
+    </View>
+  );
+}
+
+function InfoRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: AppIcon;
+  label: string;
+  value: string;
+}) {
   return (
     <View style={styles.infoRow}>
-      <Text style={styles.infoLabel}>{label}</Text>
+      <View style={styles.infoLeft}>
+        <MaterialCommunityIcons name={icon} size={16} color={colors.textSoft} />
+        <Text style={styles.infoLabel}>{label}</Text>
+      </View>
       <Text style={styles.infoValue}>{value}</Text>
     </View>
   );
+}
+
+function getLoanStatusLabel(status: MyLoan["status"]) {
+  switch (status) {
+    case "BORROWED":
+      return "借阅中";
+    case "OVERDUE":
+      return "已逾期";
+    case "RETURNED":
+      return "已归还";
+    default:
+      return "已挂失";
+  }
+}
+
+function getLoanStatusTone(status: MyLoan["status"]) {
+  switch (status) {
+    case "BORROWED":
+      return "primary" as const;
+    case "OVERDUE":
+      return "danger" as const;
+    case "RETURNED":
+      return "success" as const;
+    default:
+      return "warning" as const;
+  }
+}
+
+function getLoanStatusIcon(status: MyLoan["status"]) {
+  switch (status) {
+    case "BORROWED":
+      return "book-clock-outline" as const;
+    case "OVERDUE":
+      return "alert-circle-outline" as const;
+    case "RETURNED":
+      return "check-circle-outline" as const;
+    default:
+      return "alert-octagon-outline" as const;
+  }
 }
 
 const styles = StyleSheet.create({
@@ -172,13 +277,16 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     lineHeight: 21,
   },
+  heroCard: {
+    gap: spacing.md,
+  },
   heroRow: {
     flexDirection: "row",
     gap: spacing.md,
   },
   cover: {
-    width: 86,
-    height: 120,
+    width: 92,
+    height: 130,
   },
   heroBody: {
     flex: 1,
@@ -186,25 +294,67 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.text,
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "800",
+    lineHeight: 30,
   },
   meta: {
     color: colors.textMuted,
+    lineHeight: 20,
   },
   badgeRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.xs,
-    marginTop: spacing.xs,
+    marginTop: 2,
+  },
+  metricRow: {
+    flexDirection: "row",
+    gap: spacing.sm,
+  },
+  metricCard: {
+    flex: 1,
+    minWidth: 0,
+    backgroundColor: colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    gap: 2,
+  },
+  metricValue: {
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: "800",
+  },
+  metricLabel: {
+    color: colors.textMuted,
+    fontSize: 12,
+  },
+  sectionCard: {
+    gap: spacing.md,
+  },
+  infoBoard: {
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: "hidden",
   },
   infoRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    paddingVertical: spacing.sm,
+  },
+  infoLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   infoLabel: {
     color: colors.textMuted,
@@ -215,7 +365,24 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     textAlign: "right",
   },
+  noticeStrip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    borderRadius: radius.md,
+    backgroundColor: colors.primarySoft,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  noticeText: {
+    flex: 1,
+    color: colors.text,
+    lineHeight: 21,
+  },
   actionRow: {
     gap: spacing.sm,
+  },
+  actionButton: {
+    width: "100%",
   },
 });

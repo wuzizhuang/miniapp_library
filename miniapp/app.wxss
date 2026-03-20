@@ -500,3 +500,57 @@ page {
   font-size: 24rpx;
   line-height: 1.6;
 }
+
+/* ===== Active / press-down feedback ===== */
+
+.button-primary:active {
+  background: #0a6f5c;
+}
+
+.button-secondary:active {
+  background: #e2d5c1;
+}
+
+.button-danger:active {
+  background: #9c362c;
+}
+
+.button-ghost:active {
+  background: #f0faf6;
+}
+
+.pill-item:active {
+  opacity: 0.7;
+}
+
+.pill-item--active:active {
+  opacity: 0.85;
+}
+
+.list-card:active {
+  background: #f5efe4;
+}
+
+.notice-card:active {
+  background: #f7f1e7;
+}
+
+.feed-card:active {
+  background: #f7f1e7;
+}
+
+.entry-card:active {
+  background: #efe5d5;
+}
+
+.chip:active,
+.chip-primary:active,
+.chip-warning:active,
+.chip-danger:active,
+.chip-success:active {
+  opacity: 0.7;
+}
+
+.stat-card:active {
+  background: #f0e8d9;
+}

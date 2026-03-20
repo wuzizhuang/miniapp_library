@@ -686,14 +686,17 @@ export interface ApiHomePageDto {
   categories: ApiHomeCategoryItem[];
 }
 
+export interface ApiChatMessageItem {
+  role: "user" | "assistant";
+  content: string;
+}
+
 export interface ApiPublicAiChatRequest {
-  message: string;
-  previousResponseId?: string;
+  messages: ApiChatMessageItem[];
 }
 
 export interface ApiPublicAiChatResponse {
   reply: string;
-  responseId?: string;
   provider?: string;
   model?: string;
 }

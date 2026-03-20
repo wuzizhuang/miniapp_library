@@ -105,7 +105,7 @@ public class PublicController {
             HttpServletRequest request) {
         requestRateLimitService.checkPublicAiChatLimit(request);
         return ResponseEntity.status(HttpStatus.OK)
-                .body(aiChatService.chat(requestDto.getMessage(), requestDto.getPreviousResponseId()));
+                .body(aiChatService.chat(requestDto.getMessages()));
     }
 
     private List<HomePageDto.StatItem> buildHeroStats(DashboardStatsDto stats, long totalBooks) {

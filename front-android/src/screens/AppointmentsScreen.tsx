@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { Card, Screen, SectionTitle } from "../components/Screen";
-import { ActionButton, EmptyCard, ErrorCard, InfoPill, LoginPromptCard } from "../components/Ui";
+import { ActionButton, EmptyCard, ErrorCard, InfoPill, LoginPromptCard, TextField } from "../components/Ui";
 import type { RootStackParamList } from "../navigation/types";
 import { getErrorMessage } from "../services/http";
 import { loanService } from "../services/loan";
@@ -211,67 +212,126 @@ export function AppointmentsScreen() {
   }
 
   return (
-    <Screen title="服务预约" subtitle="对应 Web 端 `/my/appointments` 的创建、查询与取消。" refreshing={refreshing} onRefresh={() => { void loadData(true); }}>
-      <Card>
+    <Screen
+      title="服务预约"
+      subtitle="对应 Web 端 `/my/appointments` 的创建、查询与取消。"
+      refreshing={refreshing}
+      onRefresh={() => {
+        void loadData(true);
+      }}
+    >
+      <Card tone="tinted" style={styles.summaryCard}>
+        <View style={styles.summaryHeader}>
+          <View style={styles.summaryIconWrap}>
+            <MaterialCommunityIcons name="desk-lamp" size={26} color={colors.primaryDark} />
+          </View>
+          <View style={styles.summaryBody}>
+            <InfoPill label="SERVICE DESK" tone="primary" icon="calendar-check-outline" />
+            <Text style={styles.summaryTitle}>把线下业务预约好再出发</Text>
+            <Text style={styles.summaryText}>支持到馆还书、预约取书和馆员咨询，让线下流程更可控。</Text>
+          </View>
+        </View>
+        <View style={styles.statRow}>
+          <StatCard icon="clock-outline" value={pending.length} label="待处理" />
+          <StatCard icon="history" value={history.length} label="历史记录" />
+          <StatCard icon="bookmark-check-outline" value={loanOptions.length} label="可关联借阅" />
+        </View>
+      </Card>
+
+      <Card style={styles.sectionCard}>
         <SectionTitle>新建预约</SectionTitle>
         <View style={styles.optionWrap}>
           {serviceTypes.map((item) => (
-            <ActionButton
+            <Pressable
               key={item}
-              label={serviceTypeLabels[item]}
+              style={[styles.optionChip, form.serviceType === item ? styles.optionChipActive : undefined]}
               onPress={() => setForm((current) => ({ ...current, serviceType: item }))}
-              tone={form.serviceType === item ? "primary" : "secondary"}
-            />
+            >
+              <Text style={form.serviceType === item ? styles.optionChipActiveText : styles.optionChipText}>
+                {serviceTypeLabels[item]}
+              </Text>
+            </Pressable>
           ))}
         </View>
+
         <View style={styles.optionWrap}>
           {methods.map((item) => (
-            <ActionButton
+            <Pressable
               key={item}
-              label={methodLabels[item]}
+              style={[styles.optionChip, form.method === item ? styles.optionChipActive : undefined]}
               onPress={() => setForm((current) => ({ ...current, method: item }))}
-              tone={form.method === item ? "primary" : "secondary"}
-            />
+            >
+              <Text style={form.method === item ? styles.optionChipActiveText : styles.optionChipText}>
+                {methodLabels[item]}
+              </Text>
+            </Pressable>
           ))}
         </View>
-        <TextInput
+
+        <TextField
+          label="预约时间"
+          hint="使用 ISO 时间格式，例如 2026-03-10T18:30"
+          icon="calendar-clock-outline"
           value={form.scheduledTime}
           onChangeText={(value) => setForm((current) => ({ ...current, scheduledTime: value }))}
           placeholder="预约时间，如 2026-03-10T18:30"
-          placeholderTextColor={colors.textMuted}
-          style={styles.input}
         />
-        <TextInput
+
+        <TextField
+          label="关联借阅"
+          hint={loanOptions.length > 0 ? `可直接填写，例如 ${loanOptions[0].loanId}` : "没有可关联的当前借阅时可留空"}
+          icon="bookmark-check-outline"
           value={form.loanId}
           onChangeText={(value) => setForm((current) => ({ ...current, loanId: value }))}
           placeholder={loanOptions.length > 0 ? `关联借阅，可填 ${loanOptions[0].loanId}` : "关联借阅（可选）"}
-          placeholderTextColor={colors.textMuted}
-          style={styles.input}
+          keyboardType="numeric"
         />
-        {form.serviceType === "RETURN_BOOK" ? (
-          <View style={styles.optionWrap}>
-            {availableReturnLocations.map((item) => (
-              <ActionButton
-                key={item.value}
-                label={item.label}
-                onPress={() => setForm((current) => ({ ...current, returnLocation: item.value }))}
-                tone={form.returnLocation === item.value ? "primary" : "secondary"}
-              />
+
+        {loanOptions.length > 0 ? (
+          <View style={styles.loanOptionList}>
+            {loanOptions.slice(0, 4).map((item) => (
+              <Pressable
+                key={item.loanId}
+                style={[styles.loanOptionCard, form.loanId === String(item.loanId) ? styles.loanOptionCardActive : undefined]}
+                onPress={() => setForm((current) => ({ ...current, loanId: String(item.loanId) }))}
+              >
+                <Text style={styles.loanOptionTitle}>{`#${item.loanId}`}</Text>
+                <Text style={styles.loanOptionMeta}>{item.label.replace(` #${item.loanId}`, "")}</Text>
+              </Pressable>
             ))}
           </View>
         ) : null}
-        <TextInput
+
+        {form.serviceType === "RETURN_BOOK" ? (
+          <View style={styles.optionWrap}>
+            {availableReturnLocations.map((item) => (
+              <Pressable
+                key={item.value}
+                style={[styles.optionChip, form.returnLocation === item.value ? styles.optionChipActive : undefined]}
+                onPress={() => setForm((current) => ({ ...current, returnLocation: item.value }))}
+              >
+                <Text style={form.returnLocation === item.value ? styles.optionChipActiveText : styles.optionChipText}>
+                  {item.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
+
+        <TextField
+          label="备注说明"
+          icon="text-box-outline"
           value={form.notes}
           onChangeText={(value) => setForm((current) => ({ ...current, notes: value }))}
           multiline
           numberOfLines={4}
           placeholder="备注说明"
-          placeholderTextColor={colors.textMuted}
-          style={styles.textarea}
         />
+
         {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
         <ActionButton
           label={submitting ? "提交中..." : "提交预约"}
+          icon="calendar-plus"
           onPress={() => {
             void handleCreate();
           }}
@@ -279,7 +339,12 @@ export function AppointmentsScreen() {
         />
       </Card>
 
-      {loading ? <Card><Text style={styles.helperText}>正在加载预约记录...</Text></Card> : null}
+      {loading ? (
+        <Card tone="muted">
+          <Text style={styles.helperText}>正在加载预约记录...</Text>
+        </Card>
+      ) : null}
+
       {!loading && errorMessage ? (
         <ErrorCard
           message={errorMessage}
@@ -291,57 +356,43 @@ export function AppointmentsScreen() {
 
       {!loading && !errorMessage ? (
         <>
-          <Card>
+          <Card style={styles.sectionCard}>
             <SectionTitle>待处理预约</SectionTitle>
             {pending.length === 0 ? (
               <EmptyCard title="暂无待处理预约" />
             ) : (
               pending.map((item) => (
-                <View
+                <AppointmentCard
                   key={item.appointmentId}
-                  style={[
-                    styles.itemCard,
-                    route.params?.highlightId === item.appointmentId ? styles.highlightCard : undefined,
-                  ]}
-                >
-                  <Text style={styles.itemTitle}>{serviceTypeLabels[item.serviceType]}</Text>
-                  <Text style={styles.itemMeta}>预约时间 {item.scheduledTime}</Text>
-                  <Text style={styles.itemMeta}>方式 {methodLabels[item.method]}</Text>
-                  {item.returnLocation ? <Text style={styles.itemMeta}>归还地点 {item.returnLocation}</Text> : null}
-                  {item.bookTitle ? <Text style={styles.itemMeta}>关联图书 {item.bookTitle}</Text> : null}
-                  <InfoPill label={statusLabels[item.status]} tone="warning" />
-                  <ActionButton
-                    label={actingId === item.appointmentId ? "取消中..." : "取消预约"}
-                    onPress={() => {
-                      void handleCancel(item.appointmentId);
-                    }}
-                    tone="danger"
-                    disabled={actingId !== null}
-                  />
-                </View>
+                  item={item}
+                  highlighted={route.params?.highlightId === item.appointmentId}
+                  action={
+                    <ActionButton
+                      label={actingId === item.appointmentId ? "取消中..." : "取消预约"}
+                      icon="close-circle-outline"
+                      onPress={() => {
+                        void handleCancel(item.appointmentId);
+                      }}
+                      tone="danger"
+                      disabled={actingId !== null}
+                    />
+                  }
+                />
               ))
             )}
           </Card>
 
-          <Card>
+          <Card style={styles.sectionCard}>
             <SectionTitle>历史记录</SectionTitle>
             {history.length === 0 ? (
               <EmptyCard title="暂无历史服务预约" />
             ) : (
               history.map((item) => (
-                <View
+                <AppointmentCard
                   key={item.appointmentId}
-                  style={[
-                    styles.itemCard,
-                    route.params?.highlightId === item.appointmentId ? styles.highlightCard : undefined,
-                  ]}
-                >
-                  <Text style={styles.itemTitle}>{serviceTypeLabels[item.serviceType]}</Text>
-                  <Text style={styles.itemMeta}>预约时间 {item.scheduledTime}</Text>
-                  <Text style={styles.itemMeta}>方式 {methodLabels[item.method]}</Text>
-                  {item.returnLocation ? <Text style={styles.itemMeta}>归还地点 {item.returnLocation}</Text> : null}
-                  <InfoPill label={statusLabels[item.status]} />
-                </View>
+                  item={item}
+                  highlighted={route.params?.highlightId === item.appointmentId}
+                />
               ))
             )}
           </Card>
@@ -351,56 +402,230 @@ export function AppointmentsScreen() {
   );
 }
 
+function AppointmentCard({
+  item,
+  highlighted,
+  action,
+}: {
+  item: ServiceAppointment;
+  highlighted?: boolean;
+  action?: React.ReactNode;
+}) {
+  const meta = getAppointmentMeta(item.status);
+
+  return (
+    <View style={[styles.itemCard, highlighted ? styles.highlightCard : undefined]}>
+      <View style={styles.itemHeader}>
+        <View style={styles.itemIconWrap}>
+          <MaterialCommunityIcons name={meta.icon} size={18} color={meta.iconColor} />
+        </View>
+        <View style={styles.itemHeaderBody}>
+          <View style={styles.rowBetween}>
+            <Text style={styles.itemTitle}>{serviceTypeLabels[item.serviceType]}</Text>
+            <InfoPill label={statusLabels[item.status]} tone={meta.tone} icon={meta.icon} />
+          </View>
+          <Text style={styles.itemMeta}>预约时间 {item.scheduledTime}</Text>
+        </View>
+      </View>
+      <View style={styles.badgeRow}>
+        <InfoPill label={methodLabels[item.method]} icon="storefront-outline" />
+        {item.returnLocation ? <InfoPill label={item.returnLocation} icon="map-marker-outline" /> : null}
+      </View>
+      {item.bookTitle ? <Text style={styles.itemMeta}>关联图书 {item.bookTitle}</Text> : null}
+      {item.notes ? <Text style={styles.itemMeta}>备注：{item.notes}</Text> : null}
+      {action}
+    </View>
+  );
+}
+
+function StatCard({
+  icon,
+  value,
+  label,
+}: {
+  icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+  value: number;
+  label: string;
+}) {
+  return (
+    <View style={styles.statCard}>
+      <MaterialCommunityIcons name={icon} size={18} color={colors.primaryDark} />
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </View>
+  );
+}
+
+function getAppointmentMeta(status: ServiceAppointment["status"]) {
+  switch (status) {
+    case "PENDING":
+      return { tone: "warning" as const, icon: "clock-outline" as const, iconColor: colors.accent };
+    case "COMPLETED":
+      return { tone: "success" as const, icon: "check-circle-outline" as const, iconColor: colors.primaryDark };
+    case "CANCELLED":
+      return { tone: "neutral" as const, icon: "close-circle-outline" as const, iconColor: colors.textMuted };
+    default:
+      return { tone: "danger" as const, icon: "alert-circle-outline" as const, iconColor: colors.danger };
+  }
+}
+
 const styles = StyleSheet.create({
+  summaryCard: {
+    gap: spacing.md,
+  },
+  summaryHeader: {
+    flexDirection: "row",
+    gap: spacing.md,
+  },
+  summaryIconWrap: {
+    width: 60,
+    height: 60,
+    borderRadius: 22,
+    backgroundColor: colors.primarySoft,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  summaryBody: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  summaryTitle: {
+    color: colors.text,
+    fontSize: 22,
+    fontWeight: "800",
+  },
+  summaryText: {
+    color: colors.textMuted,
+    lineHeight: 22,
+  },
+  statRow: {
+    flexDirection: "row",
+    gap: spacing.sm,
+  },
+  statCard: {
+    flex: 1,
+    minWidth: 0,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceElevated,
+    padding: spacing.md,
+    gap: 4,
+  },
+  statValue: {
+    color: colors.primaryDark,
+    fontSize: 22,
+    fontWeight: "800",
+  },
+  statLabel: {
+    color: colors.textMuted,
+    fontSize: 12,
+  },
+  sectionCard: {
+    gap: spacing.md,
+  },
   optionWrap: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.sm,
   },
-  input: {
+  optionChip: {
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.sm,
-    backgroundColor: colors.white,
+    borderRadius: 999,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    color: colors.text,
+    paddingVertical: 10,
+    backgroundColor: colors.surface,
   },
-  textarea: {
-    minHeight: 100,
+  optionChipActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  optionChipText: {
+    color: colors.text,
+    fontWeight: "600",
+  },
+  optionChipActiveText: {
+    color: colors.white,
+    fontWeight: "700",
+  },
+  loanOptionList: {
+    gap: spacing.sm,
+  },
+  loanOptionCard: {
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.sm,
-    backgroundColor: colors.white,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    borderRadius: radius.md,
+    padding: spacing.sm,
+    backgroundColor: colors.surface,
+  },
+  loanOptionCardActive: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primarySoft,
+  },
+  loanOptionTitle: {
     color: colors.text,
-    textAlignVertical: "top",
+    fontWeight: "800",
+  },
+  loanOptionMeta: {
+    color: colors.textMuted,
+    marginTop: 2,
   },
   helperText: {
     color: colors.textMuted,
+    lineHeight: 21,
   },
   errorText: {
     color: colors.danger,
+    lineHeight: 21,
   },
   itemCard: {
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.sm,
-    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceElevated,
     padding: spacing.md,
-    gap: spacing.xs,
+    gap: spacing.sm,
   },
   highlightCard: {
     borderColor: colors.primary,
-    backgroundColor: "#f1faf7",
+    backgroundColor: colors.primarySoft,
+  },
+  itemHeader: {
+    flexDirection: "row",
+    gap: spacing.sm,
+  },
+  itemIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.surfaceAlt,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  itemHeaderBody: {
+    flex: 1,
+    gap: 4,
+  },
+  rowBetween: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: spacing.sm,
+  },
+  badgeRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.xs,
   },
   itemTitle: {
+    flex: 1,
     color: colors.text,
     fontSize: 16,
     fontWeight: "800",
+    lineHeight: 22,
   },
   itemMeta: {
     color: colors.textMuted,
+    lineHeight: 20,
   },
 });

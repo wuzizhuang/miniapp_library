@@ -3,7 +3,7 @@
     <view class="toolbar-spread">
       <view>
         <view class="section-title">通知中心</view>
-        <view class="section-subtitle">支持单条已读、全部已读、删除单条和按业务跳转。</view>
+        <view class="section-subtitle">管理通知消息，快速定位待办事项</view>
       </view>
       <view class="button-row">
         <view class="button-secondary" bindtap="markAllRead">全部已读</view>

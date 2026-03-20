@@ -15,6 +15,9 @@ Thumbs.db
 .agp/
 .gemini/
 
+# Temporary files
+tmp/
+
 # Miniapp
 miniapp/node_modules/
 miniapp/dist/

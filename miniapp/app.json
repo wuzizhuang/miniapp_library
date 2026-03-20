@@ -33,15 +33,21 @@
     "list": [
       {
         "pagePath": "pages/index/index",
-        "text": "首页"
+        "text": "首页",
+        "iconPath": "assets/tab_home.png",
+        "selectedIconPath": "assets/tab_home_active.png"
       },
       {
         "pagePath": "pages/books/index",
-        "text": "馆藏"
+        "text": "馆藏",
+        "iconPath": "assets/tab_books.png",
+        "selectedIconPath": "assets/tab_books_active.png"
       },
       {
         "pagePath": "pages/my/index",
-        "text": "我的"
+        "text": "我的",
+        "iconPath": "assets/tab_my.png",
+        "selectedIconPath": "assets/tab_my_active.png"
       }
     ]
   },

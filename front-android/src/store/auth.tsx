@@ -9,6 +9,7 @@ import {
   clearSessionStorage,
   getStoredRefreshToken,
   getStoredToken,
+  getStoredUser,
   setStoredRefreshToken,
   setStoredToken,
   setStoredUser,
@@ -54,9 +55,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setToken(storedToken);
         setUser(nextUser);
       } catch {
-        await clearSessionStorage();
-        setToken(null);
-        setUser(null);
+        const cachedUser = await getStoredUser();
+
+        if (cachedUser) {
+          setToken(storedToken);
+          setUser(cachedUser);
+        } else {
+          await clearSessionStorage();
+          setToken(null);
+          setUser(null);
+        }
       }
 
       setIsBootstrapping(false);

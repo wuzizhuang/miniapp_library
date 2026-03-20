@@ -172,8 +172,8 @@ npm run typecheck
 
 - 默认通过 `.env` 中的 `EXPO_PUBLIC_API_BASE_URL` 对接后端
 - 与 Web 端、小程序端复用同一套业务接口
-- debug 构建允许明文 HTTP，便于本地模拟器直连
-- release 构建建议只连接 HTTPS 接口
+- debug 与当前演示用的 release 构建都允许明文 HTTP，便于直接对接现有接口
+- 当公共接口不可用时，首页、图书页和图书详情页会自动回退到内置演示数据，方便展示基础页面结构
 
 ## 开发说明
 

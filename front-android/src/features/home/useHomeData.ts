@@ -39,7 +39,7 @@ export function useHomeData({ user, signOut }: UseHomeDataOptions) {
                 return null;
               }
 
-              throw error;
+              return null;
             })
           : Promise.resolve(null),
       ]);

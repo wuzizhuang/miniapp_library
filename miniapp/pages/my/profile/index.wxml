@@ -1,12 +1,12 @@
 <scroll-view class="page-shell" scroll-y>
   <view class="hero-card">
     <view class="hero-title">个人资料</view>
-    <view class="hero-subtitle">把常用资料维护得更稳一些。认证邮箱只做展示，不在小程序里直接修改。</view>
+    <view class="hero-subtitle">在这里维护你的个人资料与阅读兴趣标签</view>
   </view>
 
   <view class="panel">
     <view class="section-title">基础信息</view>
-    <view class="section-subtitle">资料变更会同步刷新当前登录用户信息。</view>
+    <view class="section-subtitle">修改后即时生效</view>
 
     <view wx:if="{{loading}}" class="empty-card">正在加载资料...</view>
     <view wx:elif="{{errorMessage}}" class="empty-card danger-text">

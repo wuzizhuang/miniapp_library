@@ -6,10 +6,12 @@ import {
   Text,
   View,
   type ScrollViewProps,
+  type StyleProp,
+  type ViewStyle,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { colors, radius, spacing } from "../theme";
+import { colors, radius, shadows, spacing } from "../theme";
 
 interface ScreenProps extends ScrollViewProps {
   title: string;
@@ -25,12 +27,14 @@ export function Screen({
   refreshing,
   onRefresh,
   children,
+  contentContainerStyle,
   ...props
 }: ScreenProps) {
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
+    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, contentContainerStyle]}
+        showsVerticalScrollIndicator={false}
         refreshControl={
           onRefresh ? (
             <RefreshControl
@@ -43,6 +47,9 @@ export function Screen({
         {...props}
       >
         <View style={styles.hero}>
+          <View style={styles.heroGlowPrimary} />
+          <View style={styles.heroGlowAccent} />
+          <Text style={styles.eyebrow}>SMART LIBRARY</Text>
           <Text style={styles.title}>{title}</Text>
           {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
         </View>
@@ -52,8 +59,27 @@ export function Screen({
   );
 }
 
-export function Card({ children }: { children: React.ReactNode }) {
-  return <View style={styles.card}>{children}</View>;
+export function Card({
+  children,
+  tone = "default",
+  style,
+}: {
+  children: React.ReactNode;
+  tone?: "default" | "tinted" | "muted";
+  style?: StyleProp<ViewStyle>;
+}) {
+  return (
+    <View
+      style={[
+        styles.card,
+        tone === "tinted" ? styles.cardTinted : undefined,
+        tone === "muted" ? styles.cardMuted : undefined,
+        style,
+      ]}
+    >
+      {children}
+    </View>
+  );
 }
 
 export function SectionTitle({ children }: { children: React.ReactNode }) {
@@ -79,36 +105,72 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: spacing.lg,
+    paddingBottom: spacing.xxl + 72,
     gap: spacing.md,
   },
   hero: {
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: colors.surfaceElevated,
     borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: spacing.lg,
     gap: spacing.xs,
+    overflow: "hidden",
+    ...shadows.card,
+  },
+  heroGlowPrimary: {
+    position: "absolute",
+    width: 180,
+    height: 180,
+    borderRadius: 999,
+    backgroundColor: colors.primarySoft,
+    top: -90,
+    right: -48,
+  },
+  heroGlowAccent: {
+    position: "absolute",
+    width: 100,
+    height: 100,
+    borderRadius: 999,
+    backgroundColor: colors.accentSoft,
+    bottom: -30,
+    right: 28,
+  },
+  eyebrow: {
+    color: colors.primaryDark,
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 1.2,
   },
   title: {
     color: colors.text,
-    fontSize: 30,
+    fontSize: 32,
     fontWeight: "800",
   },
   subtitle: {
     color: colors.textMuted,
     fontSize: 15,
-    lineHeight: 22,
+    lineHeight: 23,
   },
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceElevated,
     borderColor: colors.border,
     borderWidth: 1,
     borderRadius: radius.md,
     padding: spacing.md,
     gap: spacing.sm,
+    ...shadows.card,
+  },
+  cardTinted: {
+    backgroundColor: colors.surface,
+  },
+  cardMuted: {
+    backgroundColor: colors.surfaceAlt,
   },
   sectionTitle: {
     color: colors.text,
     fontSize: 20,
-    fontWeight: "700",
+    fontWeight: "800",
   },
   stateMuted: {
     color: colors.textMuted,
@@ -121,4 +183,3 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
 });
-

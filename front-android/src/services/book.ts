@@ -1,4 +1,5 @@
 import type { ApiBookDto, ApiCategoryDto, PageResponse } from "../types/api";
+import { getDemoBookById, getDemoCategories, searchDemoBooks } from "../demo/catalog";
 import type { Book, BookListQuery, CategoryOption, PagedResult } from "../types/book";
 import { request } from "./http";
 
@@ -63,19 +64,36 @@ export const bookService = {
       || sort !== "RELEVANCE",
     );
 
-    if (hasAdvancedFilters) {
+    try {
+      if (hasAdvancedFilters) {
+        const response = await request<PageResponse<ApiBookDto>>({
+          url: "/books/search",
+          query: {
+            keyword: keyword?.trim(),
+            title: title?.trim(),
+            author: author?.trim(),
+            publisher: publisher?.trim(),
+            categoryId,
+            availableOnly: query.availableOnly,
+            sort,
+            page,
+            size,
+          },
+        });
+
+        return {
+          ...mapPage(response),
+          items: (response.content ?? []).map(mapApiBook),
+        };
+      }
+
       const response = await request<PageResponse<ApiBookDto>>({
-        url: "/books/search",
+        url: "/books",
         query: {
-          keyword: keyword?.trim(),
-          title: title?.trim(),
-          author: author?.trim(),
-          publisher: publisher?.trim(),
-          categoryId,
-          availableOnly: query.availableOnly,
-          sort,
           page,
           size,
+          sortBy,
+          direction,
         },
       });
 
@@ -83,44 +101,44 @@ export const bookService = {
         ...mapPage(response),
         items: (response.content ?? []).map(mapApiBook),
       };
+    } catch {
+      return searchDemoBooks(query);
     }
-
-    const response = await request<PageResponse<ApiBookDto>>({
-      url: "/books",
-      query: {
-        page,
-        size,
-        sortBy,
-        direction,
-      },
-    });
-
-    return {
-      ...mapPage(response),
-      items: (response.content ?? []).map(mapApiBook),
-    };
   },
 
   async getBookById(bookId: number): Promise<Book> {
-    const response = await request<ApiBookDto>({
-      url: `/books/${bookId}`,
-    });
+    try {
+      const response = await request<ApiBookDto>({
+        url: `/books/${bookId}`,
+      });
 
-    return mapApiBook(response);
+      return mapApiBook(response);
+    } catch (error) {
+      const demoBook = getDemoBookById(bookId);
+      if (demoBook) {
+        return demoBook;
+      }
+
+      throw error;
+    }
   },
 
   async getCategories(): Promise<CategoryOption[]> {
-    const response = await request<PageResponse<ApiCategoryDto>>({
-      url: "/categories",
-      query: {
-        page: 0,
-        size: 100,
-      },
-    });
+    try {
+      const response = await request<PageResponse<ApiCategoryDto>>({
+        url: "/categories",
+        query: {
+          page: 0,
+          size: 100,
+        },
+      });
 
-    return (response.content ?? []).map((item) => ({
-      categoryId: item.categoryId,
-      name: item.name,
-    }));
+      return (response.content ?? []).map((item) => ({
+        categoryId: item.categoryId,
+        name: item.name,
+      }));
+    } catch {
+      return getDemoCategories();
+    }
   },
 };

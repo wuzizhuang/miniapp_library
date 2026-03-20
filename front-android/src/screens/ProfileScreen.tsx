@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { StyleSheet, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { Card, Screen, SectionTitle } from "../components/Screen";
-import { ActionButton, ErrorCard, InfoPill, LoginPromptCard } from "../components/Ui";
+import { ActionButton, ErrorCard, InfoPill, LoginPromptCard, TextField } from "../components/Ui";
 import type { RootStackParamList } from "../navigation/types";
 import { authService } from "../services/auth";
 import { getErrorMessage } from "../services/http";
@@ -102,7 +103,12 @@ export function ProfileScreen() {
 
   return (
     <Screen title="个人资料" subtitle="对应 Web 端 `/my/profile` 的资料编辑与概览统计。">
-      {loading ? <Card><Text style={styles.helperText}>正在加载个人资料...</Text></Card> : null}
+      {loading ? (
+        <Card tone="muted">
+          <Text style={styles.helperText}>正在加载个人资料...</Text>
+        </Card>
+      ) : null}
+
       {!loading && errorMessage ? (
         <ErrorCard
           message={errorMessage}
@@ -114,48 +120,60 @@ export function ProfileScreen() {
 
       {!loading && profile ? (
         <>
-          <Card>
-            <SectionTitle>账户信息</SectionTitle>
-            <Text style={styles.name}>{profile.fullName || profile.username}</Text>
-            <View style={styles.badgeRow}>
-              <InfoPill label={profile.role} tone="primary" />
-              {profile.identityType ? <InfoPill label={profile.identityType} /> : null}
+          <Card tone="tinted" style={styles.heroCard}>
+            <View style={styles.heroHeader}>
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>{(profile.fullName || profile.username).slice(0, 1).toUpperCase()}</Text>
+              </View>
+              <View style={styles.heroBody}>
+                <Text style={styles.name}>{profile.fullName || profile.username}</Text>
+                <Text style={styles.helperText}>用户名 {profile.username}</Text>
+                <View style={styles.badgeRow}>
+                  <InfoPill label={profile.role} tone="primary" icon="shield-account-outline" />
+                  {profile.identityType ? <InfoPill label={profile.identityType} icon="badge-account-outline" /> : null}
+                </View>
+              </View>
             </View>
-            <Text style={styles.helperText}>用户名 {profile.username}</Text>
+            <View style={styles.metricRow}>
+              <MetricCard icon="cash" value={`¥${pendingFineTotal.toFixed(2)}`} label="待缴罚款" />
+              <MetricCard icon="account-group-outline" value={profile.department || "--"} label="院系" />
+            </View>
           </Card>
 
-          <Card>
+          <Card style={styles.sectionCard}>
             <SectionTitle>编辑资料</SectionTitle>
-            <TextInput
+            <TextField
+              label="姓名"
+              icon="account-outline"
               value={form.fullName || ""}
               onChangeText={(value) => setForm((current) => ({ ...current, fullName: value }))}
               placeholder="姓名"
-              placeholderTextColor={colors.textMuted}
-              style={styles.input}
             />
-            <TextInput
+            <TextField
+              label="邮箱"
+              icon="email-outline"
               value={form.email || ""}
               onChangeText={(value) => setForm((current) => ({ ...current, email: value }))}
               autoCapitalize="none"
               placeholder="邮箱"
-              placeholderTextColor={colors.textMuted}
-              style={styles.input}
             />
-            <TextInput
+            <TextField
+              label="院系"
+              icon="office-building-outline"
               value={form.department || ""}
               onChangeText={(value) => setForm((current) => ({ ...current, department: value }))}
               placeholder="院系"
-              placeholderTextColor={colors.textMuted}
-              style={styles.input}
             />
-            <TextInput
+            <TextField
+              label="专业"
+              icon="school-outline"
               value={form.major || ""}
               onChangeText={(value) => setForm((current) => ({ ...current, major: value }))}
               placeholder="专业"
-              placeholderTextColor={colors.textMuted}
-              style={styles.input}
             />
-            <TextInput
+            <TextField
+              label="入学年份"
+              icon="calendar-range"
               value={form.enrollmentYear?.toString() || ""}
               onChangeText={(value) =>
                 setForm((current) => ({
@@ -165,10 +183,11 @@ export function ProfileScreen() {
               }
               keyboardType="numeric"
               placeholder="入学年份"
-              placeholderTextColor={colors.textMuted}
-              style={styles.input}
             />
-            <TextInput
+            <TextField
+              label="兴趣标签"
+              hint="使用逗号分隔多个标签"
+              icon="tag-multiple-outline"
               value={(form.interestTags ?? []).join(", ")}
               onChangeText={(value) =>
                 setForm((current) => ({
@@ -180,28 +199,38 @@ export function ProfileScreen() {
                 }))
               }
               placeholder="兴趣标签，逗号分隔"
-              placeholderTextColor={colors.textMuted}
-              style={styles.input}
             />
-            <Text style={styles.helperText}>
-              身份类型由管理员统一分配，移动端仅允许编辑个人资料字段。
-            </Text>
+            <Text style={styles.helperText}>身份类型由管理员统一分配，移动端仅允许编辑个人资料字段。</Text>
             <ActionButton
               label={saving ? "保存中..." : "保存资料"}
+              icon="content-save-outline"
               onPress={() => {
                 void handleSave();
               }}
               disabled={saving}
             />
           </Card>
-
-          <Card>
-            <SectionTitle>快捷概览</SectionTitle>
-            <Text style={styles.helperText}>待缴罚款总额 ¥{pendingFineTotal.toFixed(2)}</Text>
-          </Card>
         </>
       ) : null}
     </Screen>
+  );
+}
+
+function MetricCard({
+  icon,
+  value,
+  label,
+}: {
+  icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+  value: string;
+  label: string;
+}) {
+  return (
+    <View style={styles.metricCard}>
+      <MaterialCommunityIcons name={icon} size={18} color={colors.primaryDark} />
+      <Text style={styles.metricValue}>{value}</Text>
+      <Text style={styles.metricLabel}>{label}</Text>
+    </View>
   );
 }
 
@@ -210,9 +239,34 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     lineHeight: 21,
   },
+  heroCard: {
+    gap: spacing.md,
+  },
+  heroHeader: {
+    flexDirection: "row",
+    gap: spacing.md,
+    alignItems: "center",
+  },
+  avatar: {
+    width: 72,
+    height: 72,
+    borderRadius: 24,
+    backgroundColor: colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarText: {
+    color: colors.white,
+    fontSize: 30,
+    fontWeight: "800",
+  },
+  heroBody: {
+    flex: 1,
+    gap: 4,
+  },
   name: {
     color: colors.text,
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "800",
   },
   badgeRow: {
@@ -220,13 +274,30 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: spacing.xs,
   },
-  input: {
+  metricRow: {
+    flexDirection: "row",
+    gap: spacing.sm,
+  },
+  metricCard: {
+    flex: 1,
+    minWidth: 0,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.sm,
-    backgroundColor: colors.white,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    color: colors.text,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceElevated,
+    padding: spacing.md,
+    gap: 4,
+  },
+  metricValue: {
+    color: colors.primaryDark,
+    fontSize: 18,
+    fontWeight: "800",
+  },
+  metricLabel: {
+    color: colors.textMuted,
+    fontSize: 12,
+  },
+  sectionCard: {
+    gap: spacing.md,
   },
 });

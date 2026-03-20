@@ -1,7 +1,7 @@
 <scroll-view class="page-shell" scroll-y scroll-into-view="{{highlightAnchor}}">
   <view class="hero-card">
     <view class="hero-title">服务预约</view>
-    <view class="hero-subtitle">预约时间改成了更适合小程序的选择方式，避免手动输入时间串。</view>
+    <view class="hero-subtitle">在线预约咨询、取书及图书馆各项服务</view>
   </view>
 
   <view class="panel">

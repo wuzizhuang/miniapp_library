@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { Card, Screen, SectionTitle } from "../components/Screen";
-import { ActionButton, CoverImage, EmptyCard, ErrorCard, InfoPill, LoginPromptCard } from "../components/Ui";
+import { ActionButton, CoverImage, EmptyCard, ErrorCard, InfoPill, LoginPromptCard, TextField } from "../components/Ui";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import type { RootStackParamList } from "../navigation/types";
 import { authService } from "../services/auth";
@@ -187,15 +188,33 @@ export function RecommendationsScreen() {
 
   return (
     <Screen title="推荐动态" subtitle="对应 Web 端 `/my/recommendations` 的推荐流、关注和点赞。">
+      <Card tone="tinted" style={styles.summaryCard}>
+        <View style={styles.summaryHeader}>
+          <View style={styles.summaryIconWrap}>
+            <MaterialCommunityIcons name="star-box-outline" size={26} color={colors.primaryDark} />
+          </View>
+          <View style={styles.summaryBody}>
+            <InfoPill label="READER FEED" tone="primary" icon="star-outline" />
+            <Text style={styles.summaryTitle}>发现老师和读者的荐书内容</Text>
+            <Text style={styles.summaryText}>你可以浏览、点赞、关注推荐人；教师或管理员还能直接发布荐书动态。</Text>
+          </View>
+        </View>
+        <View style={styles.statRow}>
+          <StatCard icon="text-box-check-outline" value={posts.length} label="当前动态" />
+          <StatCard icon="account-check-outline" value={posts.filter((item) => item.followingAuthor).length} label="已关注" />
+          <StatCard icon="heart-outline" value={posts.filter((item) => item.likedByMe).length} label="已点赞" />
+        </View>
+      </Card>
+
       {canPublish ? (
-        <Card>
+        <Card style={styles.sectionCard}>
           <SectionTitle>发布推荐</SectionTitle>
-          <TextInput
+          <TextField
+            label="图书检索"
+            icon="magnify"
             value={bookKeyword}
             onChangeText={setBookKeyword}
             placeholder="检索要推荐的图书"
-            placeholderTextColor={colors.textMuted}
-            style={styles.input}
           />
           {bookOptions.length > 0 ? (
             <View style={styles.optionWrap}>
@@ -211,17 +230,28 @@ export function RecommendationsScreen() {
               ))}
             </View>
           ) : null}
-          <TextInput
+          {selectedBook ? (
+            <View style={styles.selectedBookCard}>
+              <CoverImage title={selectedBook.title} uri={selectedBook.coverUrl} />
+              <View style={styles.selectedBookBody}>
+                <Text style={styles.optionTitle}>{selectedBook.title}</Text>
+                <Text style={styles.optionMeta}>{selectedBook.authorNames.join(", ") || "未知作者"}</Text>
+              </View>
+            </View>
+          ) : null}
+          <TextField
+            label="推荐理由"
+            icon="text-box-outline"
             value={content}
             onChangeText={setContent}
             multiline
             numberOfLines={4}
             placeholder="推荐理由"
-            placeholderTextColor={colors.textMuted}
-            style={styles.textarea}
           />
+          {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
           <ActionButton
             label={submitting ? "发布中..." : "发布推荐"}
+            icon="send-outline"
             onPress={() => {
               void handleCreate();
             }}
@@ -234,21 +264,27 @@ export function RecommendationsScreen() {
         </Card>
       )}
 
-      <Card>
+      <Card style={styles.sectionCard}>
         <SectionTitle>筛选范围</SectionTitle>
         <View style={styles.scopeRow}>
           {scopes.map((item) => (
-            <ActionButton
+            <Pressable
               key={item}
-              label={scopeLabelMap[item]}
+              style={[styles.scopeChip, scope === item ? styles.scopeChipActive : undefined]}
               onPress={() => setScope(item)}
-              tone={scope === item ? "primary" : "secondary"}
-            />
+            >
+              <Text style={scope === item ? styles.scopeChipActiveText : styles.scopeChipText}>{scopeLabelMap[item]}</Text>
+            </Pressable>
           ))}
         </View>
       </Card>
 
-      {loading ? <Card><Text style={styles.helperText}>正在加载推荐动态...</Text></Card> : null}
+      {loading ? (
+        <Card tone="muted">
+          <Text style={styles.helperText}>正在加载推荐动态...</Text>
+        </Card>
+      ) : null}
+
       {!loading && errorMessage ? (
         <ErrorCard
           message={errorMessage}
@@ -259,7 +295,7 @@ export function RecommendationsScreen() {
       ) : null}
 
       {!loading && !errorMessage ? (
-        <Card>
+        <Card style={styles.sectionCard}>
           <SectionTitle>动态列表</SectionTitle>
           {posts.length === 0 ? (
             <EmptyCard title="当前没有推荐动态" />
@@ -274,22 +310,32 @@ export function RecommendationsScreen() {
               >
                 <View style={styles.rowBetween}>
                   <View style={styles.postHeader}>
-                    <Text style={styles.postAuthor}>{post.authorFullName || post.authorUsername}</Text>
-                    <Text style={styles.optionMeta}>{post.createTime.slice(0, 16).replace("T", " ")}</Text>
+                    <View style={styles.authorAvatar}>
+                      <Text style={styles.authorAvatarText}>{(post.authorFullName || post.authorUsername).slice(0, 1)}</Text>
+                    </View>
+                    <View style={styles.postHeaderBody}>
+                      <Text style={styles.postAuthor}>{post.authorFullName || post.authorUsername}</Text>
+                      <Text style={styles.optionMeta}>{post.createTime.slice(0, 16).replace("T", " ")}</Text>
+                    </View>
                   </View>
-                  <InfoPill label={post.authorIdentityType || "推荐人"} tone="primary" />
+                  <InfoPill label={post.authorIdentityType || "推荐人"} tone="primary" icon="badge-account-outline" />
                 </View>
+
                 <View style={styles.bookRow}>
                   <CoverImage title={post.bookTitle} uri={post.bookCoverUrl} />
                   <View style={styles.bookBody}>
                     <Text style={styles.optionTitle}>{post.bookTitle}</Text>
                     <Text style={styles.optionMeta}>{post.bookIsbn || "-"}</Text>
+                    {post.authorDepartment ? <Text style={styles.optionMeta}>{post.authorDepartment}</Text> : null}
                   </View>
                 </View>
+
                 <Text style={styles.postContent}>{post.content}</Text>
+
                 <View style={styles.actionRow}>
                   <ActionButton
                     label={actingId === post.postId ? "处理中..." : post.likedByMe ? `取消点赞 ${post.likeCount}` : `点赞 ${post.likeCount}`}
+                    icon={post.likedByMe ? "heart" : "heart-outline"}
                     onPress={() => {
                       void handleLike(post);
                     }}
@@ -299,6 +345,7 @@ export function RecommendationsScreen() {
                   {post.authorUserId !== user.userId ? (
                     <ActionButton
                       label={post.followingAuthor ? "已关注" : "关注老师"}
+                      icon={post.followingAuthor ? "account-check-outline" : "account-plus-outline"}
                       onPress={() => {
                         void handleFollow(post);
                       }}
@@ -309,6 +356,7 @@ export function RecommendationsScreen() {
                   {post.canManage ? (
                     <ActionButton
                       label="删除"
+                      icon="trash-can-outline"
                       onPress={() => {
                         void handleDelete(post.postId);
                       }}
@@ -318,6 +366,7 @@ export function RecommendationsScreen() {
                   ) : null}
                   <ActionButton
                     label="查看图书"
+                    icon="book-open-variant"
                     onPress={() => navigation.navigate("BookDetail", { bookId: post.bookId })}
                     tone="secondary"
                   />
@@ -331,30 +380,86 @@ export function RecommendationsScreen() {
   );
 }
 
+function StatCard({
+  icon,
+  value,
+  label,
+}: {
+  icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+  value: number;
+  label: string;
+}) {
+  return (
+    <View style={styles.statCard}>
+      <MaterialCommunityIcons name={icon} size={18} color={colors.primaryDark} />
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  summaryCard: {
+    gap: spacing.md,
+  },
+  summaryHeader: {
+    flexDirection: "row",
+    gap: spacing.md,
+  },
+  summaryIconWrap: {
+    width: 60,
+    height: 60,
+    borderRadius: 22,
+    backgroundColor: colors.primarySoft,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  summaryBody: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  summaryTitle: {
+    color: colors.text,
+    fontSize: 22,
+    fontWeight: "800",
+  },
+  summaryText: {
+    color: colors.textMuted,
+    lineHeight: 22,
+  },
+  statRow: {
+    flexDirection: "row",
+    gap: spacing.sm,
+  },
+  statCard: {
+    flex: 1,
+    minWidth: 0,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceElevated,
+    padding: spacing.md,
+    gap: 4,
+  },
+  statValue: {
+    color: colors.primaryDark,
+    fontSize: 22,
+    fontWeight: "800",
+  },
+  statLabel: {
+    color: colors.textMuted,
+    fontSize: 12,
+  },
+  sectionCard: {
+    gap: spacing.md,
+  },
   helperText: {
     color: colors.textMuted,
     lineHeight: 21,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.sm,
-    backgroundColor: colors.white,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    color: colors.text,
-  },
-  textarea: {
-    minHeight: 100,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.sm,
-    backgroundColor: colors.white,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    color: colors.text,
-    textAlignVertical: "top",
+  errorText: {
+    color: colors.danger,
+    lineHeight: 21,
   },
   optionWrap: {
     gap: spacing.sm,
@@ -362,32 +467,68 @@ const styles = StyleSheet.create({
   optionCard: {
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.sm,
+    borderRadius: radius.md,
     padding: spacing.md,
     backgroundColor: colors.surface,
   },
+  selectedBookCard: {
+    flexDirection: "row",
+    gap: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    padding: spacing.md,
+  },
+  selectedBookBody: {
+    flex: 1,
+    justifyContent: "center",
+    gap: 4,
+  },
   highlightCard: {
     borderColor: colors.primary,
-    backgroundColor: "#f1faf7",
+    backgroundColor: colors.primarySoft,
   },
   optionTitle: {
     color: colors.text,
     fontSize: 15,
     fontWeight: "800",
+    lineHeight: 21,
   },
   optionMeta: {
     color: colors.textMuted,
+    lineHeight: 20,
   },
   scopeRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.sm,
   },
+  scopeChip: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 999,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 10,
+    backgroundColor: colors.surface,
+  },
+  scopeChipActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  scopeChipText: {
+    color: colors.text,
+    fontWeight: "600",
+  },
+  scopeChipActiveText: {
+    color: colors.white,
+    fontWeight: "700",
+  },
   postCard: {
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.sm,
-    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceElevated,
     padding: spacing.md,
     gap: spacing.sm,
   },
@@ -398,8 +539,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   postHeader: {
+    flexDirection: "row",
+    gap: spacing.sm,
     flex: 1,
-    gap: 4,
+    alignItems: "center",
+  },
+  authorAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.primarySoft,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  authorAvatarText: {
+    color: colors.primaryDark,
+    fontWeight: "800",
+  },
+  postHeaderBody: {
+    flex: 1,
+    gap: 2,
   },
   postAuthor: {
     color: colors.text,

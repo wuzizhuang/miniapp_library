@@ -1,10 +1,16 @@
 <scroll-view class="page-shell" scroll-y>
   <view class="hero-card">
-    <view class="hero-title">让馆藏与读者更高效地相遇</view>
+    <view wx:if="{{user}}" class="hero-title">你好，{{user.fullName}}</view>
+    <view wx:else class="hero-title">欢迎来到智慧图书馆</view>
     <view class="hero-subtitle">
-      当前首页、馆藏、详情和我的主链路都直接联调后端接口。
+      智慧馆藏检索 · 借阅预约 · 个人中心，一站式读者服务
     </view>
-    <view class="button-row">
+    <view class="index-info-row" style="margin-top: 16rpx;">
+      <view class="index-info-item">📚 馆藏丰富</view>
+      <view class="index-info-item">🕗 8:00 – 22:00</view>
+      <view class="index-info-item">📱 随时查阅</view>
+    </view>
+    <view class="button-row" style="margin-top: 20rpx;">
       <view wx:if="{{!user}}" class="button-primary" bindtap="goLogin">进入登录</view>
       <view wx:else class="button-primary" bindtap="goBooks">浏览馆藏</view>
       <view wx:if="{{user}}" class="button-ghost" bindtap="goMy">打开我的</view>

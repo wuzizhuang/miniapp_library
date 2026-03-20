@@ -14,7 +14,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PublicAiChatResponseDto {
     private String reply;
-    private String responseId;
     private String provider;
     private String model;
 }

@@ -1,14 +1,15 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, TextInput } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { StyleSheet, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { Card, Screen, StateText } from "../components/Screen";
-import { ActionButton } from "../components/Ui";
+import { ActionButton, InfoPill, TextField } from "../components/Ui";
 import type { RootStackParamList } from "../navigation/types";
 import { authService } from "../services/auth";
 import { getErrorMessage } from "../services/http";
-import { colors, radius, spacing } from "../theme";
+import { colors, spacing } from "../theme";
 
 export function ForgotPasswordScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -22,7 +23,7 @@ export function ForgotPasswordScreen() {
     setMessage("");
 
     if (!value.trim()) {
-      setErrorMessage("请输入用户名或邮箱");
+      setErrorMessage("请输入注册邮箱");
       return;
     }
 
@@ -40,17 +41,29 @@ export function ForgotPasswordScreen() {
   }
 
   return (
-    <Screen title="找回密码" subtitle="对应 Web 端 `/auth/forgot-password` 语义。">
-      <Card>
-        <Text style={styles.label}>邮箱</Text>
-        <TextInput
+    <Screen title="找回密码" subtitle="对应 Web 端 `/auth/forgot-password` 的找回流程语义。">
+      <Card tone="tinted" style={styles.introCard}>
+        <View style={styles.introRow}>
+          <View style={styles.iconWrap}>
+            <MaterialCommunityIcons name="email-check-outline" size={28} color={colors.primaryDark} />
+          </View>
+          <View style={styles.introBody}>
+            <InfoPill label="邮件找回" tone="warning" icon="email-fast-outline" />
+            <Text style={styles.introTitle}>重置账号访问权限</Text>
+            <Text style={styles.introText}>输入注册邮箱后，系统会按后端配置继续密码找回流程。</Text>
+          </View>
+        </View>
+      </Card>
+
+      <Card style={styles.formCard}>
+        <TextField
+          label="邮箱"
+          icon="email-outline"
           value={value}
           onChangeText={setValue}
           autoCapitalize="none"
           keyboardType="email-address"
           placeholder="请输入注册邮箱"
-          placeholderTextColor={colors.textMuted}
-          style={styles.input}
         />
 
         {errorMessage ? <StateText tone="danger">{errorMessage}</StateText> : null}
@@ -58,6 +71,7 @@ export function ForgotPasswordScreen() {
 
         <ActionButton
           label={submitting ? "提交中..." : "发送找回请求"}
+          icon="send-outline"
           onPress={() => {
             void handleSubmit();
           }}
@@ -66,6 +80,7 @@ export function ForgotPasswordScreen() {
 
         <ActionButton
           label="返回登录"
+          icon="arrow-left"
           onPress={() => navigation.goBack()}
           tone="secondary"
         />
@@ -75,18 +90,35 @@ export function ForgotPasswordScreen() {
 }
 
 const styles = StyleSheet.create({
-  label: {
-    color: colors.text,
-    fontSize: 15,
-    fontWeight: "700",
+  introCard: {
+    gap: spacing.md,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.white,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+  introRow: {
+    flexDirection: "row",
+    gap: spacing.md,
+  },
+  iconWrap: {
+    width: 60,
+    height: 60,
+    borderRadius: 22,
+    backgroundColor: colors.accentSoft,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  introBody: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  introTitle: {
     color: colors.text,
+    fontSize: 22,
+    fontWeight: "800",
+  },
+  introText: {
+    color: colors.textMuted,
+    lineHeight: 22,
+  },
+  formCard: {
+    gap: spacing.md,
   },
 });
