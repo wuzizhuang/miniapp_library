@@ -9,6 +9,10 @@ import { toast } from "sonner";
 import DefaultLayout from "@/components/layouts/default";
 import { authService, parseApiError } from "@/services/api/authService";
 
+/**
+ * 重置密码页。
+ * 负责校验找回令牌，并在校验通过后提交新密码。
+ */
 export default function ResetPasswordPage() {
   const router = useRouter();
   const token = useMemo(
@@ -32,6 +36,7 @@ export default function ResetPasswordPage() {
       return;
     }
 
+    // 缺少 token 时直接走失效态提示，不再触发无意义的校验请求。
     if (!token) {
       setIsChecking(false);
       setIsValidToken(false);
@@ -82,6 +87,7 @@ export default function ResetPasswordPage() {
 
       setSuccess(true);
       toast.success(result.message);
+      // 给成功提示留出短暂可见时间，再回到登录页。
       setTimeout(() => {
         void router.push("/auth/login");
       }, 1200);

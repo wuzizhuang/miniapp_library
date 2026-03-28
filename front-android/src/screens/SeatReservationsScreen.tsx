@@ -1,3 +1,19 @@
+/**
+ * @file 座位预约页面
+ * @description 馆内自习与研讨座位的查询、预约和取消。
+ *
+ *   页面结构：
+ *   1. 概要卡片 - 可预约/当前预约/历史数量统计
+ *   2. 预约条件表单 - 开始/结束时间、楼层、分区、备注
+ *   3. 可选座位列表 - 显示座位信息（类型、电源、靠窗）+ 直接预约按钮
+ *   4. 我的当前预约 - 支持取消
+ *   5. 历史预约 - 只读展示
+ *
+ *   座位状态：可用 / 停用 / 冲突
+ *   预约状态：ACTIVE / COMPLETED / CANCELLED / MISSED
+ *
+ *   事件驱动：监听 seatReservations / notifications 自动刷新
+ */
 import React, { useEffect, useMemo, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { View, StyleSheet, Text } from "react-native";
@@ -18,10 +34,12 @@ import { useAuth } from "../store/auth";
 import { colors, radius, spacing } from "../theme";
 import { emitAppEvent, subscribeAppEvent } from "../utils/events";
 
+/** 数字补零工具函数 */
 function padTwoDigits(value: number): string {
   return String(value).padStart(2, "0");
 }
 
+/** 格式化 Date 为 ISO 输入框用字符串 */
 function formatDateTimeInput(date: Date): string {
   return [
     date.getFullYear(),
@@ -31,6 +49,7 @@ function formatDateTimeInput(date: Date): string {
     + `T${padTwoDigits(date.getHours())}:${padTwoDigits(date.getMinutes())}`;
 }
 
+/** 生成默认开始时间（下一个整点） */
 function buildDefaultStartTime(): string {
   const next = new Date();
   next.setMinutes(0, 0, 0);
@@ -38,6 +57,7 @@ function buildDefaultStartTime(): string {
   return formatDateTimeInput(next);
 }
 
+/** 生成默认结束时间（+3 小时） */
 function buildDefaultEndTime(): string {
   const next = new Date();
   next.setMinutes(0, 0, 0);
@@ -45,6 +65,7 @@ function buildDefaultEndTime(): string {
   return formatDateTimeInput(next);
 }
 
+/** 座位可用状态色调 */
 function getSeatStatusTone(item: SeatItem): "success" | "warning" | "danger" {
   if (item.available) {
     return "success";
@@ -53,6 +74,7 @@ function getSeatStatusTone(item: SeatItem): "success" | "warning" | "danger" {
   return item.status === "UNAVAILABLE" ? "danger" : "warning";
 }
 
+/** 预约状态色调 */
 function getReservationTone(
   status: SeatReservationItem["status"],
 ): "primary" | "warning" | "success" | "danger" {
@@ -146,10 +168,12 @@ export function SeatReservationsScreen() {
     [seats],
   );
 
+  /** 执行座位查询 */
   async function handleSearch() {
     await loadData(true);
   }
 
+  /** 提交座位预约 */
   async function handleReserve(seatId: number) {
     if (!filters.startTime || !filters.endTime) {
       setErrorMessage("请先填写预约开始和结束时间");
@@ -175,6 +199,7 @@ export function SeatReservationsScreen() {
     }
   }
 
+  /** 取消座位预约 */
   async function handleCancel(reservationId: number) {
     try {
       setActingReservationId(reservationId);
@@ -213,7 +238,7 @@ export function SeatReservationsScreen() {
             <MaterialCommunityIcons name="seat-outline" size={26} color={colors.primaryDark} />
           </View>
           <View style={styles.summaryBody}>
-            <InfoPill label="SEAT BOOKING" tone="primary" icon="calendar-clock-outline" />
+            <InfoPill label="座位预约" tone="primary" icon="calendar-clock-outline" />
             <Text style={styles.summaryTitle}>找到合适的自习位置</Text>
             <Text style={styles.summaryText}>按时间、楼层和分区筛选座位，再直接在当前页面完成预约与取消。</Text>
           </View>
@@ -394,6 +419,7 @@ export function SeatReservationsScreen() {
   );
 }
 
+/** 座位预约卡片组件 */
 function ReservationCard({
   item,
   highlighted,
@@ -413,7 +439,7 @@ function ReservationCard({
           <View style={styles.rowBetween}>
             <Text style={styles.itemTitle}>{item.seatCode}</Text>
             <InfoPill
-              label={item.status}
+              label={{ ACTIVE: "进行中", COMPLETED: "已完成", CANCELLED: "已取消", MISSED: "已失约" }[item.status] || item.status}
               tone={getReservationTone(item.status)}
               icon={item.status === "ACTIVE" ? "calendar-check-outline" : item.status === "COMPLETED" ? "check-circle-outline" : item.status === "CANCELLED" ? "close-circle-outline" : "alert-circle-outline"}
             />

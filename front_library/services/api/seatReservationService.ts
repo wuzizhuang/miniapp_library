@@ -47,6 +47,9 @@ export interface GetSeatsParams {
 
 // ─── 工具函数 ────────────────────────────────────────────────
 
+/**
+ * 统一整理座位 DTO。
+ */
 function mapSeat(dto: ApiSeatDto): SeatItem {
   return {
     seatId: dto.seatId,
@@ -64,6 +67,9 @@ function mapSeat(dto: ApiSeatDto): SeatItem {
   };
 }
 
+/**
+ * 统一整理座位预约 DTO。
+ */
 function mapReservation(dto: ApiSeatReservationDto): SeatReservationItem {
   return {
     reservationId: dto.reservationId,
@@ -87,6 +93,9 @@ function mapReservation(dto: ApiSeatReservationDto): SeatReservationItem {
 
 // ─── seatReservationService ──────────────────────────────────
 
+/**
+ * 座位预约接口服务。
+ */
 export const seatReservationService = {
   /**
    * 查询可用座位

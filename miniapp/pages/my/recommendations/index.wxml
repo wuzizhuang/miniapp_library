@@ -3,16 +3,20 @@
     <view class="section-title">发布推荐动态</view>
     <view class="field-stack">
       <input class="text-input" placeholder="搜索要推荐的图书" value="{{bookKeyword}}" bindinput="onBookKeywordInput" />
+      <view wx:if="{{searchLoading}}" class="muted-text">正在搜索图书...</view>
       <view wx:if="{{selectedBook}}" class="chip-primary">已选图书：{{selectedBook.title}}</view>
       <view wx:for="{{searchResults}}" wx:key="bookId" class="list-card" data-book-id="{{item.bookId}}" bindtap="selectBook">
-        <image class="book-cover book-cover--small" src="{{item.coverUrl}}" mode="aspectFill"></image>
+        <image wx:if="{{item.coverUrl}}" class="book-cover book-cover--small" src="{{item.coverUrl}}" mode="aspectFill"></image>
+        <view wx:else class="book-cover book-cover--small shelf-cover-placeholder">暂无封面</view>
         <view class="book-info">
           <view class="book-title">{{item.title}}</view>
           <view class="book-meta">{{item.authorNames.join(' / ')}}</view>
         </view>
       </view>
       <textarea class="textarea" placeholder="写下推荐理由或阅读观察" value="{{content}}" bindinput="onContentInput"></textarea>
-      <view class="button-primary" bindtap="createPost">{{submitting ? '发布中...' : '发布动态'}}</view>
+      <view class="{{submitting ? 'button-primary is-disabled' : 'button-primary'}}" bindtap="createPost">
+        {{submitting ? '发布中...' : '发布动态'}}
+      </view>
     </view>
   </view>
 
@@ -48,7 +52,8 @@
         <view class="chip">{{item.authorIdentityType}}</view>
       </view>
       <view class="list-card" data-book-id="{{item.bookId}}" bindtap="openBook">
-        <image class="book-cover book-cover--small" src="{{item.bookCoverUrl}}" mode="aspectFill"></image>
+        <image wx:if="{{item.bookCoverUrl}}" class="book-cover book-cover--small" src="{{item.bookCoverUrl}}" mode="aspectFill"></image>
+        <view wx:else class="book-cover book-cover--small shelf-cover-placeholder">暂无封面</view>
         <view class="book-info">
           <view class="book-title">{{item.bookTitle}}</view>
           <view class="book-meta">{{item.bookIsbn}}</view>
@@ -56,13 +61,15 @@
       </view>
       <view class="feed-content">{{item.content}}</view>
       <view class="inline-actions">
-        <view class="button-secondary" bindtap="toggleLike" data-post-id="{{item.postId}}">
-          {{item.likedByMe ? '取消点赞' : '点赞'}} {{item.likeCount}}
+        <view class="{{busyActionKey === 'like-' + item.postId ? 'button-secondary is-disabled' : 'button-secondary'}}" bindtap="toggleLike" data-post-id="{{item.postId}}">
+          {{busyActionKey === 'like-' + item.postId ? '处理中...' : (item.likedByMe ? '取消点赞' : '点赞') + ' ' + item.likeCount}}
         </view>
-        <view class="button-ghost" bindtap="toggleFollow" data-post-id="{{item.postId}}">
-          {{item.followingAuthor ? '取消关注' : '关注作者'}}
+        <view class="{{busyActionKey === 'follow-' + item.postId ? 'button-ghost is-disabled' : 'button-ghost'}}" bindtap="toggleFollow" data-post-id="{{item.postId}}">
+          {{busyActionKey === 'follow-' + item.postId ? '处理中...' : (item.followingAuthor ? '取消关注' : '关注作者')}}
         </view>
-        <view wx:if="{{item.canManage}}" class="button-danger" bindtap="deletePost" data-post-id="{{item.postId}}">删除</view>
+        <view wx:if="{{item.canManage}}" class="{{busyActionKey === 'delete-' + item.postId ? 'button-danger is-disabled' : 'button-danger'}}" bindtap="deletePost" data-post-id="{{item.postId}}">
+          {{busyActionKey === 'delete-' + item.postId ? '处理中...' : '删除'}}
+        </view>
       </view>
     </view>
   </view>

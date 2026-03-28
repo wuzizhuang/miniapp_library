@@ -1,22 +1,42 @@
+/**
+ * @file 通知服务
+ * @description 封装通知相关的 API 调用和通知路由解析：
+ *
+ *   API 方法：
+ *   - getNotificationsPage：分页获取通知列表
+ *   - getUnreadCount：获取未读通知数量
+ *   - markRead：标记单条通知为已读
+ *   - markAllRead：标记全部通知为已读
+ *   - deleteNotification：删除单条通知
+ *   - deleteAllRead：删除所有已读通知
+ *
+ *   路由解析（resolveNotificationTarget）：
+ *   根据通知的 targetType / routeHint / type / 内容关键词
+ *   推断用户点击通知后应跳转到的目标屏幕及参数。
+ *   解析优先级：targetType > routeHint > type > 内容关键词推断
+ */
+
 import type { ApiNotificationDto, ApiNotificationType, PageResponse } from "../types/api";
 import { request } from "./http";
 
+/** 前端通知视图模型 */
 export interface NotificationItem {
-  notificationId: number;
-  title: string;
-  content: string;
-  type: ApiNotificationType;
-  isRead: boolean;
-  createTime: string;
-  relatedEntityId?: number;
-  targetType?: string;
-  targetId?: string;
-  routeHint?: string;
-  businessKey?: string;
+  notificationId: number;       // 通知 ID
+  title: string;                // 标题
+  content: string;              // 内容
+  type: ApiNotificationType;    // 通知类型枚举
+  isRead: boolean;              // 是否已读
+  createTime: string;           // 创建时间
+  relatedEntityId?: number;     // 关联实体 ID（旧版兼容）
+  targetType?: string;          // 目标类型（BOOK / LOAN / RESERVATION 等）
+  targetId?: string;            // 目标 ID
+  routeHint?: string;           // 路由提示（Web 前端路径）
+  businessKey?: string;         // 业务键
 }
 
+/** 通知跳转目标 */
 export interface NotificationTarget {
-  screen:
+  screen:                        // 目标屏幕名称
     | "MainTabs"
     | "BookDetail"
     | "LoanTracking"
@@ -27,9 +47,10 @@ export interface NotificationTarget {
     | "HelpFeedback"
     | "Recommendations"
     | "Shelf";
-  params?: Record<string, unknown>;
+  params?: Record<string, unknown>;  // 路由参数
 }
 
+/** 将后端通知 DTO 映射为前端视图模型 */
 function mapNotification(dto: ApiNotificationDto): NotificationItem {
   return {
     notificationId: dto.notificationId,
@@ -46,7 +67,20 @@ function mapNotification(dto: ApiNotificationDto): NotificationItem {
   };
 }
 
+/**
+ * 解析通知的跳转目标
+ *
+ * 解析优先级（从高到低）：
+ * 1. targetType 精确匹配（BOOK / RECOMMENDATION / LOAN 等）
+ * 2. routeHint 路径匹配（Web 前端路由映射到 App 屏幕）
+ * 3. type 类型推断（NEW_BOOK_RECOMMEND / ARRIVAL_NOTICE / DUE_REMINDER）
+ * 4. 内容关键词推断（罚款 / 反馈 / 预约 / 借阅）
+ *
+ * @param notification - 通知项
+ * @returns 跳转目标（屏幕 + 参数），无法解析时返回 null
+ */
 export function resolveNotificationTarget(notification: NotificationItem): NotificationTarget | null {
+  // ── 1. 按 targetType 精确路由 ──
   if (notification.targetType === "BOOK") {
     if (notification.targetId) {
       return {
@@ -109,6 +143,7 @@ export function resolveNotificationTarget(notification: NotificationItem): Notif
     };
   }
 
+  // ── 2. 按 routeHint 路径路由 ──
   if (notification.routeHint) {
     switch (notification.routeHint) {
       case "/books":
@@ -155,6 +190,7 @@ export function resolveNotificationTarget(notification: NotificationItem): Notif
     }
   }
 
+  // ── 3. 按通知类型推断 ──
   if (notification.type === "NEW_BOOK_RECOMMEND") {
     return {
       screen: notification.targetId ? "BookDetail" : "MainTabs",
@@ -174,6 +210,7 @@ export function resolveNotificationTarget(notification: NotificationItem): Notif
       : { screen: "Shelf" };
   }
 
+  // ── 4. 内容关键词兜底推断 ──
   const joinedText = `${notification.title} ${notification.content}`;
 
   if (joinedText.includes("罚款")) {
@@ -194,7 +231,9 @@ export function resolveNotificationTarget(notification: NotificationItem): Notif
   return null;
 }
 
+/** 通知服务对象 */
 export const notificationService = {
+  /** 分页获取通知列表 */
   async getNotificationsPage(page = 0, size = 20): Promise<PageResponse<NotificationItem>> {
     const response = await request<PageResponse<ApiNotificationDto>>({
       url: "/notifications",
@@ -208,6 +247,7 @@ export const notificationService = {
     };
   },
 
+  /** 获取未读通知数量 */
   async getUnreadCount(): Promise<number> {
     const response = await request<number>({
       url: "/notifications/unread-count",
@@ -217,6 +257,7 @@ export const notificationService = {
     return typeof response === "number" ? response : 0;
   },
 
+  /** 标记单条通知为已读 */
   async markRead(notificationId: number): Promise<void> {
     await request<void>({
       url: `/notifications/${notificationId}/read`,
@@ -225,6 +266,7 @@ export const notificationService = {
     });
   },
 
+  /** 标记全部通知为已读 */
   async markAllRead(): Promise<void> {
     await request<void>({
       url: "/notifications/read-all",
@@ -233,6 +275,7 @@ export const notificationService = {
     });
   },
 
+  /** 删除单条通知 */
   async deleteNotification(notificationId: number): Promise<void> {
     await request<void>({
       url: `/notifications/${notificationId}`,
@@ -241,6 +284,7 @@ export const notificationService = {
     });
   },
 
+  /** 删除所有已读通知 */
   async deleteAllRead(): Promise<void> {
     await request<void>({
       url: "/notifications/read",

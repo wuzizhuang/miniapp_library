@@ -1,13 +1,12 @@
-import type { FormEvent } from "react";
+import type { ApiChatMessageItem } from "@/types/api";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Chip } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { toast } from "sonner";
 
 import { getApiErrorMessage } from "@/lib/apiError";
 import { publicService } from "@/services/api/publicService";
-import type { ApiChatMessageItem } from "@/types/api";
 
 type ChatMessage = {
   id: string;
@@ -15,6 +14,7 @@ type ChatMessage = {
   content: string;
 };
 
+// 常用快捷提问，用于降低首次使用门槛。
 const quickPrompts = [
   "帮我推荐 3 本适合数据库入门的书",
   "如果想找计算机网络经典教材，应该怎么搜",
@@ -29,6 +29,10 @@ const welcomeMessage: ChatMessage = {
     "我是 AI 馆藏助理，可以帮你做图书推荐、关键词建议、借阅规则说明和学习路径梳理。涉及实时馆藏与个人账户数据时，我会提醒你去目录或个人中心核实。",
 };
 
+/**
+ * 悬浮 AI 助手。
+ * 通过公共 AI 接口提供轻量问答能力，主要服务首页和读者前台页面。
+ */
 export function FloatingAiAssistant() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([welcomeMessage]);
@@ -44,6 +48,7 @@ export function FloatingAiAssistant() {
     [conversationCount],
   );
 
+  // 面板打开且消息更新后，自动滚动到底部，保证最新回复可见。
   useEffect(() => {
     if (!isOpen) {
       return;
@@ -71,11 +76,17 @@ export function FloatingAiAssistant() {
     return () => window.removeEventListener("keydown", handleEscape);
   }, [isOpen]);
 
+  /**
+   * 重置当前会话为欢迎态。
+   */
   const resetConversation = () => {
     setMessages([welcomeMessage]);
     setErrorMessage("");
   };
 
+  /**
+   * 发送一条消息到公共 AI 服务，并把返回结果追加到对话流中。
+   */
   const submitMessage = async (message: string) => {
     const normalized = message.trim();
 
@@ -94,13 +105,13 @@ export function FloatingAiAssistant() {
     setErrorMessage("");
     setIsSubmitting(true);
 
-    // Build the full conversation history for the backend
+    // 后端需要完整上下文，因此每次发送都带上当前对话历史。
     const updatedMessages = [...messages, userMessage];
 
     setMessages(updatedMessages);
 
     try {
-      // Convert local messages (excluding the welcome message) to API format
+      // 欢迎语只用于前端展示，不需要发送给后端。
       const apiMessages: ApiChatMessageItem[] = updatedMessages
         .filter((msg) => msg.id !== "welcome")
         .map((msg) => ({ role: msg.role, content: msg.content }));
@@ -126,6 +137,9 @@ export function FloatingAiAssistant() {
     }
   };
 
+  /**
+   * 表单提交统一走 submitMessage，便于键盘回车与快捷提问复用。
+   */
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     await submitMessage(input);

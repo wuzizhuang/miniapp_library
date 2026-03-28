@@ -25,7 +25,8 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Default service appointment implementation.
+ * 服务预约服务实现类。
+ * 负责创建服务预约、取消预约、后台处理状态以及状态通知。
  */
 @Service
 @RequiredArgsConstructor
@@ -38,7 +39,8 @@ public class ServiceAppointmentServiceImpl implements ServiceAppointmentService 
     private final LoanService loanService;
 
     /**
-     * Creates a service appointment.
+     * 创建服务预约。
+     * 对还书预约会附加借阅单校验和重复预约幂等处理。
      */
     @Override
     @Transactional
@@ -110,7 +112,7 @@ public class ServiceAppointmentServiceImpl implements ServiceAppointmentService 
     }
 
     /**
-     * Returns appointments for a user.
+     * 分页查询用户自己的服务预约。
      */
     @Override
     @Transactional(readOnly = true)
@@ -120,7 +122,7 @@ public class ServiceAppointmentServiceImpl implements ServiceAppointmentService 
     }
 
     /**
-     * Cancels a service appointment.
+     * 取消服务预约。
      */
     @Override
     @Transactional
@@ -145,7 +147,7 @@ public class ServiceAppointmentServiceImpl implements ServiceAppointmentService 
     }
 
     /**
-     * Returns appointments for admin workflow.
+     * 分页查询后台服务预约列表。
      */
     @Override
     @Transactional(readOnly = true)
@@ -167,6 +169,9 @@ public class ServiceAppointmentServiceImpl implements ServiceAppointmentService 
         return appointments.map(this::convertToDto);
     }
 
+    /**
+     * 统计服务预约各状态数量。
+     */
     @Override
     @Transactional(readOnly = true)
     public List<DashboardBreakdownItemDto> getAppointmentStatusStats(String keyword) {
@@ -196,7 +201,8 @@ public class ServiceAppointmentServiceImpl implements ServiceAppointmentService 
     }
 
     /**
-     * Updates appointment status from admin workflow.
+     * 后台更新服务预约状态。
+     * 对“还书预约 -> 已完成”的场景，会联动执行归还业务。
      */
     @Override
     @Transactional
@@ -240,7 +246,7 @@ public class ServiceAppointmentServiceImpl implements ServiceAppointmentService 
     }
 
     /**
-     * Maps entity to DTO.
+     * 将服务预约实体转换为 DTO。
      */
     private ServiceAppointmentDto convertToDto(ServiceAppointment entity) {
         User user = entity.getUser();
@@ -268,6 +274,9 @@ public class ServiceAppointmentServiceImpl implements ServiceAppointmentService 
         return dto;
     }
 
+    /**
+     * 发送服务预约状态变更通知。
+     */
     private void sendStatusNotification(ServiceAppointment appointment) {
         String title = switch (appointment.getStatus()) {
             case COMPLETED -> "服务预约已完成";
@@ -294,6 +303,9 @@ public class ServiceAppointmentServiceImpl implements ServiceAppointmentService 
                 buildBusinessKey("SERVICE_APPOINTMENT_" + appointment.getStatus().name(), appointment.getAppointmentId()));
     }
 
+    /**
+     * 发送服务预约创建成功通知。
+     */
     private void sendCreationNotification(ServiceAppointment appointment) {
         String content = String.format(
                 Locale.ROOT,
@@ -313,6 +325,9 @@ public class ServiceAppointmentServiceImpl implements ServiceAppointmentService 
                 buildBusinessKey("SERVICE_APPOINTMENT_CREATED", appointment.getAppointmentId()));
     }
 
+    /**
+     * 发送服务预约取消通知。
+     */
     private void sendCancellationNotification(ServiceAppointment appointment) {
         String content = String.format(
                 Locale.ROOT,
@@ -332,6 +347,9 @@ public class ServiceAppointmentServiceImpl implements ServiceAppointmentService 
                 buildBusinessKey("SERVICE_APPOINTMENT_CANCELLED_BY_USER", appointment.getAppointmentId()));
     }
 
+    /**
+     * 规范化后台关键字检索参数。
+     */
     private String normalizeKeyword(String keyword) {
         if (keyword == null) {
             return null;
@@ -341,6 +359,9 @@ public class ServiceAppointmentServiceImpl implements ServiceAppointmentService 
         return trimmed.isEmpty() ? null : trimmed;
     }
 
+    /**
+     * 规范化预约备注或地点字段。
+     */
     private String normalizeNotes(String notes) {
         if (notes == null) {
             return null;
@@ -350,6 +371,9 @@ public class ServiceAppointmentServiceImpl implements ServiceAppointmentService 
         return trimmed.isEmpty() ? null : trimmed;
     }
 
+    /**
+     * 将服务类型转换为用户可读文案。
+     */
     private String describeServiceType(ServiceAppointment.ServiceType serviceType) {
         return switch (serviceType) {
             case RETURN_BOOK -> "到馆还书";
@@ -358,6 +382,9 @@ public class ServiceAppointmentServiceImpl implements ServiceAppointmentService 
         };
     }
 
+    /**
+     * 将预约状态转换为用户可读文案。
+     */
     private String describeStatus(ServiceAppointment.AppointmentStatus status) {
         return switch (status) {
             case PENDING -> "待处理";
@@ -367,6 +394,9 @@ public class ServiceAppointmentServiceImpl implements ServiceAppointmentService 
         };
     }
 
+    /**
+     * 构造服务预约状态统计项。
+     */
     private DashboardBreakdownItemDto createBreakdownItem(String key, String label, Long value) {
         DashboardBreakdownItemDto dto = new DashboardBreakdownItemDto();
         dto.setKey(key);
@@ -375,6 +405,9 @@ public class ServiceAppointmentServiceImpl implements ServiceAppointmentService 
         return dto;
     }
 
+    /**
+     * 构造通知去重业务主键。
+     */
     private String buildBusinessKey(String prefix, Integer appointmentId) {
         return appointmentId == null ? null : prefix + ":" + appointmentId;
     }

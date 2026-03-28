@@ -33,7 +33,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * Public endpoints that do not require authentication.
+ * 公共控制器。
+ * 提供无需登录即可访问的健康检查、首页聚合数据和公共 AI 对话接口。
  */
 @RestController
 @RequestMapping("/api/public")
@@ -47,7 +48,7 @@ public class PublicController {
     private final RequestRateLimitService requestRateLimitService;
 
     /**
-     * Returns a basic health check payload.
+     * 健康检查接口。
      */
     @GetMapping("/health")
     public ResponseEntity<Map<String, String>> healthCheck() {
@@ -58,7 +59,8 @@ public class PublicController {
     }
 
     /**
-     * Returns homepage aggregated data.
+     * 获取首页聚合数据。
+     * 包括主视觉统计、热门图书、新上架和分类分布。
      */
     @GetMapping("/home")
     public ResponseEntity<HomePageDto> getHomePageData(
@@ -97,7 +99,7 @@ public class PublicController {
     }
 
     /**
-     * Public homepage AI chat proxy.
+     * 公共首页 AI 对话代理接口。
      */
     @PostMapping(path = "/ai/chat", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PublicAiChatResponseDto> chatWithAi(
@@ -108,6 +110,9 @@ public class PublicController {
                 .body(aiChatService.chat(requestDto.getMessages()));
     }
 
+    /**
+     * 构造首页主视觉统计项。
+     */
     private List<HomePageDto.StatItem> buildHeroStats(DashboardStatsDto stats, long totalBooks) {
         HomePageDto.StatItem books = new HomePageDto.StatItem();
         books.setLabel("馆藏图书");
@@ -128,6 +133,9 @@ public class PublicController {
         return List.of(books, readers, activeLoans, availableCopies);
     }
 
+    /**
+     * 将图书详情转换为首页展示项。
+     */
     private HomePageDto.BookItem toBookItem(BookDetailDto book, String tag) {
         HomePageDto.BookItem item = new HomePageDto.BookItem();
         item.setId(book.getBookId());
@@ -138,6 +146,9 @@ public class PublicController {
         return item;
     }
 
+    /**
+     * 将分类统计视图转换为首页分类项。
+     */
     private HomePageDto.CategoryItem toCategoryItem(BookRepository.CategoryBookCountView view) {
         HomePageDto.CategoryItem item = new HomePageDto.CategoryItem();
         item.setCategoryId(view.getCategoryId());
@@ -146,6 +157,9 @@ public class PublicController {
         return item;
     }
 
+    /**
+     * 提取作者姓名列表，供首页卡片展示。
+     */
     private String extractAuthorNames(BookDetailDto book) {
         if (book.getAuthors() == null || book.getAuthors().isEmpty()) {
             return "Unknown Author";
@@ -160,6 +174,9 @@ public class PublicController {
         return names.isBlank() ? "Unknown Author" : names;
     }
 
+    /**
+     * 安全处理可能为 null 的 Long 统计值。
+     */
     private long safeLong(Long value) {
         return value == null ? 0L : value;
     }

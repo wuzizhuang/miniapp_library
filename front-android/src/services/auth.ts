@@ -1,3 +1,25 @@
+/**
+ * @file 认证服务
+ * @description 封装所有与用户认证相关的 API 调用：
+ *   - login：用户名密码登录
+ *   - register：新用户注册
+ *   - forgotPassword：忘记密码（发送重置邮件）
+ *   - validateResetToken：校验密码重置令牌
+ *   - resetPassword：重置密码
+ *   - getContext：获取认证上下文（角色 & 权限）
+ *   - getMyProfile：获取用户资料
+ *   - updateProfile：更新用户资料
+ *   - refresh：刷新访问令牌
+ *   - logout：登出
+ *   - loginAndBootstrap：登录 + 拉取用户资料（组合操作）
+ *   - bootstrapFromToken：用已有 token 恢复会话
+ *
+ *   辅助函数：
+ *   - normalizeRoles：角色去重与统一大写
+ *   - mapProfileToAuthUser：DTO → AuthUser 视图映射
+ *   - createFallbackUser：资料接口不可用时的降级用户构造
+ */
+
 import type {
   ApiAuthContextDto,
   ApiAuthResponse,
@@ -14,6 +36,10 @@ import type {
 import type { AuthUser } from "../types/auth";
 import { request } from "./http";
 
+/**
+ * 角色标准化
+ * 去重、统一转为大写；无角色时默认添加 USER
+ */
 function normalizeRoles(primaryRole?: string, roles?: string[]): string[] {
   const roleSet = new Set<string>();
 
@@ -27,6 +53,7 @@ function normalizeRoles(primaryRole?: string, roles?: string[]): string[] {
     }
   }
 
+  // 保底：至少有一个 USER 角色
   if (roleSet.size === 0) {
     roleSet.add("USER");
   }
@@ -34,6 +61,11 @@ function normalizeRoles(primaryRole?: string, roles?: string[]): string[] {
   return Array.from(roleSet);
 }
 
+/**
+ * 将用户资料 DTO 映射为前端 AuthUser 视图模型
+ * @param profile - 后端返回的用户资料 DTO
+ * @param session - 可选的会话上下文（用于获取角色列表和权限）
+ */
 function mapProfileToAuthUser(
   profile: ApiUserProfileDto,
   session?: ApiAuthResponse | ApiAuthContextDto,
@@ -49,6 +81,10 @@ function mapProfileToAuthUser(
   };
 }
 
+/**
+ * 降级用户构造
+ * 当 getMyProfile 调用失败时，用 login 返回的基本信息构造用户对象
+ */
 function createFallbackUser(authResponse: ApiAuthResponse): AuthUser {
   return {
     userId: authResponse.userId,
@@ -60,7 +96,9 @@ function createFallbackUser(authResponse: ApiAuthResponse): AuthUser {
   };
 }
 
+/** 认证服务对象，聚合所有认证相关 API */
 export const authService = {
+  /** 用户登录 */
   async login(payload: ApiLoginRequest): Promise<ApiAuthResponse> {
     return request<ApiAuthResponse, ApiLoginRequest>({
       url: "/auth/login",
@@ -69,6 +107,7 @@ export const authService = {
     });
   },
 
+  /** 用户注册 */
   async register(payload: ApiRegisterRequest): Promise<ApiUserProfileDto> {
     return request<ApiUserProfileDto, ApiRegisterRequest>({
       url: "/auth/register",
@@ -77,6 +116,7 @@ export const authService = {
     });
   },
 
+  /** 忘记密码 - 发送重置邮件 */
   async forgotPassword(
     payload: ApiForgotPasswordRequest,
   ): Promise<ApiForgotPasswordResponse> {
@@ -87,6 +127,7 @@ export const authService = {
     });
   },
 
+  /** 校验密码重置令牌是否有效 */
   async validateResetToken(token: string): Promise<ApiResetPasswordValidateResponse> {
     return request<ApiResetPasswordValidateResponse>({
       url: "/auth/reset-password/validate",
@@ -94,6 +135,7 @@ export const authService = {
     });
   },
 
+  /** 重置密码 */
   async resetPassword(
     payload: ApiResetPasswordRequest,
   ): Promise<ApiForgotPasswordResponse> {
@@ -104,6 +146,7 @@ export const authService = {
     });
   },
 
+  /** 获取认证上下文（角色和权限列表） */
   async getContext(tokenOverride?: string): Promise<ApiAuthContextDto> {
     return request<ApiAuthContextDto>({
       url: "/auth/context",
@@ -112,6 +155,7 @@ export const authService = {
     });
   },
 
+  /** 获取当前用户资料 */
   async getMyProfile(tokenOverride?: string): Promise<ApiUserProfileDto> {
     return request<ApiUserProfileDto>({
       url: "/users/me/profile",
@@ -120,6 +164,7 @@ export const authService = {
     });
   },
 
+  /** 更新当前用户资料 */
   async updateProfile(payload: ApiProfileUpdateDto): Promise<ApiUserProfileDto> {
     return request<ApiUserProfileDto, ApiProfileUpdateDto>({
       url: "/users/me/profile",
@@ -129,15 +174,20 @@ export const authService = {
     });
   },
 
+  /** 使用刷新令牌获取新的访问令牌 */
   async refresh(refreshToken: string): Promise<ApiAuthResponse> {
     return request<ApiAuthResponse, ApiRefreshTokenRequest>({
       url: "/auth/refresh",
       method: "POST",
       data: { refreshToken },
-      skipAuthRefresh: true,
+      skipAuthRefresh: true,  // 令牌刷新请求本身不应触发再次刷新
     });
   },
 
+  /**
+   * 登出
+   * 即使后端登出调用失败，也不应阻塞本地会话清除
+   */
   async logout(refreshToken?: string): Promise<void> {
     try {
       await request<void, { refreshToken?: string }>({
@@ -148,10 +198,16 @@ export const authService = {
         skipAuthRefresh: true,
       });
     } catch {
-      // Mirror the web client: backend logout failure should not block local sign-out.
+      // 后端登出失败时静默忽略，不阻塞本地登出流程
     }
   },
 
+  /**
+   * 登录并引导（组合操作）
+   * 1. 调用 login 获取 session
+   * 2. 用新 token 拉取用户资料
+   * 3. 资料拉取失败时使用降级用户
+   */
   async loginAndBootstrap(payload: ApiLoginRequest): Promise<{
     session: ApiAuthResponse;
     user: AuthUser;
@@ -172,6 +228,10 @@ export const authService = {
     }
   },
 
+  /**
+   * 从已有 token 恢复用户会话
+   * 并行获取上下文和资料，上下文失败时仅用资料降级
+   */
   async bootstrapFromToken(token: string): Promise<AuthUser> {
     try {
       const [context, profile] = await Promise.all([

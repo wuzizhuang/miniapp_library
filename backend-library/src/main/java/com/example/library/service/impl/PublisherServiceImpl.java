@@ -14,7 +14,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Default publisher service implementation.
+ * 出版社服务实现类。
+ * 负责出版社数据的校验、增删改查与实体转换。
  */
 @Service
 @RequiredArgsConstructor
@@ -23,7 +24,7 @@ public class PublisherServiceImpl implements PublisherService {
     private final PublisherRepository publisherRepository;
 
     /**
-     * Creates a publisher.
+     * 创建出版社。
      */
     @Override
     @Transactional
@@ -43,7 +44,7 @@ public class PublisherServiceImpl implements PublisherService {
     }
 
     /**
-     * Returns all publishers (unpaged, for internal use).
+     * 查询全部未删除出版社，不分页。
      */
     @Override
     @Transactional(readOnly = true)
@@ -54,7 +55,7 @@ public class PublisherServiceImpl implements PublisherService {
     }
 
     /**
-     * Returns paged publishers.
+     * 分页查询未删除出版社。
      */
     @Override
     @Transactional(readOnly = true)
@@ -64,7 +65,7 @@ public class PublisherServiceImpl implements PublisherService {
     }
 
     /**
-     * Returns a publisher by id.
+     * 根据出版社 ID 查询详情。
      */
     @Override
     @Transactional(readOnly = true)
@@ -75,7 +76,8 @@ public class PublisherServiceImpl implements PublisherService {
     }
 
     /**
-     * Soft-deletes a publisher.
+     * 软删除出版社。
+     * 通过改名避免后续新增同名出版社时触发唯一键冲突。
      */
     @Override
     @Transactional
@@ -90,7 +92,7 @@ public class PublisherServiceImpl implements PublisherService {
     }
 
     /**
-     * Updates a publisher.
+     * 更新出版社。
      */
     @Override
     @Transactional
@@ -111,6 +113,9 @@ public class PublisherServiceImpl implements PublisherService {
 
     }
 
+    /**
+     * 规范化并校验必填名称字段。
+     */
     private String normalizeRequiredName(String value) {
         String normalized = normalizeNullable(value);
         if (normalized == null) {
@@ -119,6 +124,9 @@ public class PublisherServiceImpl implements PublisherService {
         return normalized;
     }
 
+    /**
+     * 规范化可空字符串：去除首尾空白，空串转为 null。
+     */
     private String normalizeNullable(String value) {
         if (value == null) {
             return null;
@@ -129,7 +137,7 @@ public class PublisherServiceImpl implements PublisherService {
     }
 
     /**
-     * Maps entity to DTO.
+     * 将出版社实体转换为 DTO。
      */
     private PublisherDto convertToDto(Publisher entity) {
         PublisherDto dto = new PublisherDto();

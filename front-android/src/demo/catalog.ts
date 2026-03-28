@@ -1,3 +1,15 @@
+/**
+ * @file 离线演示数据（馆藏目录）
+ * @description 当后端不可达时，为 Android 端的馆藏浏览、搜索和首页推荐
+ *   提供一套内置的示例书目数据。包含：
+ *     - 6 本涵盖计算机/文学/管理/设计四个分类的演示书目
+ *     - 热门关键词和搜索建议
+ *     - 首页统计数据和推荐书单构建工具
+ *     - 带分页、排序和多条件筛选的本地搜索实现
+ *
+ *   数据仅用于演示目的（bookId 使用 900000+ 段避免与真实数据冲突）。
+ */
+
 import type { ApiHomePageDto } from "../types/api";
 import type { Book, BookListQuery, CategoryOption, PagedResult } from "../types/book";
 

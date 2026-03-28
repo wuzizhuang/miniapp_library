@@ -1,3 +1,24 @@
+/**
+ * @file 图书目录页面
+ * @description 全量馆藏检索屏幕，支持多维度联合筛选。
+ *
+ *   功能特性：
+ *   - 关键词、题名、作者、出版社的多字段搜索
+ *   - 分类筛选 + 可借状态过滤
+ *   - 排序方式切换
+ *   - 发现关键词标签（快速填充检索词）
+ *   - 支持从首页传入 presetKeyword 预设搜索
+ *   - 下拉刷新
+ *
+ *   页面结构：
+ *   1. 概要卡片 - 当前图书数量 + 分类数量
+ *   2. 筛选器卡片 - BooksFiltersCard 组件
+ *   3. 当前筛选标签 + 发现关键词标签
+ *   4. 图书列表 - BookCatalogCard 列表
+ *
+ *   数据来源：useBooksCatalog() Hook
+ */
+
 import React from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { StyleSheet, Text, View } from "react-native";
@@ -24,35 +45,24 @@ export function BooksScreen() {
     >
   >();
   const { user } = useAuth();
+
+  // 从 Hook 中解构所有筛选状态和数据
   const {
-    keyword,
-    setKeyword,
-    titleKeyword,
-    setTitleKeyword,
-    authorKeyword,
-    setAuthorKeyword,
-    publisherKeyword,
-    setPublisherKeyword,
-    selectedCategory,
-    setSelectedCategory,
-    selectedSort,
-    setSelectedSort,
-    availableOnly,
-    setAvailableOnly,
-    books,
-    categories,
-    favoriteIds,
-    loanedIds,
-    reservedIds,
-    loading,
-    refreshing,
-    errorMessage,
-    discoveryKeywords,
-    activeFilters,
-    loadAll,
-    resetFilters,
+    keyword, setKeyword,
+    titleKeyword, setTitleKeyword,
+    authorKeyword, setAuthorKeyword,
+    publisherKeyword, setPublisherKeyword,
+    selectedCategory, setSelectedCategory,
+    selectedSort, setSelectedSort,
+    availableOnly, setAvailableOnly,
+    books, categories,
+    favoriteIds, loanedIds, reservedIds,
+    loading, refreshing, errorMessage,
+    discoveryKeywords, activeFilters,
+    loadAll, resetFilters,
   } = useBooksCatalog(user);
 
+  // 处理从首页传入的预设搜索关键词
   React.useEffect(() => {
     const presetKeyword = route.params?.presetKeyword?.trim();
 
@@ -61,18 +71,20 @@ export function BooksScreen() {
     }
 
     setKeyword(presetKeyword);
+    // 消费后清除参数，避免重复触发
     navigation.setParams({ presetKeyword: undefined });
   }, [navigation, route.params?.presetKeyword, setKeyword]);
 
   return (
     <Screen
       title="图书目录"
-      subtitle="支持关键词、题名、作者、出版社、分类和可借状态的联合检索。"
+      subtitle="多维度检索，快速找到你想读的书"
       refreshing={refreshing}
       onRefresh={() => {
         void loadAll(true);
       }}
     >
+      {/* 概要卡片 */}
       <Card tone="tinted" style={styles.summaryCard}>
         <View style={styles.summaryHeader}>
           <View style={styles.summaryIconWrap}>
@@ -95,6 +107,7 @@ export function BooksScreen() {
         </View>
       </Card>
 
+      {/* 筛选器 */}
       <BooksFiltersCard
         keyword={keyword}
         onKeywordChange={setKeyword}
@@ -114,9 +127,11 @@ export function BooksScreen() {
         onReset={resetFilters}
       />
 
+      {/* 当前筛选标签 + 发现关键词 */}
       <CatalogTagSection title="当前筛选" items={activeFilters} />
       <CatalogTagSection groups={discoveryKeywords} onKeywordPress={setKeyword} />
 
+      {/* 错误态 */}
       {errorMessage ? (
         <ErrorCard
           message={errorMessage}
@@ -126,16 +141,19 @@ export function BooksScreen() {
         />
       ) : null}
 
+      {/* 空态 */}
       {!loading && !errorMessage && books.length === 0 ? (
         <EmptyCard title="未找到相关图书" description="试试调整关键词、作者、出版社、分类或排序方式。" />
       ) : null}
 
+      {/* 加载态 */}
       {loading ? (
         <Card tone="muted">
           <Text style={styles.loadingText}>正在加载馆藏目录...</Text>
         </Card>
       ) : null}
 
+      {/* 图书列表 */}
       {!loading && !errorMessage && books.length > 0 ? (
         books.map((book) => (
           <BookCatalogCard
@@ -152,42 +170,18 @@ export function BooksScreen() {
   );
 }
 
+// ─── 样式定义 ─────────────────────────────────
+
 const styles = StyleSheet.create({
-  summaryCard: {
-    gap: spacing.md,
-  },
-  summaryHeader: {
-    flexDirection: "row",
-    gap: spacing.md,
-  },
+  summaryCard: { gap: spacing.md },
+  summaryHeader: { flexDirection: "row", gap: spacing.md },
   summaryIconWrap: {
-    width: 52,
-    height: 52,
-    borderRadius: 20,
-    backgroundColor: colors.primarySoft,
-    alignItems: "center",
-    justifyContent: "center",
+    width: 52, height: 52, borderRadius: 20,
+    backgroundColor: colors.primarySoft, alignItems: "center", justifyContent: "center",
   },
-  summaryBody: {
-    flex: 1,
-    gap: 4,
-  },
-  summaryTitle: {
-    color: colors.text,
-    fontSize: 20,
-    fontWeight: "800",
-  },
-  summaryText: {
-    color: colors.textMuted,
-    lineHeight: 21,
-  },
-  summaryPills: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.xs,
-  },
-  loadingText: {
-    color: colors.textMuted,
-    lineHeight: 21,
-  },
+  summaryBody: { flex: 1, gap: 4 },
+  summaryTitle: { color: colors.text, fontSize: 20, fontWeight: "800" },
+  summaryText: { color: colors.textMuted, lineHeight: 21 },
+  summaryPills: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs },
+  loadingText: { color: colors.textMuted, lineHeight: 21 },
 });

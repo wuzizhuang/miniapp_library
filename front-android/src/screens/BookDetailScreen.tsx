@@ -1,3 +1,25 @@
+/**
+ * @file 图书详情页面
+ * @description 单本图书的完整详情屏幕，对应 Web 端详情页与评论模块。
+ *
+ *   页面结构：
+ *   1. Hero 卡片 - 封面、标题、作者、可借/总藏/排队标签、借阅/预约/收藏状态
+ *   2. 核心信息 - ISBN、出版社、语言、出版年、资源模式、排队、可借位置
+ *   3. 内容简介
+ *   4. 线上资源 - 在线访问 URL + 打开按钮
+ *   5. 发表评论 - 评分 + 评论输入框
+ *   6. 读者评论 - 已有评论列表
+ *
+ *   交互能力：
+ *   - 立即借阅（自动选择可用副本）
+ *   - 预约取书（无可借副本时）
+ *   - 收藏/取消收藏
+ *   - 发表评论
+ *   - 所有写操作需要登录，未登录自动跳转登录页
+ *
+ *   事件驱动：
+ *   - 监听 books / favorites / loans / reservations 事件自动刷新
+ */
 import React, { useEffect, useMemo, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
@@ -41,7 +63,9 @@ export function BookDetailScreen() {
   const [commentText, setCommentText] = useState("");
   const [rating, setRating] = useState(5);
 
+  // 借阅条件：有书 + 未借 + 未预约 + 有可借副本
   const canBorrow = !!book && activeLoanId == null && activeReservationStatus == null && book.availableCopies > 0;
+  // 预约条件：有书 + 未借 + 未预约 + 无可借副本
   const canReserve = !!book && activeLoanId == null && activeReservationStatus == null && book.availableCopies <= 0;
   const averageRating = useMemo(() => {
     if (reviews.length === 0) {
@@ -52,6 +76,7 @@ export function BookDetailScreen() {
     return Number((total / reviews.length).toFixed(1));
   }, [reviews]);
 
+  /** 加载图书详情（并行获取图书信息、副本、评论）+ 用户态数据（收藏、借阅、预约） */
   async function loadBookDetail(isRefresh = false) {
     if (!isRefresh) {
       setLoading(true);
@@ -139,6 +164,7 @@ export function BookDetailScreen() {
     });
   }, [bookId, user]);
 
+  /** 确保用户已登录，未登录则跳转登录页 */
   async function requireLogin(): Promise<boolean> {
     if (user) {
       return true;
@@ -148,6 +174,7 @@ export function BookDetailScreen() {
     return false;
   }
 
+  /** 处理借阅：查找可用副本 → 创建借阅 → 发出事件通知 */
   async function handleBorrow() {
     if (!(await requireLogin()) || !book) {
       return;
@@ -175,6 +202,7 @@ export function BookDetailScreen() {
     }
   }
 
+  /** 切换收藏状态 */
   async function handleToggleFavorite() {
     if (!(await requireLogin()) || !book) {
       return;
@@ -203,6 +231,7 @@ export function BookDetailScreen() {
     }
   }
 
+  /** 处理预约取书 */
   async function handleReserve() {
     if (!(await requireLogin()) || !book) {
       return;
@@ -222,6 +251,7 @@ export function BookDetailScreen() {
     }
   }
 
+  /** 提交评论 */
   async function handleCreateReview() {
     if (!(await requireLogin()) || !book) {
       return;
@@ -251,14 +281,14 @@ export function BookDetailScreen() {
   }
 
   return (
-    <Screen title="图书详情" subtitle={`对应 Web 端详情页与评论模块，图书 ID: ${bookId}`}>
+    <Screen title="图书详情" subtitle={book ? book.title : "加载中..."}>
       {loading ? (
         <Card tone="muted">
           <Text style={styles.helperText}>正在加载图书详情...</Text>
         </Card>
       ) : null}
 
-      {!loading && errorMessage ? (
+      {!loading && errorMessage && !book ? (
         <ErrorCard
           message={errorMessage}
           onRetry={() => {
@@ -267,17 +297,27 @@ export function BookDetailScreen() {
         />
       ) : null}
 
-      {!loading && !errorMessage && !book ? (
+      {!loading && !book && !errorMessage ? (
         <EmptyCard title="未找到该图书" description="它可能已下架，或者当前请求参数不正确。" />
       ) : null}
 
-      {!loading && !errorMessage && book ? (
+      {!loading && book ? (
         <>
+          {/* 操作错误内联提示（借阅/收藏/预约/评论失败时显示） */}
+          {errorMessage ? (
+            <Card tone="muted" style={styles.sectionCard}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}>
+                <MaterialCommunityIcons name="alert-circle-outline" size={18} color={colors.danger} />
+                <Text style={{ flex: 1, color: colors.danger, lineHeight: 21 }}>{errorMessage}</Text>
+              </View>
+              <ActionButton label="知道了" icon="check" onPress={() => setErrorMessage("")} tone="secondary" size="sm" />
+            </Card>
+          ) : null}
           <Card tone="tinted" style={styles.heroCard}>
             <View style={styles.heroRow}>
               <CoverImage title={book.title} uri={book.coverUrl} style={styles.cover} />
               <View style={styles.heroBody}>
-                <InfoPill label="BOOK PROFILE" tone="primary" icon="book-open-page-variant-outline" />
+                <InfoPill label="图书档案" tone="primary" icon="book-open-page-variant-outline" />
                 <Text style={styles.title}>{book.title}</Text>
                 <Text style={styles.meta}>{joinText(book.authorNames, "未知作者")}</Text>
                 <View style={styles.badgeRow}>
@@ -474,6 +514,7 @@ export function BookDetailScreen() {
   );
 }
 
+/** 迷你指标卡片（评分/评论数/可借点位） */
 function MiniMetric({
   icon,
   label,
@@ -492,6 +533,7 @@ function MiniMetric({
   );
 }
 
+/** 信息行组件（核心信息面板中的一行） */
 function InfoRow({
   icon,
   label,

@@ -1,5 +1,6 @@
 // Admin Reservations Management Page
 import React, { useState } from "react";
+import { useRouter } from "next/router";
 import {
     Table,
     TableHeader,
@@ -44,9 +45,22 @@ const statusConfig: Record<
 };
 
 export default function AdminReservationsPage() {
+    const router = useRouter();
     const [filter, setFilter] = useState("all");
     const [page, setPage] = useState(1);
     const [keyword, setKeyword] = useState("");
+
+    // 从 URL query 中读取 keyword（从用户详情页跳转时携带）
+    React.useEffect(() => {
+      if (!router.isReady) return;
+      const qKeyword = Array.isArray(router.query.keyword)
+        ? router.query.keyword[0]
+        : router.query.keyword;
+
+      if (qKeyword) {
+        setKeyword(qKeyword);
+      }
+    }, [router.isReady]);  
     const [fulfilling, setFulfilling] = useState<number | null>(null);
     const [cancelling, setCancelling] = useState<number | null>(null);
 

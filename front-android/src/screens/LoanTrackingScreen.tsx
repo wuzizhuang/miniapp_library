@@ -1,3 +1,19 @@
+/**
+ * @file 借阅追踪页面
+ * @description 单笔借阅的详情与自助操作屏幕。
+ *
+ *   页面结构：
+ *   1. Hero 卡片 - 封面、书名、状态标签、续借次数、剩余/逾期天数
+ *   2. 借阅信息面板 - 借阅编号、副本编号、馆藏位置、借出/应还/归还日期
+ *   3. 读者自助操作 - 续借 + 归还（仅 BORROWED / OVERDUE 状态可见）
+ *
+ *   交互能力：
+ *   - 续借（canRenew 时可用）
+ *   - 归还
+ *   - 遗失登记说明仅由馆员在后台处理
+ *
+ *   事件驱动：监听 loans / books 事件自动刷新
+ */
 import React, { useEffect, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { StyleSheet, Text, View } from "react-native";
@@ -57,6 +73,7 @@ export function LoanTrackingScreen() {
     });
   }, [route.params.loanId]);
 
+  /** 处理续借或归还操作 */
   async function handleAction(action: "renew" | "return") {
     try {
       setActing(action);
@@ -79,7 +96,7 @@ export function LoanTrackingScreen() {
 
   if (!user) {
     return (
-      <Screen title="借阅追踪" subtitle="仅保留读者自助续借与归还，不提供挂失。">
+      <Screen title="借阅追踪" subtitle="续借、归还和借阅详情">
         <LoginPromptCard onLogin={() => navigation.navigate("Login")} />
       </Screen>
     );
@@ -88,7 +105,7 @@ export function LoanTrackingScreen() {
   return (
     <Screen
       title="借阅追踪"
-      subtitle="对应 Web 端 `/my/loan-tracking/[id]` 的读者借阅详情。"
+      subtitle="查看借阅状态和操作"
       refreshing={refreshing}
       onRefresh={() => {
         void loadData(true);
@@ -117,7 +134,7 @@ export function LoanTrackingScreen() {
             <View style={styles.heroRow}>
               <CoverImage title={loan.bookTitle} uri={loan.bookCover} style={styles.cover} />
               <View style={styles.heroBody}>
-                <InfoPill label="LOAN STATUS" tone="primary" icon="book-arrow-right-outline" />
+                <InfoPill label="借阅状态" tone="primary" icon="book-arrow-right-outline" />
                 <Text style={styles.title}>{loan.bookTitle}</Text>
                 <Text style={styles.meta}>{loan.bookAuthorNames || "未知作者"}</Text>
                 <View style={styles.badgeRow}>
@@ -195,6 +212,7 @@ export function LoanTrackingScreen() {
   );
 }
 
+/** 迷你指标卡片（借出日期/应还日期/续借次数） */
 function MiniMetric({
   icon,
   label,
@@ -213,6 +231,7 @@ function MiniMetric({
   );
 }
 
+/** 信息行组件 */
 function InfoRow({
   icon,
   label,
@@ -233,6 +252,7 @@ function InfoRow({
   );
 }
 
+/** 借阅状态文案映射 */
 function getLoanStatusLabel(status: MyLoan["status"]) {
   switch (status) {
     case "BORROWED":
@@ -246,6 +266,7 @@ function getLoanStatusLabel(status: MyLoan["status"]) {
   }
 }
 
+/** 借阅状态色调映射 */
 function getLoanStatusTone(status: MyLoan["status"]) {
   switch (status) {
     case "BORROWED":
@@ -259,6 +280,7 @@ function getLoanStatusTone(status: MyLoan["status"]) {
   }
 }
 
+/** 借阅状态图标映射 */
 function getLoanStatusIcon(status: MyLoan["status"]) {
   switch (status) {
     case "BORROWED":

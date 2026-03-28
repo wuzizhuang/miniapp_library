@@ -5,7 +5,7 @@ import com.example.library.dto.ServiceAppointmentCreateDto;
 import com.example.library.dto.ServiceAppointmentDto;
 import com.example.library.dto.ServiceAppointmentStatusUpdateDto;
 import com.example.library.entity.ServiceAppointment;
-import com.example.library.exception.UnauthorizedException;
+import com.example.library.util.ControllerHelper;
 import com.example.library.security.RequestRateLimitService;
 import com.example.library.security.UserDetailsImpl;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,7 +22,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Endpoints for reader service appointments.
+ * 服务预约控制器。
+ * 提供读者预约到馆服务、查询预约、取消预约以及后台处理状态的接口。
  */
 @RestController
 @RequestMapping("/api/service-appointments")
@@ -33,34 +34,34 @@ public class ServiceAppointmentController {
     private final RequestRateLimitService requestRateLimitService;
 
     /**
-     * Creates an appointment for the current user.
+     * 为当前用户创建服务预约。
      */
     @PostMapping
     public ResponseEntity<ServiceAppointmentDto> createAppointment(
             HttpServletRequest request,
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @Valid @RequestBody ServiceAppointmentCreateDto dto) {
-        UserDetailsImpl authenticatedUser = requireAuthenticatedUser(userDetails);
+        UserDetailsImpl authenticatedUser = ControllerHelper.requireAuthenticated(userDetails);
         requestRateLimitService.checkServiceAppointmentCreateLimit(request, authenticatedUser.getId());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(serviceAppointmentService.createAppointment(authenticatedUser.getId(), dto));
     }
 
     /**
-     * Returns the current user's appointments.
+     * 分页查询当前用户的服务预约记录。
      */
     @GetMapping("/me")
     public ResponseEntity<Page<ServiceAppointmentDto>> getMyAppointments(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        UserDetailsImpl authenticatedUser = requireAuthenticatedUser(userDetails);
+        UserDetailsImpl authenticatedUser = ControllerHelper.requireAuthenticated(userDetails);
         PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "scheduledTime"));
         return ResponseEntity.ok(serviceAppointmentService.getMyAppointments(authenticatedUser.getId(), pageable));
     }
 
     /**
-     * Returns all appointments for admin workflow.
+     * 分页查询全部服务预约，供后台处理使用。
      */
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('appointment:manage')")
@@ -77,7 +78,7 @@ public class ServiceAppointmentController {
     }
 
     /**
-     * Returns grouped service appointment counts by status.
+     * 统计服务预约各状态数量。
      */
     @GetMapping("/stats")
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('appointment:manage')")
@@ -87,19 +88,19 @@ public class ServiceAppointmentController {
     }
 
     /**
-     * Cancels one of the current user's appointments.
+     * 取消当前用户的一条服务预约。
      */
     @PutMapping("/{id}/cancel")
     public ResponseEntity<Void> cancelAppointment(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Integer id) {
-        UserDetailsImpl authenticatedUser = requireAuthenticatedUser(userDetails);
+        UserDetailsImpl authenticatedUser = ControllerHelper.requireAuthenticated(userDetails);
         serviceAppointmentService.cancelAppointment(authenticatedUser.getId(), id);
         return ResponseEntity.noContent().build();
     }
 
     /**
-     * Updates appointment status from the admin workflow.
+     * 后台更新服务预约状态。
      */
     @PutMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('appointment:manage')")
@@ -109,11 +110,4 @@ public class ServiceAppointmentController {
         return ResponseEntity.ok(serviceAppointmentService.updateAppointmentStatus(id, dto));
     }
 
-    private UserDetailsImpl requireAuthenticatedUser(UserDetailsImpl userDetails) {
-        if (userDetails == null) {
-            throw new UnauthorizedException("请先登录后再继续");
-        }
-
-        return userDetails;
-    }
 }

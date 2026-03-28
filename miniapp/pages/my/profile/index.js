@@ -1,5 +1,19 @@
+/**
+ * @file 个人资料页面逻辑
+ * @description 用户个人信息管理页面，功能：
+ *   - 查看和编辑基础信息（姓名/邮箱/院系/专业/入学年份）
+ *   - 管理兴趣标签（预设标签选择 + 自定义标签添加）
+ *   - 保存修改后同步到全局会话
+ *
+ *   兴趣标签系统：
+ *     - 预设标签：文学/历史/计算机/人工智能/艺术设计/心理学/经济管理/外语学习/考试备考/科研论文
+ *     - 自定义标签：用户手动输入，支持中英文逗号分隔批量添加
+ *     - 标签存储格式兼容 JSON 数组字符串和逗号分隔字符串
+ */
+
 const { libraryService } = require('../../../services/library')
 
+/** 预设的兴趣标签选项 */
 const INTEREST_TAG_OPTIONS = [
   '文学',
   '历史',
@@ -13,6 +27,10 @@ const INTEREST_TAG_OPTIONS = [
   '科研论文',
 ]
 
+/**
+ * 生成入学年份选项列表（当前年份 → 1980）
+ * @returns {string[]} 年份字符串数组
+ */
 function buildYearOptions() {
   const currentYear = new Date().getFullYear()
   const options = []
@@ -24,6 +42,16 @@ function buildYearOptions() {
   return options
 }
 
+/**
+ * 标准化兴趣标签碎片
+ * 支持多种输入格式：
+ *   - 字符串数组（递归处理）
+ *   - JSON 数组字符串（如 '["文学","历史"]'）
+ *   - 逗号分隔字符串（如 '文学，历史,计算机'）
+ *
+ * @param {*} value - 标签值
+ * @returns {string[]} 标准化后的标签列表
+ */
 function normalizeInterestTagFragments(value) {
   if (Array.isArray(value)) {
     return value
@@ -37,6 +65,7 @@ function normalizeInterestTagFragments(value) {
     return []
   }
 
+  // 尝试解析 JSON 格式
   if (normalizedValue.startsWith('[') && normalizedValue.endsWith(']')) {
     try {
       const parsedValue = JSON.parse(normalizedValue)
@@ -46,12 +75,18 @@ function normalizeInterestTagFragments(value) {
     }
   }
 
+  // 按中英文逗号分隔
   return normalizedValue
     .split(/[，,]/)
     .map((item) => item.trim())
     .filter(Boolean)
 }
 
+/**
+ * 将标签列表分为"预设标签"和"自定义标签"两组
+ * @param {string[]} tags - 完整标签列表
+ * @returns {Object} { selectedInterestTags, customInterestTags }
+ */
 function splitInterestTags(tags) {
   const selectedInterestTags = []
   const customInterestTags = []
@@ -73,6 +108,12 @@ function splitInterestTags(tags) {
   }
 }
 
+/**
+ * 获取入学年份在 picker 选项中的索引
+ * @param {string[]} yearOptions - 年份选项列表
+ * @param {*} enrollmentYear - 入学年份
+ * @returns {number} 索引值
+ */
 function getYearIndex(yearOptions, enrollmentYear) {
   const matchedIndex = yearOptions.findIndex(
     (item) => item === String(enrollmentYear || ''),
@@ -81,12 +122,21 @@ function getYearIndex(yearOptions, enrollmentYear) {
   return matchedIndex >= 0 ? matchedIndex : 0
 }
 
+/**
+ * 合并预设标签和自定义标签为一个去重列表
+ * @returns {string[]} 合并后的标签列表
+ */
 function mergeInterestTags(selectedInterestTags, customInterestTags) {
   return Array.from(
     new Set([...(selectedInterestTags || []), ...(customInterestTags || [])]),
   )
 }
 
+/**
+ * 构建预设标签选项的视图模型
+ * @param {string[]} selectedInterestTags - 已选中的标签
+ * @returns {Object[]} 含 label / active 的标签对象列表
+ */
 function buildInterestTagOptions(selectedInterestTags) {
   return INTEREST_TAG_OPTIONS.map((item) => ({
     label: item,
@@ -95,6 +145,19 @@ function buildInterestTagOptions(selectedInterestTags) {
 }
 
 Page({
+  /**
+   * 页面数据
+   * @property {Object} form - 表单数据（fullName/email/department/major/enrollmentYear）
+   * @property {string[]} yearOptions - 入学年份选项
+   * @property {number} yearIndex     - 当前选中的年份索引
+   * @property {Object[]} interestTagOptions - 预设标签视图模型
+   * @property {string[]} selectedInterestTags - 已选中的预设标签
+   * @property {string[]} customInterestTags   - 自定义标签列表
+   * @property {string} customInterestInputValue - 自定义标签输入框的值
+   * @property {boolean} loading  - 加载中
+   * @property {boolean} saving   - 保存中
+   * @property {string} errorMessage - 错误信息
+   */
   data: {
     form: {
       fullName: '',
@@ -114,14 +177,20 @@ Page({
     errorMessage: '',
   },
 
+  /** 每次显示页面时加载资料 */
   onShow() {
     this.loadProfile()
   },
 
+  /** 下拉刷新 */
   onPullDownRefresh() {
     this.loadProfile({ stopPullDownRefresh: true })
   },
 
+  /**
+   * 加载用户资料
+   * 获取后端数据 → 分拆兴趣标签 → 同步到表单
+   */
   async loadProfile(options) {
     const nextOptions = options || {}
 
@@ -133,6 +202,8 @@ Page({
     try {
       const profile = await libraryService.getMyProfile()
       const yearOptions = this.data.yearOptions
+
+      // 分拆兴趣标签为预设和自定义两组
       const { selectedInterestTags, customInterestTags } = splitInterestTags(
         profile.interestTags || [],
       )
@@ -166,6 +237,7 @@ Page({
     }
   },
 
+  /** 表单字段输入处理（通过 data-field 动态绑定） */
   onFieldInput(event) {
     const field = event.currentTarget.dataset.field
 
@@ -177,6 +249,7 @@ Page({
     })
   },
 
+  /** 入学年份 picker 变更 */
   onYearChange(event) {
     const yearIndex = Number(event.detail.value || 0)
 
@@ -189,6 +262,7 @@ Page({
     })
   },
 
+  /** 切换预设兴趣标签的选中状态 */
   toggleInterestTag(event) {
     const value = event.currentTarget.dataset.value
     const selectedInterestTags = [...this.data.selectedInterestTags]
@@ -206,12 +280,17 @@ Page({
     })
   },
 
+  /** 自定义标签输入事件 */
   onCustomInterestInput(event) {
     this.setData({
       customInterestInputValue: event.detail.value,
     })
   },
 
+  /**
+   * 添加自定义兴趣标签
+   * 过滤掉已存在于预设标签中的值，去重后添加
+   */
   addCustomInterestTag() {
     const nextTags = normalizeInterestTagFragments(
       this.data.customInterestInputValue,
@@ -229,6 +308,7 @@ Page({
     })
   },
 
+  /** 删除某个自定义兴趣标签 */
   removeCustomInterestTag(event) {
     const value = event.currentTarget.dataset.value
 
@@ -239,11 +319,44 @@ Page({
     })
   },
 
+  /** 重试加载 */
   retryLoadProfile() {
     this.loadProfile()
   },
 
+  /**
+   * 保存个人资料
+   *
+   * 流程：
+   *   1. 合并预设标签和自定义标签
+   *   2. 调用 updateProfile 接口
+   *   3. 成功后同步更新全局会话中的用户信息
+   */
   async saveProfile() {
+    if (this.data.saving) {
+      return
+    }
+
+    // 表单校验
+    const fullName = String(this.data.form.fullName || '').trim()
+    const email = String(this.data.form.email || '').trim()
+
+    if (!fullName) {
+      wx.showToast({
+        title: '请填写姓名',
+        icon: 'none',
+      })
+      return
+    }
+
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      wx.showToast({
+        title: '请输入有效的邮箱地址',
+        icon: 'none',
+      })
+      return
+    }
+
     this.setData({
       saving: true,
     })
@@ -261,6 +374,7 @@ Page({
       const user = await libraryService.updateProfile(payload)
       const app = getApp()
 
+      // 同步更新全局会话中的用户信息（保持 token 不变）
       app.setSession({
         token: app.globalData.token,
         user,

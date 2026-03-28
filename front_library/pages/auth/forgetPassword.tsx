@@ -9,6 +9,10 @@ import { toast } from "sonner";
 import DefaultLayout from "@/components/layouts/default";
 import { authService, parseApiError } from "@/services/api/authService";
 
+/**
+ * 忘记密码页。
+ * 提交邮箱后触发后端找回流程，并提示用户查看邮箱或开发日志。
+ */
 export default function ForgetPasswordPage() {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -81,6 +85,7 @@ export default function ForgetPasswordPage() {
                   <Button as={Link} color="primary" href="/auth/login">
                     返回登录
                   </Button>
+                  {/* 成功态下允许用户快速回到表单，重新提交其他邮箱。 */}
                   <Button variant="flat" onPress={() => setSuccessMessage("")}>
                     重新提交
                   </Button>

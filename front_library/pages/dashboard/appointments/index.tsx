@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useRouter } from "next/router";
 import {
   Button,
   Card,
@@ -103,9 +104,22 @@ function getSuccessMessage(status: ApiServiceAppointmentStatus) {
 }
 
 export default function AdminAppointmentsPage() {
+  const router = useRouter();
   const [filter, setFilter] = useState<AppointmentFilter>("all");
   const [page, setPage] = useState(1);
   const [keyword, setKeyword] = useState("");
+
+  // 从 URL query 中读取 keyword（从用户详情页跳转时携带）
+  React.useEffect(() => {
+    if (!router.isReady) return;
+    const qKeyword = Array.isArray(router.query.keyword)
+      ? router.query.keyword[0]
+      : router.query.keyword;
+
+    if (qKeyword) {
+      setKeyword(qKeyword);
+    }
+  }, [router.isReady]);  
   const [processingKey, setProcessingKey] = useState<string | null>(null);
 
   const { data, error, isLoading, mutate } = useSWR<ServiceAppointmentPageResult<ServiceAppointment>>(

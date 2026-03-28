@@ -1,5 +1,5 @@
 // services/api/fineService.ts
-// 罚款与信用模块接口服务（真实后端实现）
+// 罚款与信用模块接口服务
 
 import apiClient from "@/lib/axios";
 import { ApiFineDto, PageResponse } from "@/types/api";
@@ -50,6 +50,9 @@ export interface MyFinesPage {
 }
 
 // ─── 工具函数 ────────────────────────────────────────────────
+/**
+ * 把后端罚款 DTO 整理成前端统一视图结构。
+ */
 function mapDto(dto: ApiFineDto): AdminFine {
     return {
         fineId: dto.fineId,
@@ -109,6 +112,7 @@ export const fineService = {
 
         if (query.status && query.status !== "all") params.status = query.status;
         if (query.keyword?.trim()) params.keyword = query.keyword.trim();
+        // 后端分页对象与读者端列表组件约定不同，这里统一整理成 items + total 信息。
         const { data } = await apiClient.get<PageResponse<ApiFineDto>>("/fines", {
             params,
         });
@@ -144,14 +148,15 @@ export const fineService = {
      * 豁免罚款（管理员）
      * POST /api/fines/{fineId}/waive
      */
-    waiveFine: async (fineId: number): Promise<void> => {
-        await apiClient.post(`/fines/${fineId}/waive`);
+    waiveFine: async (fineId: number, reason?: string): Promise<void> => {
+        await apiClient.post(`/fines/${fineId}/waive`, reason ? { reason } : {});
     },
 
     /**
      * 获取未缴罚款总额（用于仪表盘）
      */
     getMyPendingTotal: async (): Promise<number> => {
+        // 当前接口层没有单独总额接口，因此复用我的罚款列表做一次前端聚合。
         const fines = await fineService.getMyFines();
 
         return fines

@@ -11,7 +11,8 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 /**
- * Checks whether the authenticated user owns a fine record.
+ * 罚款数据权限服务。
+ * 用于校验当前登录用户是否拥有指定罚款记录。
  */
 @Service
 @RequiredArgsConstructor
@@ -32,6 +33,7 @@ public class FineSecurityServiceImpl implements FineSecurityService {
         UserDetailsImpl userDetails = (UserDetailsImpl) principal;
         Integer userId = userDetails.getId();
 
+        // 对象级权限判断必须回表确认归属关系，避免仅凭请求参数放行。
         Optional<Fine> fineOpt = fineRepository.findById(fineId);
         if (fineOpt.isEmpty()) {
             return false;

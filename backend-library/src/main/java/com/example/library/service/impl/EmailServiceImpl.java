@@ -9,7 +9,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 /**
- * SMTP-backed email delivery service.
+ * 基于 SMTP 的邮件发送服务。
+ * 当前主要用于密码找回邮件投递。
  */
 @Service
 @RequiredArgsConstructor
@@ -23,6 +24,7 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void sendPasswordResetEmail(String toEmail, String username, String resetUrl, int expirationMinutes) {
+        // 保持纯文本邮件，兼容学校或企业内网中较严格的邮件客户端策略。
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromAddress);
         message.setTo(toEmail);

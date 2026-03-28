@@ -18,6 +18,9 @@ export interface Notification {
   businessKey?: string;
 }
 
+/**
+ * 将后端通知 DTO 转换为前端通知模型。
+ */
 function mapDto(dto: ApiNotificationDto): Notification {
   return {
     notificationId: dto.notificationId,
@@ -34,6 +37,9 @@ function mapDto(dto: ApiNotificationDto): Notification {
   };
 }
 
+/**
+ * 为通知跳转目标拼接高亮参数。
+ */
 function buildTargetWithHighlight(
   basePath: string,
   key: string,
@@ -48,6 +54,9 @@ function buildTargetWithHighlight(
   return `${basePath}?${params.toString()}`;
 }
 
+/**
+ * 把未知输入安全转换为非负整数，用于分页参数兜底。
+ */
 function normalizeNonNegativeInt(value: unknown, fallback: number): number {
   if (typeof value === "number" && Number.isFinite(value) && value >= 0) {
     return Math.trunc(value);
@@ -60,6 +69,9 @@ function normalizeNonNegativeInt(value: unknown, fallback: number): number {
   return fallback;
 }
 
+/**
+ * 根据通知业务类型和文案推断跳转目标页面。
+ */
 export function resolveNotificationTarget(notification: Notification): string | null {
   if (notification.targetType === "RECOMMENDATION") {
     return buildTargetWithHighlight("/my/recommendations", "highlight", notification.targetId);
@@ -117,6 +129,9 @@ export function resolveNotificationTarget(notification: Notification): string | 
   return null;
 }
 
+/**
+ * 为通知动作按钮生成更贴近业务语义的文案。
+ */
 export function getNotificationActionLabel(notification: Notification): string {
   const targetType = notification.targetType;
 
@@ -145,6 +160,10 @@ export function getNotificationActionLabel(notification: Notification): string {
   return "查看相关";
 }
 
+/**
+ * 通知 API 服务。
+ * 负责消息列表、已读状态、删除和未读数查询。
+ */
 export const notificationService = {
   /**
    * 获取当前用户通知分页

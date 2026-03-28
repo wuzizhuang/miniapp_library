@@ -33,7 +33,7 @@ public interface FineService {
     /**
      * Waives a fine (admin only).
      */
-    FineDto waiveFine(Integer fineId);
+    FineDto waiveFine(Integer fineId, String waiveReason);
 
     /**
      * Pays a fine.

@@ -25,8 +25,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Role service implementation — manages roles, permission assignments, and
- * user-role bindings.
+ * 角色服务实现类。
+ * 负责角色、权限分配以及用户与角色之间的绑定和批量操作。
  */
 @Service
 @RequiredArgsConstructor
@@ -36,18 +36,27 @@ public class RoleServiceImpl implements RoleService {
     private final PermissionRepository permissionRepository;
     private final UserRepository userRepository;
 
+    /**
+     * 查询全部角色。
+     */
     @Override
     @Transactional(readOnly = true)
     public List<RoleDto> getAllRoles() {
         return roleRepository.findAll().stream().map(this::toDto).toList();
     }
 
+    /**
+     * 根据角色 ID 查询详情。
+     */
     @Override
     @Transactional(readOnly = true)
     public RoleDto getRoleById(Integer roleId) {
         return toDto(findRoleOrThrow(roleId));
     }
 
+    /**
+     * 创建角色。
+     */
     @Override
     @Transactional
     public RoleDto createRole(RoleCreateDto dto) {
@@ -58,6 +67,10 @@ public class RoleServiceImpl implements RoleService {
         return toDto(roleRepository.save(role));
     }
 
+    /**
+     * 删除角色。
+     * 删除前会先解除该角色与所有用户之间的绑定关系。
+     */
     @Override
     @Transactional
     public void deleteRole(Integer roleId) {
@@ -72,6 +85,9 @@ public class RoleServiceImpl implements RoleService {
         roleRepository.delete(role);
     }
 
+    /**
+     * 为角色分配单个权限。
+     */
     @Override
     @Transactional
     public RoleDto assignPermission(Integer roleId, Integer permissionId) {
@@ -82,6 +98,9 @@ public class RoleServiceImpl implements RoleService {
         return toDto(roleRepository.save(role));
     }
 
+    /**
+     * 从角色中移除单个权限。
+     */
     @Override
     @Transactional
     public RoleDto revokePermission(Integer roleId, Integer permissionId) {
@@ -92,6 +111,9 @@ public class RoleServiceImpl implements RoleService {
         return toDto(roleRepository.save(role));
     }
 
+    /**
+     * 批量为角色分配权限。
+     */
     @Override
     @Transactional
     public RoleDto assignPermissions(Integer roleId, List<Integer> permissionIds) {
@@ -105,6 +127,9 @@ public class RoleServiceImpl implements RoleService {
         return toDto(roleRepository.save(role));
     }
 
+    /**
+     * 批量从角色移除权限。
+     */
     @Override
     @Transactional
     public RoleDto revokePermissions(Integer roleId, List<Integer> permissionIds) {
@@ -118,6 +143,9 @@ public class RoleServiceImpl implements RoleService {
         return toDto(roleRepository.save(role));
     }
 
+    /**
+     * 为单个用户分配角色。
+     */
     @Override
     @Transactional
     public void assignRoleToUser(Integer userId, Integer roleId) {
@@ -128,6 +156,9 @@ public class RoleServiceImpl implements RoleService {
         userRepository.save(user);
     }
 
+    /**
+     * 从单个用户撤销角色。
+     */
     @Override
     @Transactional
     public void revokeRoleFromUser(Integer userId, Integer roleId) {
@@ -138,6 +169,10 @@ public class RoleServiceImpl implements RoleService {
         userRepository.save(user);
     }
 
+    /**
+     * 批量为多个用户分配角色。
+     * 返回值会区分成功、生效、未变化和缺失用户等情况。
+     */
     @Override
     @Transactional
     public UserRoleBatchUpdateResultDto assignRoleToUsers(List<Integer> userIds, Integer roleId) {
@@ -175,6 +210,9 @@ public class RoleServiceImpl implements RoleService {
         return result;
     }
 
+    /**
+     * 批量从多个用户撤销角色。
+     */
     @Override
     @Transactional
     public UserRoleBatchUpdateResultDto revokeRoleFromUsers(List<Integer> userIds, Integer roleId) {
@@ -212,6 +250,9 @@ public class RoleServiceImpl implements RoleService {
         return result;
     }
 
+    /**
+     * 预览批量角色操作影响，不真正落库。
+     */
     @Override
     @Transactional(readOnly = true)
     public UserRoleBatchPreviewDto previewRoleOperation(List<Integer> userIds, Integer roleId) {
@@ -249,6 +290,9 @@ public class RoleServiceImpl implements RoleService {
         return preview;
     }
 
+    /**
+     * 查询某个用户当前已绑定的角色。
+     */
     @Override
     @Transactional(readOnly = true)
     public List<RoleDto> getUserRoles(Integer userId) {
@@ -257,11 +301,17 @@ public class RoleServiceImpl implements RoleService {
         return user.getRoles().stream().map(this::toDto).toList();
     }
 
+    /**
+     * 按 ID 查询角色，查不到时抛出异常。
+     */
     private Role findRoleOrThrow(Integer roleId) {
         return roleRepository.findById(roleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + roleId));
     }
 
+    /**
+     * 校验传入的权限 ID 是否全部存在。
+     */
     private void validatePermissionIds(List<Integer> requestedIds, List<Permission> foundPermissions) {
         Set<Integer> foundIds = foundPermissions.stream()
                 .map(Permission::getPermissionId)
@@ -275,6 +325,9 @@ public class RoleServiceImpl implements RoleService {
         }
     }
 
+    /**
+     * 归一化用户 ID 列表：去空、去重、去除非法值。
+     */
     private List<Integer> normalizeUserIds(List<Integer> userIds) {
         if (userIds == null) {
             return List.of();
@@ -285,6 +338,9 @@ public class RoleServiceImpl implements RoleService {
                         .toList()));
     }
 
+    /**
+     * 构造批量用户角色操作的基础返回对象。
+     */
     private UserRoleBatchUpdateResultDto buildBaseUserRoleResult(
             String operation,
             Role role,
@@ -297,6 +353,9 @@ public class RoleServiceImpl implements RoleService {
         return result;
     }
 
+    /**
+     * 补全批量操作统计信息。
+     */
     private void finalizeUserRoleResult(
             UserRoleBatchUpdateResultDto result,
             int requestedCount,
@@ -308,6 +367,9 @@ public class RoleServiceImpl implements RoleService {
         result.setUnchangedCount(result.getUnchangedUserIds().size());
     }
 
+    /**
+     * 将角色实体转换为 DTO，并展开其权限点信息。
+     */
     private RoleDto toDto(Role role) {
         RoleDto dto = new RoleDto();
         dto.setRoleId(role.getRoleId());

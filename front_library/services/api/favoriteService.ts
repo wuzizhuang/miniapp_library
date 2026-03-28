@@ -2,6 +2,9 @@ import apiClient from "@/lib/axios";
 import { ApiBookDto, PageResponse } from "@/types/api";
 import { Book } from "@/types/book";
 
+/**
+ * 把后端图书 DTO 映射成前端书架使用的 Book 结构。
+ */
 function mapApiBookToBook(dto: ApiBookDto): Book {
   return {
     bookId: dto.bookId,
@@ -22,6 +25,9 @@ function mapApiBookToBook(dto: ApiBookDto): Book {
   };
 }
 
+/**
+ * 收藏书架接口服务。
+ */
 export const favoriteService = {
   /**
    * 获取当前用户收藏书单
@@ -32,6 +38,7 @@ export const favoriteService = {
       params: { page, size },
     });
 
+    // 书架页面当前使用扁平列表，这里直接提取 content。
     return (data.content ?? []).map(mapApiBookToBook);
   },
 

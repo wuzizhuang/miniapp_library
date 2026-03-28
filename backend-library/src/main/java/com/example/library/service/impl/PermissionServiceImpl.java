@@ -14,7 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * Permission service implementation.
+ * 权限服务实现类。
+ * 负责权限点查询、创建、删除以及 DTO 转换。
  */
 @Service
 @RequiredArgsConstructor
@@ -22,6 +23,9 @@ public class PermissionServiceImpl implements PermissionService {
 
     private final PermissionRepository permissionRepository;
 
+    /**
+     * 查询全部权限点。
+     */
     @Override
     @Transactional(readOnly = true)
     public List<PermissionDto> getAllPermissions() {
@@ -30,6 +34,9 @@ public class PermissionServiceImpl implements PermissionService {
                 .toList();
     }
 
+    /**
+     * 创建权限点。
+     */
     @Override
     @Transactional
     public PermissionDto createPermission(PermissionCreateDto dto) {
@@ -40,6 +47,9 @@ public class PermissionServiceImpl implements PermissionService {
         return toDto(permissionRepository.save(permission));
     }
 
+    /**
+     * 删除权限点。
+     */
     @Override
     @Transactional
     public void deletePermission(Integer permissionId) {
@@ -48,6 +58,9 @@ public class PermissionServiceImpl implements PermissionService {
         permissionRepository.delete(permission);
     }
 
+    /**
+     * 将权限实体转换为 DTO。
+     */
     private PermissionDto toDto(Permission p) {
         PermissionDto dto = new PermissionDto();
         dto.setPermissionId(p.getPermissionId());

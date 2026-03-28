@@ -14,7 +14,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Physical copy of a book.
+ * 图书馆藏副本实体。
+ * 用于表示可被借阅、预约、盘点的具体实物副本。
  */
 @Entity
 @Table(name = "book_copies")
@@ -62,12 +63,15 @@ public class BookCopy {
     @Column(name = "location_code", length = 50)
     private String locationCode;
 
+    /** 副本对应的 RFID 标签编号。 */
     @Column(name = "rfid_tag", length = 64, unique = true)
     private String rfidTag;
 
+    /** 用于定位副本所在平面图位置的标识。 */
     @Column(name = "floor_plan_id")
     private Integer floorPlanId;
 
+    /** 副本流转状态。 */
     public enum CopyStatus {
         AVAILABLE, BORROWED, RESERVED, LOST, DAMAGED
     }

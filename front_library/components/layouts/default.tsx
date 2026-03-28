@@ -3,6 +3,10 @@ import { Navbar } from "./navbar";
 
 import { siteConfig } from "@/config/site";
 
+/**
+ * 前台默认布局。
+ * 统一包裹公共头部导航、内容区域和页脚，供读者侧页面复用。
+ */
 export default function DefaultLayout({
   children,
 }: {

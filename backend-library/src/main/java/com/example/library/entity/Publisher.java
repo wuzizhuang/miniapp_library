@@ -10,7 +10,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Publisher entity.
+ * 出版社实体。
+ * 保存出版社基础资料以及其名下图书关联。
  */
 @Entity
 @Table(name = "publishers")
@@ -42,6 +43,7 @@ public class Publisher {
     @OneToMany(mappedBy = "publisher")
     private Set<Book> books = new HashSet<>();
 
+    /** 是否已被软删除。 */
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 }

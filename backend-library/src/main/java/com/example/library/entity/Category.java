@@ -10,7 +10,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Category entity.
+ * 分类实体。
+ * 支持父子层级结构，用于组织图书分类树。
  */
 @Entity
 @Table(name = "categories")
@@ -46,6 +47,7 @@ public class Category {
     @OneToMany(mappedBy = "category")
     private Set<Book> books = new HashSet<>();
 
+    /** 是否已被软删除。 */
     @Column(name = "is_deleted", nullable = false)
     private Boolean deleted = false;
 }

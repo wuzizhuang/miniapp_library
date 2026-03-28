@@ -1,6 +1,9 @@
 /**
  * Mock data for offline demo fallback.
  * Provides realistic Chinese-language library data for all libraryService methods.
+ *
+ * 注意：书目数据与 Android 端 demo/catalog.ts 保持一致，
+ * 确保答辩演示时两端展示的馆藏信息统一。
  */
 
 // ─── Shared entities ───────────────────────────────────────────────
@@ -22,55 +25,77 @@ const DEMO_USER = {
 
 const DEMO_BOOKS = [
   {
-    id: 1, title: '深入理解计算机系统', author: 'Randal E. Bryant', isbn: '978-7-111-54493-7',
-    publisher: '机械工业出版社', publishYear: 2016, language: 'zh-CN', categoryId: 1,
-    categoryName: '计算机科学', totalCount: 5, availableCount: 2,
-    cover: '', description: '从程序员视角全面剖析计算机系统，涵盖数据表示、汇编语言、存储器层次、链接、异常控制流、虚拟存储器、系统级 I/O 等核心主题。',
+    id: 1, title: '人工智能导论', author: '王磊、周宁', isbn: '978-7-302-66001-1',
+    publisher: '清华大学出版社', publishYear: 2024, language: 'zh-CN', categoryId: 1,
+    categoryName: '计算机', totalCount: 8, availableCount: 6,
+    cover: '', description: '面向 AI 入门的读物，覆盖机器学习、模型训练与图书馆智能服务案例。',
   },
   {
-    id: 2, title: '算法导论', author: 'Thomas H. Cormen', isbn: '978-7-111-40701-0',
-    publisher: '机械工业出版社', publishYear: 2012, language: 'zh-CN', categoryId: 1,
-    categoryName: '计算机科学', totalCount: 8, availableCount: 3,
-    cover: '', description: '系统介绍了各种算法的设计方法与分析技巧，是计算机算法领域的经典教材。',
+    id: 2, title: '数据结构与算法实践', author: '陈晨', isbn: '978-7-111-71122-5',
+    publisher: '机械工业出版社', publishYear: 2023, language: 'zh-CN', categoryId: 1,
+    categoryName: '计算机', totalCount: 6, availableCount: 4,
+    cover: '', description: '从数组、链表到图算法，适合课程展示和移动端馆藏演示。',
   },
   {
-    id: 3, title: '百年孤独', author: '加西亚·马尔克斯', isbn: '978-7-5442-4528-8',
-    publisher: '南海出版公司', publishYear: 2011, language: 'zh-CN', categoryId: 2,
-    categoryName: '文学', totalCount: 4, availableCount: 1,
-    cover: '', description: '魔幻现实主义文学代表作，讲述布恩迪亚家族七代人的传奇故事。',
+    id: 3, title: '云边协同架构设计', author: '刘洋、徐敏', isbn: '978-7-121-45009-1',
+    publisher: '电子工业出版社', publishYear: 2025, language: 'zh-CN', categoryId: 1,
+    categoryName: '计算机', totalCount: 5, availableCount: 2,
+    cover: '', description: '聚焦现代系统设计，适合展示资源模式、线上访问与热门推荐能力。',
   },
   {
-    id: 4, title: '数据库系统概论', author: '王珊', isbn: '978-7-04-044425-1',
-    publisher: '高等教育出版社', publishYear: 2014, language: 'zh-CN', categoryId: 1,
-    categoryName: '计算机科学', totalCount: 10, availableCount: 5,
-    cover: '', description: '数据库领域经典教材，全面介绍关系数据库理论和数据库设计方法。',
+    id: 4, title: '图书馆空间叙事设计', author: '林岚', isbn: '978-7-515-36923-7',
+    publisher: '中国青年出版社', publishYear: 2022, language: 'zh-CN', categoryId: 4,
+    categoryName: '设计', totalCount: 5, availableCount: 5,
+    cover: '', description: '用于展示设计类资源和移动端推荐流的示例书目。',
   },
   {
-    id: 5, title: '三体', author: '刘慈欣', isbn: '978-7-229-03093-3',
-    publisher: '重庆出版社', publishYear: 2008, language: 'zh-CN', categoryId: 3,
-    categoryName: '科幻', totalCount: 6, availableCount: 0,
-    cover: '', description: '中国科幻文学里程碑之作，以宏大的宇宙视角展现文明间的博弈。',
+    id: 5, title: '品牌传播与用户洞察', author: '顾宁、赵悦', isbn: '978-7-300-31890-7',
+    publisher: '中国人民大学出版社', publishYear: 2021, language: 'zh-CN', categoryId: 3,
+    categoryName: '管理', totalCount: 4, availableCount: 1,
+    cover: '', description: '适合管理类场景展示，包含借阅、收藏与预约文案示例。',
   },
   {
-    id: 6, title: 'Spring Boot 实战', author: '克雷格·沃尔斯', isbn: '978-7-115-45301-9',
-    publisher: '人民邮电出版社', publishYear: 2016, language: 'zh-CN', categoryId: 1,
-    categoryName: '计算机科学', totalCount: 3, availableCount: 2,
-    cover: '', description: '全面介绍 Spring Boot 框架的实践指南，示范如何快速构建可部署应用。',
+    id: 6, title: '城市阅读与文学漫游', author: '沈青', isbn: '978-7-020-18889-7',
+    publisher: '人民文学出版社', publishYear: 2024, language: 'zh-CN', categoryId: 2,
+    categoryName: '文学', totalCount: 6, availableCount: 3,
+    cover: '', description: '文学类演示数据，适合展示分类筛选与推荐书目卡片。',
   },
 ]
 
 const DEMO_CATEGORIES = [
-  { categoryId: 1, name: '计算机科学', bookCount: 42 },
+  { categoryId: 1, name: '计算机', bookCount: 42 },
   { categoryId: 2, name: '文学', bookCount: 28 },
-  { categoryId: 3, name: '科幻', bookCount: 15 },
-  { categoryId: 4, name: '经济管理', bookCount: 20 },
-  { categoryId: 5, name: '自然科学', bookCount: 18 },
+  { categoryId: 3, name: '管理', bookCount: 20 },
+  { categoryId: 4, name: '设计', bookCount: 18 },
 ]
 
 const now = new Date()
 const dayMs = 86400000
 function dateStr(offset) {
   return new Date(now.getTime() + offset * dayMs).toISOString().slice(0, 19)
+}
+
+function toMockCatalogBook(book) {
+  return {
+    bookId: book.id,
+    isbn: book.isbn || '',
+    title: book.title,
+    coverUrl: book.cover || '',
+    description: book.description || '',
+    language: book.language || '',
+    publishYear: book.publishYear,
+    publisherName: book.publisher,
+    categoryId: book.categoryId,
+    categoryName: book.categoryName,
+    categoryNames: book.categoryName ? [book.categoryName] : [],
+    authorNames: book.author ? [book.author] : [],
+    inventoryCount: book.totalCount || book.availableCount || 0,
+    availableCount: book.availableCount || 0,
+    availableCopies: book.availableCount || 0,
+    totalCopies: book.totalCount || book.availableCount || 0,
+    avgRating: 0,
+    reviewCount: 0,
+  }
 }
 
 // ─── Mock method implementations ───────────────────────────────────
@@ -113,6 +138,10 @@ const mockData = {
         id: b.id, title: b.title, author: b.author, cover: b.cover,
         tag: b.categoryName,
       })),
+      newArrivals: DEMO_BOOKS.slice(2, 6).map((b) => ({
+        id: b.id, title: b.title, author: b.author, cover: b.cover,
+        tag: '推荐',
+      })),
       categories: DEMO_CATEGORIES.map((c) => ({
         categoryId: c.categoryId, label: c.name, count: c.bookCount,
       })),
@@ -138,13 +167,54 @@ const mockData = {
   },
 
   // ── Catalog ──────────────────────────────────────────────────────
-  getCatalog() {
+  getCatalog(params) {
+    const query = params || {}
+    const keyword = String(query.keyword || '').trim().toLowerCase()
+    const categoryId = Number(query.categoryId || 0)
+    const availableOnly = Boolean(query.availableOnly)
+    const page = Math.max(Number(query.page || 0), 0)
+    const size = Math.max(Number(query.size || 10), 1)
+    const filteredBooks = DEMO_BOOKS.filter((book) => {
+      const matchesKeyword =
+        !keyword ||
+        [book.title, book.author, book.isbn, book.publisher, book.categoryName]
+          .filter(Boolean)
+          .some((value) => String(value).toLowerCase().includes(keyword))
+
+      if (!matchesKeyword) {
+        return false
+      }
+
+      if (categoryId > 0 && Number(book.categoryId) !== categoryId) {
+        return false
+      }
+
+      if (availableOnly && Number(book.availableCount || 0) <= 0) {
+        return false
+      }
+
+      return true
+    }).map(toMockCatalogBook)
+    const totalElements = filteredBooks.length
+    const totalPages = Math.max(1, Math.ceil(totalElements / size))
+    const start = page * size
+    const pagedBooks = filteredBooks.slice(start, start + size)
+
     return {
       categories: DEMO_CATEGORIES,
       suggestions: ['计算机', '算法', '数据库', '文学', '三体'],
       hotKeywords: ['深入理解', 'Spring Boot', '三体', '百年孤独'],
       searchHistory: ['Java', '数据结构'],
-      books: DEMO_BOOKS,
+      books: pagedBooks,
+      pagination: {
+        page,
+        size,
+        totalPages,
+        totalElements,
+        numberOfElements: pagedBooks.length,
+        first: page <= 0,
+        last: page >= totalPages - 1,
+      },
       favoriteBookIds: [1, 3],
       loanBookIds: [1, 4],
       reservationBookIds: [5],
@@ -404,6 +474,11 @@ const mockData = {
 
   getHotKeywords() {
     return ['深入理解计算机系统', 'Spring Boot', '三体', '百年孤独', '算法导论', 'Python', '机器学习', '设计模式']
+  },
+
+  clearSearchHistory() {
+    wx.showToast({ title: '[演示模式] 历史已清空', icon: 'none' })
+    return { success: true }
   },
 
   // ── Appointments ─────────────────────────────────────────────────

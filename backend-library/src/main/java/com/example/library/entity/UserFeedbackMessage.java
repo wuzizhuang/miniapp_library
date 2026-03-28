@@ -19,7 +19,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 /**
- * Individual message inside a feedback conversation.
+ * 反馈消息实体。
+ * 表示反馈工单对话中的单条消息，可由用户或管理员发送。
  */
 @Entity
 @Table(name = "user_feedback_messages")
@@ -58,6 +59,7 @@ public class UserFeedbackMessage {
     @Column(name = "create_time", nullable = false, updatable = false)
     private LocalDateTime createTime;
 
+    /** 消息发送方类型。 */
     public enum SenderType {
         USER, ADMIN
     }

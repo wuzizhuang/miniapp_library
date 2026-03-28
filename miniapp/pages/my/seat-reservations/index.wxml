@@ -28,10 +28,14 @@
       </view>
 
       <view class="field-label">楼层筛选</view>
-      <input class="text-input" value="{{floorName}}" data-field="floorName" bindinput="onFieldInput" placeholder="可选，例如 2F" />
+      <picker range="{{floorOptions}}" value="{{floorPickerIndex}}" bindchange="onFloorChange">
+        <view class="picker-field">{{floorPickerIndex > 0 ? floorOptions[floorPickerIndex] : '不限楼层'}}</view>
+      </picker>
 
       <view class="field-label">分区筛选</view>
-      <input class="text-input" value="{{zoneName}}" data-field="zoneName" bindinput="onFieldInput" placeholder="可选，例如 东侧静音区" />
+      <picker range="{{zoneOptions}}" value="{{zonePickerIndex}}" bindchange="onZoneChange">
+        <view class="picker-field">{{zonePickerIndex > 0 ? zoneOptions[zonePickerIndex] : '不限分区'}}</view>
+      </picker>
 
       <view class="field-label">预约备注</view>
       <textarea class="textarea" value="{{notes}}" data-field="notes" bindinput="onFieldInput" placeholder="可选，填写临时说明"></textarea>
@@ -41,7 +45,7 @@
         <view class="button-secondary button-inline" bindtap="resetTimeWindow">重置时间</view>
       </view>
 
-      <view class="field-helper-text">后端会校验时间段冲突、最短 30 分钟和最长 8 小时。</view>
+      <view class="field-helper-text">预约时长需在 30 分钟至 8 小时之间，同一时段不可重复预约。</view>
       <view wx:if="{{errorMessage}}" class="danger-text">{{errorMessage}}</view>
     </view>
   </view>
@@ -63,7 +67,7 @@
       <view wx:if="{{item.description}}" class="notice-content">{{item.description}}</view>
       <view class="inline-actions">
         <view
-          class="{{item.available ? 'button-primary' : 'button-secondary'}}"
+          class="{{submittingSeatId === item.seatId ? (item.available ? 'button-primary is-disabled' : 'button-secondary is-disabled') : (item.available ? 'button-primary' : 'button-secondary')}}"
           bindtap="reserveSeat"
           data-seat-id="{{item.seatId}}"
           data-available="{{item.available}}"
@@ -92,7 +96,7 @@
       <view class="notice-content">时间：{{item.timeLabel}}</view>
       <view wx:if="{{item.notes}}" class="notice-content">备注：{{item.notes}}</view>
       <view class="inline-actions">
-        <view class="button-secondary" bindtap="cancelReservation" data-reservation-id="{{item.reservationId}}">
+        <view class="{{cancellingReservationId === item.reservationId ? 'button-secondary is-disabled' : 'button-secondary'}}" bindtap="cancelReservation" data-reservation-id="{{item.reservationId}}">
           {{cancellingReservationId === item.reservationId ? '取消中...' : '取消预约'}}
         </view>
       </view>

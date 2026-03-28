@@ -98,9 +98,9 @@
 
   <view wx:if="{{pageCount > 1}}" class="panel" style="text-align: center;">
     <view class="button-row">
-      <view class="{{currentPage <= 1 ? 'button-ghost disabled' : 'button-ghost'}}" bindtap="prevPage">上一页</view>
+      <view class="{{currentPage <= 1 ? 'button-ghost is-disabled' : 'button-ghost'}}" bindtap="prevPage">上一页</view>
       <view class="muted-text">{{currentPage}} / {{pageCount}}</view>
-      <view class="{{currentPage >= pageCount ? 'button-ghost disabled' : 'button-ghost'}}" bindtap="nextPage">下一页</view>
+      <view class="{{currentPage >= pageCount ? 'button-ghost is-disabled' : 'button-ghost'}}" bindtap="nextPage">下一页</view>
     </view>
   </view>
 </scroll-view>

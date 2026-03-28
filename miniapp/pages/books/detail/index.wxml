@@ -4,13 +4,19 @@
   </view>
 
   <view wx:elif="{{errorMessage}}" class="panel">
-    <view class="empty-card danger-text">{{errorMessage}}</view>
+    <view class="empty-card danger-text">
+      <view>{{errorMessage}}</view>
+      <view class="inline-actions">
+        <view class="button-secondary" bindtap="retryLoadDetail">重新加载</view>
+      </view>
+    </view>
   </view>
 
   <block wx:elif="{{detail}}">
     <view class="hero-card">
       <view class="cover-hero">
-        <image class="book-cover" src="{{detail.book.coverUrl}}" mode="aspectFill"></image>
+        <image wx:if="{{detail.book.coverUrl}}" class="book-cover" src="{{detail.book.coverUrl}}" mode="aspectFill"></image>
+        <view wx:else class="book-cover shelf-cover-placeholder">暂无封面</view>
         <view class="book-info">
           <view class="book-title">{{detail.book.title}}</view>
           <view class="book-meta">{{detail.book.authorNames.join(' / ')}}</view>
@@ -42,11 +48,23 @@
     </view>
 
     <view class="panel">
-      <view class="section-title">借阅动作</view>
+      <view class="section-title">快捷操作</view>
       <view class="button-row">
-        <view class="button-primary" bindtap="borrowBook">{{actionLoading ? '处理中...' : '立即借阅'}}</view>
-        <view class="button-secondary" bindtap="reserveBook">预约排队</view>
-        <view class="button-ghost" bindtap="toggleFavorite">{{detail.isFavorite ? '取消收藏' : '加入收藏'}}</view>
+        <view
+          class="{{actionLoading || detail.activeLoan ? 'button-primary is-disabled' : 'button-primary'}}"
+          bindtap="borrowBook"
+        >
+          {{detail.activeLoan ? '已借阅' : actionLoading ? '处理中...' : '立即借阅'}}
+        </view>
+        <view
+          class="{{actionLoading || detail.activeLoan || detail.activeReservation ? 'button-secondary is-disabled' : 'button-secondary'}}"
+          bindtap="reserveBook"
+        >
+          {{detail.activeReservation ? '已预约' : actionLoading ? '处理中...' : '预约排队'}}
+        </view>
+        <view class="{{actionLoading ? 'button-ghost is-disabled' : 'button-ghost'}}" bindtap="toggleFavorite">
+          {{actionLoading ? '处理中...' : detail.isFavorite ? '取消收藏' : '加入收藏'}}
+        </view>
       </view>
       <view wx:if="{{detail.activeLoan}}" class="inline-actions">
         <view class="chip-warning">你已借阅本书</view>
@@ -88,8 +106,11 @@
         <view class="chip-row">
           <view wx:for="{{ratingOptions}}" wx:key="*this" class="pill-item {{reviewRating === item ? 'pill-item--active' : ''}}" data-rating="{{item}}" bindtap="pickRating">{{item}} 分</view>
         </view>
-        <textarea class="textarea" placeholder="写下你的阅读感受" value="{{reviewContent}}" bindinput="onReviewInput"></textarea>
-        <view class="button-primary" bindtap="submitReview">提交评论</view>
+        <textarea class="textarea" placeholder="写下你的阅读感受" value="{{reviewContent}}" bindinput="onReviewInput" maxlength="{{maxLength}}"></textarea>
+        <view class="field-helper-text">{{reviewContent.length}} / {{maxLength}} 字</view>
+        <view class="{{actionLoading ? 'button-primary is-disabled' : 'button-primary'}}" bindtap="submitReview">
+          {{actionLoading ? '处理中...' : '提交评论'}}
+        </view>
       </view>
       <view class="divider"></view>
       <view wx:if="{{!detail.reviews.length}}" class="empty-card">还没有读者评论，你可以成为第一个留言的人。</view>

@@ -37,6 +37,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -175,6 +176,21 @@ public class BookControllerTest {
                 .andExpect(jsonPath("$.floors", hasSize(1)));
 
         verify(bookLocationMapService).getBookLocationMap(10);
+    }
+
+    @Test
+    @WithMockUser
+    void testGetTrendingBooks_HotAlias_Success() throws Exception {
+        when(bookService.getTrendingBooks(8)).thenReturn(List.of(testBookDto));
+
+        mockMvc.perform(get("/api/books/hot").param("limit", "8"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].bookId").value(1))
+                .andExpect(jsonPath("$[0].title").value("Spring Boot 实战"));
+
+        verify(bookService).getTrendingBooks(8);
+        verify(bookService, never()).getBookById(anyInt());
     }
 
 }

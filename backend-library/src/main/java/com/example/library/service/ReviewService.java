@@ -2,6 +2,7 @@ package com.example.library.service;
 
 import com.example.library.dto.ReviewDto;
 import com.example.library.dto.ReviewResponseDto;
+import com.example.library.dto.ReviewUpdateDto;
 import com.example.library.entity.BookReview;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -48,7 +49,7 @@ public interface ReviewService {
     /**
      * Updates a review's content.
      */
-    ReviewResponseDto updateReview(Integer reviewId, ReviewDto reviewDto);
+    ReviewResponseDto updateReview(Integer reviewId, ReviewUpdateDto reviewDto);
 
     /**
      * Deletes a review.

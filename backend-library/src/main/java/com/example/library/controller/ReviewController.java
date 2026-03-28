@@ -2,6 +2,8 @@ package com.example.library.controller;
 
 import com.example.library.dto.ReviewDto;
 import com.example.library.dto.ReviewResponseDto;
+import com.example.library.dto.ReviewUpdateDto;
+import com.example.library.exception.BadRequestException;
 import com.example.library.security.UserDetailsImpl;
 import com.example.library.service.ReviewService;
 import jakarta.validation.Valid;
@@ -16,7 +18,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Endpoints for book reviews.
+ * 图书评论控制器。
+ * 提供读者发表评论、查询我的评论、修改和删除评论接口。
  */
 @RestController
 @RequestMapping("/api/reviews")
@@ -26,7 +29,7 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     /**
-     * Submits a new book review.
+     * 提交图书评论。
      */
     @PostMapping
     public ResponseEntity<ReviewResponseDto> createReview(
@@ -37,7 +40,7 @@ public class ReviewController {
     }
 
     /**
-     * Returns all reviews submitted by the current user.
+     * 查询当前用户提交过的全部评论。
      */
     @GetMapping("/me")
     public ResponseEntity<Page<ReviewResponseDto>> getMyReviews(
@@ -50,18 +53,22 @@ public class ReviewController {
     }
 
     /**
-     * Updates the current user's review.
+     * 更新评论内容。
+     * 仅评论本人或管理员可操作。
      */
     @PutMapping("/{id}")
     @PreAuthorize("@reviewSecurityService.isReviewOwner(authentication, #id) or hasRole('ADMIN')")
     public ResponseEntity<ReviewResponseDto> updateReview(
             @PathVariable Integer id,
-            @Valid @RequestBody ReviewDto reviewDto) {
+            @Valid @RequestBody(required = false) ReviewUpdateDto reviewDto) {
+        if (reviewDto == null) {
+            throw new BadRequestException("评论更新请求不能为空");
+        }
         return ResponseEntity.ok(reviewService.updateReview(id, reviewDto));
     }
 
     /**
-     * Deletes the current user's review (or admin can delete any).
+     * 删除评论。
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("@reviewSecurityService.isReviewOwner(authentication, #id) or hasRole('ADMIN')")

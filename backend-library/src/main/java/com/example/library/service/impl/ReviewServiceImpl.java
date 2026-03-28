@@ -2,6 +2,7 @@ package com.example.library.service.impl;
 
 import com.example.library.dto.ReviewDto;
 import com.example.library.dto.ReviewResponseDto;
+import com.example.library.dto.ReviewUpdateDto;
 import com.example.library.entity.*;
 import com.example.library.exception.BadRequestException;
 import com.example.library.exception.ResourceNotFoundException;
@@ -15,7 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Default review service implementation.
+ * 评论服务实现类。
+ * 负责评论创建、审核、查询、更新和删除逻辑。
  */
 @Service
 @RequiredArgsConstructor
@@ -27,7 +29,8 @@ public class ReviewServiceImpl implements ReviewService {
     private final LoanRepository loanRepository;
 
     /**
-     * Creates a review for a book.
+     * 创建图书评论。
+     * 若评论绑定了借阅单，则会校验借阅归属与图书一致性，并避免同一借阅重复评论。
      */
     @Override
     @Transactional
@@ -78,7 +81,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     /**
-     * Returns approved reviews for a book.
+     * 查询某本图书的已通过评论。
      */
     @Override
     @Transactional(readOnly = true)
@@ -88,7 +91,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     /**
-     * Updates review moderation status.
+     * 更新评论审核状态。
      */
     @Override
     @Transactional
@@ -100,7 +103,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     /**
-     * Returns pending reviews for admin audit.
+     * 查询待审核评论列表。
      */
     @Override
     @Transactional(readOnly = true)
@@ -110,7 +113,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     /**
-     * Returns admin review list with status and keyword filters.
+     * 查询后台评论列表，支持状态和关键字筛选。
      */
     @Override
     @Transactional(readOnly = true)
@@ -121,7 +124,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     /**
-     * Approves or rejects a review.
+     * 审核评论，通过或驳回。
      */
     @Override
     @Transactional
@@ -134,7 +137,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     /**
-     * Maps entity to response DTO.
+     * 将评论实体转换为响应 DTO。
      */
     private ReviewResponseDto convertToDto(BookReview entity) {
         ReviewResponseDto dto = new ReviewResponseDto();
@@ -156,7 +159,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     /**
-     * Returns reviews submitted by a specific user.
+     * 查询某位用户提交的评论。
      */
     @Override
     @Transactional(readOnly = true)
@@ -165,11 +168,11 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     /**
-     * Updates a review's content.
+     * 更新评论内容。
      */
     @Override
     @Transactional
-    public ReviewResponseDto updateReview(Integer reviewId, ReviewDto dto) {
+    public ReviewResponseDto updateReview(Integer reviewId, ReviewUpdateDto dto) {
         BookReview review = reviewRepository.findById(reviewId.longValue())
                 .orElseThrow(() -> new ResourceNotFoundException("Review not found with id: " + reviewId));
         review.setRating(dto.getRating());
@@ -178,7 +181,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     /**
-     * Deletes a review.
+     * 删除评论。
      */
     @Override
     @Transactional

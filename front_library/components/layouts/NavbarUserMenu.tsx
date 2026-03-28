@@ -13,15 +13,23 @@ import { Icon } from "@iconify/react";
 import { useAuth } from "@/config/authContext";
 import { canAccessAdminPanel } from "@/utils/rbac";
 
+/**
+ * 顶部导航用户菜单组件属性。
+ */
 interface NavbarUserMenuProps {
     unreadCount: number;
 }
 
+/**
+ * 顶部导航用户菜单。
+ * 负责通知入口、头像下拉菜单以及读者常用快捷跳转。
+ */
 export const NavbarUserMenu = ({ unreadCount }: NavbarUserMenuProps) => {
     const { user, logout } = useAuth();
 
     if (!user) return null;
 
+    // 若用户未上传头像，则回退到动态生成的首字母头像。
     const userAvatar =
         user.avatar ||
         `https://ui-avatars.com/api/?name=${user.fullName || user.username || "User"}&background=random`;
@@ -81,6 +89,9 @@ export const NavbarUserMenu = ({ unreadCount }: NavbarUserMenuProps) => {
                     </DropdownItem>
                     <DropdownItem key="recommendations" href="/my/recommendations">
                         🌟 推荐动态
+                    </DropdownItem>
+                    <DropdownItem key="personal-recommendations" href="/my/personal-recommendations">
+                        💡 为您推荐
                     </DropdownItem>
                     <DropdownItem key="search-history" href="/my/search-history">
                         🔎 搜索历史

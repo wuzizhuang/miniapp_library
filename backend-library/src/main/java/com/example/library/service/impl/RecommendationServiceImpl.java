@@ -32,6 +32,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * 推荐服务实现类。
+ * 负责推荐动态流、发帖、点赞、关注教师以及通知推送。
+ */
 @Service
 @RequiredArgsConstructor
 public class RecommendationServiceImpl implements RecommendationService {
@@ -47,6 +51,10 @@ public class RecommendationServiceImpl implements RecommendationService {
     private final BookRepository bookRepository;
     private final NotificationService notificationService;
 
+    /**
+     * 获取推荐动态流。
+     * 支持全部、关注中和仅自己三种视角。
+     */
     @Override
     @Transactional(readOnly = true)
     public Page<RecommendationPostDto> getFeed(Integer currentUserId, String scope, int page, int size) {
@@ -63,6 +71,10 @@ public class RecommendationServiceImpl implements RecommendationService {
         return new PageImpl<>(content, pageable, posts.getTotalElements());
     }
 
+    /**
+     * 发布一条新的推荐动态。
+     * 当前仅教师账号或管理员可发布推荐内容。
+     */
     @Override
     @Transactional
     public RecommendationPostDto createRecommendation(Integer currentUserId, RecommendationCreateDto dto) {
@@ -83,6 +95,10 @@ public class RecommendationServiceImpl implements RecommendationService {
         return enrichSingle(saved, currentUserId);
     }
 
+    /**
+     * 删除推荐动态。
+     * 仅动态作者本人或管理员可删除。
+     */
     @Override
     @Transactional
     public void deleteRecommendation(Integer currentUserId, Long postId) {
@@ -98,6 +114,9 @@ public class RecommendationServiceImpl implements RecommendationService {
         recommendationPostRepository.delete(post);
     }
 
+    /**
+     * 点赞推荐动态。
+     */
     @Override
     @Transactional
     public void likeRecommendation(Integer currentUserId, Long postId) {
@@ -114,6 +133,9 @@ public class RecommendationServiceImpl implements RecommendationService {
         recommendationLikeRepository.save(like);
     }
 
+    /**
+     * 取消点赞推荐动态。
+     */
     @Override
     @Transactional
     public void unlikeRecommendation(Integer currentUserId, Long postId) {
@@ -122,6 +144,9 @@ public class RecommendationServiceImpl implements RecommendationService {
         recommendationLikeRepository.delete(like);
     }
 
+    /**
+     * 关注教师推荐人。
+     */
     @Override
     @Transactional
     public void followTeacher(Integer currentUserId, Integer teacherUserId) {
@@ -144,6 +169,9 @@ public class RecommendationServiceImpl implements RecommendationService {
         recommendationFollowRepository.save(follow);
     }
 
+    /**
+     * 取消关注教师推荐人。
+     */
     @Override
     @Transactional
     public void unfollowTeacher(Integer currentUserId, Integer teacherUserId) {
@@ -153,6 +181,9 @@ public class RecommendationServiceImpl implements RecommendationService {
         recommendationFollowRepository.delete(follow);
     }
 
+    /**
+     * 在教师发布推荐后，通知其关注者。
+     */
     private void notifyFollowers(RecommendationPost post) {
         List<Integer> followerIds = recommendationFollowRepository.findFollowerIdsByTeacherUserId(post.getAuthor().getUserId());
 
@@ -169,6 +200,9 @@ public class RecommendationServiceImpl implements RecommendationService {
         }
     }
 
+    /**
+     * 生成推荐内容摘要，用于通知展示。
+     */
     private String summarize(String content) {
         String normalized = content == null ? "" : content.trim();
         if (normalized.length() <= 60) {
@@ -177,10 +211,16 @@ public class RecommendationServiceImpl implements RecommendationService {
         return normalized.substring(0, 60) + "...";
     }
 
+    /**
+     * 将单条动态封装为带用户上下文的 DTO。
+     */
     private RecommendationPostDto enrichSingle(RecommendationPost post, Integer currentUserId) {
         return buildDtos(List.of(post), currentUserId).get(0);
     }
 
+    /**
+     * 批量构建推荐动态 DTO，并补齐点赞数、是否已点赞、是否已关注等派生信息。
+     */
     private List<RecommendationPostDto> buildDtos(List<RecommendationPost> posts, Integer currentUserId) {
         List<Long> postIds = posts.stream().map(RecommendationPost::getPostId).toList();
         List<Integer> authorIds = posts.stream().map(post -> post.getAuthor().getUserId()).distinct().toList();
@@ -195,6 +235,9 @@ public class RecommendationServiceImpl implements RecommendationService {
                 .toList();
     }
 
+    /**
+     * 将推荐动态实体转换为 DTO。
+     */
     private RecommendationPostDto toDto(
             RecommendationPost post,
             Map<Long, Long> likeCounts,
@@ -223,6 +266,9 @@ public class RecommendationServiceImpl implements RecommendationService {
         return dto;
     }
 
+    /**
+     * 统计动态点赞数。
+     */
     private Map<Long, Long> getLikeCounts(Collection<Long> postIds) {
         if (postIds.isEmpty()) {
             return Map.of();
@@ -234,6 +280,9 @@ public class RecommendationServiceImpl implements RecommendationService {
                         RecommendationLikeRepository.RecommendationLikeCountView::getLikeCount));
     }
 
+    /**
+     * 查询当前用户已点赞的动态集合。
+     */
     private Set<Long> getLikedPostIds(Integer currentUserId, Collection<Long> postIds) {
         if (currentUserId == null || postIds.isEmpty()) {
             return Set.of();
@@ -242,6 +291,9 @@ public class RecommendationServiceImpl implements RecommendationService {
         return recommendationLikeRepository.findLikedPostIds(currentUserId, postIds).stream().collect(Collectors.toSet());
     }
 
+    /**
+     * 查询当前用户在作者列表中已经关注的教师 ID。
+     */
     private Set<Integer> getFollowingTeacherIds(Integer currentUserId, Collection<Integer> teacherIds) {
         if (currentUserId == null || teacherIds.isEmpty()) {
             return Set.of();
@@ -251,11 +303,17 @@ public class RecommendationServiceImpl implements RecommendationService {
                 .collect(Collectors.toSet());
     }
 
+    /**
+     * 按用户 ID 查询用户，查不到时抛出异常。
+     */
     private User requireUser(Integer userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
     }
 
+    /**
+     * 校验当前用户是否具备发布推荐权限。
+     */
     private void ensureCanPublish(User user) {
         if (user.getRole() == User.UserRole.ADMIN) {
             return;
@@ -265,6 +323,9 @@ public class RecommendationServiceImpl implements RecommendationService {
         }
     }
 
+    /**
+     * 校验被关注对象是否属于教师推荐人。
+     */
     private void ensureTeacherAccount(User user) {
         if (user.getRole() == User.UserRole.ADMIN) {
             return;
@@ -274,6 +335,9 @@ public class RecommendationServiceImpl implements RecommendationService {
         }
     }
 
+    /**
+     * 规范化动态流范围参数。
+     */
     private String normalizeScope(String scope) {
         if (scope == null || scope.isBlank()) {
             return FEED_SCOPE_ALL;
@@ -286,6 +350,9 @@ public class RecommendationServiceImpl implements RecommendationService {
         };
     }
 
+    /**
+     * 构造通知去重业务主键。
+     */
     private String buildBusinessKey(String prefix, Long entityId) {
         return entityId == null ? null : prefix + ":" + entityId;
     }

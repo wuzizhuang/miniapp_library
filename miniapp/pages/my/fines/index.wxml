@@ -53,7 +53,12 @@
       <view wx:if="{{item.paidTime}}" class="notice-meta">支付日期 {{item.paidTime}}</view>
       <view class="inline-actions">
         <view wx:if="{{item.loanId}}" class="button-secondary" bindtap="openLoan" data-loan-id="{{item.loanId}}">查看借阅</view>
-        <view wx:if="{{item.status === 'PENDING'}}" class="button-danger" bindtap="payFine" data-fine-id="{{item.fineId}}">
+        <view
+          wx:if="{{item.status === 'PENDING'}}"
+          class="{{payingFineId === item.fineId ? 'button-danger is-disabled' : 'button-danger'}}"
+          bindtap="payFine"
+          data-fine-id="{{item.fineId}}"
+        >
           {{payingFineId === item.fineId ? '支付中...' : '立即支付'}}
         </view>
       </view>

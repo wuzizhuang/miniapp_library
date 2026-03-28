@@ -1,27 +1,37 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import useSWR from "swr";
 import { Icon } from "@iconify/react";
-import { Spinner } from "@heroui/react";
 
 import { AppImage } from "@/components/common/AppImage";
 import { Navbar } from "@/components/layouts/navbar";
 import { useAuth } from "@/config/authContext";
 import { publicService } from "@/services/api/publicService";
 import { userService } from "@/services/api/userService";
+import {
+  personalRecommendationService,
+  PersonalRecommendationResponse,
+  RecommendedBook,
+} from "@/services/api/personalRecommendationService";
 import { ApiHomeBookItem, ApiHomeCategoryItem, ApiHomeStat } from "@/types/api";
 import { canAccessAdminPanel } from "@/utils/rbac";
 
+/**
+ * 首页数量格式化工具。
+ */
 function formatCount(value: number) {
   return Number(value || 0).toLocaleString();
 }
 
+/**
+ * 读者侧首页。
+ * 负责首页聚合数据展示以及顶部检索入口。
+ */
 export default function Home() {
   const router = useRouter();
-  const { user, isLoading: authLoading } = useAuth();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
-  const [redirecting, setRedirecting] = useState(false);
   const { data, error } = useSWR("public-homepage", publicService.getHomePage, {
     revalidateOnFocus: false,
   });
@@ -30,21 +40,41 @@ export default function Home() {
     userService.getMyOverview,
     { revalidateOnFocus: false },
   );
+  // 个人推荐数据（仅已登录用户发起请求）
+  const { data: personalRec, isLoading: personalRecLoading } = useSWR(
+    user ? "homepage-personal-rec" : null,
+    () => personalRecommendationService.getRecommendations(8),
+    { revalidateOnFocus: false },
+  );
+  /** 从多策略中合并出首页展示用的推荐列表（最多 8 本，去重） */
+  const personalRecBooks: RecommendedBook[] = useMemo(() => {
+    if (!personalRec) return [];
 
-  // 管理员默认跳转后台（从后台点"返回前台"时带 ?view=front，不再自动跳回）
-  useEffect(() => {
-    if (authLoading) return;
-    if (router.query.view === "front") return;
-    if (user && canAccessAdminPanel(user)) {
-      setRedirecting(true);
-      router.replace("/dashboard");
+    const seen = new Set<number>();
+    const merged: RecommendedBook[] = [];
+    const sources: (keyof PersonalRecommendationResponse)[] = [
+      "byCategory", "byAuthor", "byCollaborative", "byInterestTags", "trending",
+    ];
+
+    for (const key of sources) {
+      for (const book of personalRec[key] ?? []) {
+        if (merged.length >= 8) break;
+        if (!seen.has(book.bookId)) {
+          seen.add(book.bookId);
+          merged.push(book);
+        }
+      }
+      if (merged.length >= 8) break;
     }
-  }, [authLoading, user, router]);
+
+    return merged;
+  }, [personalRec]);
 
   const heroStats: ApiHomeStat[] = data?.heroStats ?? [];
   const featuredBooks: ApiHomeBookItem[] = data?.featuredBooks ?? [];
   const newArrivals: ApiHomeBookItem[] = data?.newArrivals ?? [];
   const categories: ApiHomeCategoryItem[] = data?.categories ?? [];
+  // 首页统计中把“注册读者”替换为更贴近首页浏览语义的“热门分类”。
   const audienceAwareStats = useMemo(
     () =>
       heroStats.map((stat) =>
@@ -83,6 +113,7 @@ export default function Home() {
       link: "/about",
     },
   ];
+  // 首页右侧快捷入口会根据权限动态插入后台入口。
   const readerStatusCards = [
     {
       title: "当前在借",
@@ -125,14 +156,6 @@ export default function Home() {
     },
   ];
 
-  if (redirecting) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <Spinner label="正在进入后台管理..." size="lg" />
-      </div>
-    );
-  }
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -144,6 +167,7 @@ export default function Home() {
     <div className="min-h-screen bg-slate-50">
       <Navbar />
 
+      {/* 首屏 Hero：搜索、读者状态和推荐书目统一放在第一屏。 */}
       <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white">
         <div className="absolute inset-0">
           <div className="absolute -top-20 -left-20 h-72 w-72 rounded-full bg-indigo-500/30 blur-3xl" />
@@ -317,6 +341,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 热门内容区：展示近期读者关注度较高的书目与分类。 */}
       <section className="py-16">
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex flex-col lg:flex-row justify-between gap-8">
@@ -390,6 +415,115 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 个性化推荐区：仅对已登录用户展示，通过 5 策略融合显示推荐图书。 */}
+      {user ? (
+        <section className="py-16 bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="flex items-center justify-between gap-4 mb-8">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full bg-indigo-100 px-4 py-1.5 text-xs font-medium text-indigo-700 mb-3">
+                  <Icon icon="solar:lightbulb-bolt-bold-duotone" width={14} />
+                  个性化推荐
+                </div>
+                <h2 className="text-3xl font-semibold text-slate-900">
+                  为你精选
+                </h2>
+                <p className="text-slate-500 mt-2">
+                  基于你的借阅历史、收藏偏好和兴趣标签，为你量身推荐。
+                </p>
+              </div>
+              <NextLink
+                className="hidden sm:inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-white px-5 py-2.5 text-sm font-medium text-indigo-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                href="/my/personal-recommendations"
+              >
+                查看全部推荐
+                <Icon icon="solar:arrow-right-bold" width={16} />
+              </NextLink>
+            </div>
+
+            {personalRecLoading ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="aspect-[3/4] rounded-2xl bg-slate-200/60 animate-pulse"
+                  />
+                ))}
+              </div>
+            ) : personalRecBooks.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+                {personalRecBooks.slice(0, 8).map((book) => (
+                  <NextLink
+                    key={book.bookId}
+                    className="group rounded-2xl bg-white shadow-sm hover:shadow-lg transition-all hover:-translate-y-1 overflow-hidden border border-slate-100"
+                    href={`/books/${book.bookId}`}
+                  >
+                    <div className="relative">
+                      <AppImage
+                        alt={book.title}
+                        className="group-hover:scale-105 transition-transform"
+                        height={240}
+                        src={book.coverUrl}
+                        width={320}
+                        wrapperClassName="h-56 overflow-hidden"
+                      />
+                      {book.categoryName ? (
+                        <span className="absolute top-3 left-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-slate-700 shadow-sm backdrop-blur">
+                          {book.categoryName}
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="p-4 space-y-2">
+                      <p className="text-sm text-slate-500">
+                        {book.authorNames?.join(", ") || "未知作者"}
+                      </p>
+                      <p className="font-semibold text-slate-900 line-clamp-2">
+                        {book.title}
+                      </p>
+                      {book.reason ? (
+                        <p className="text-xs text-indigo-600 flex items-center gap-1">
+                          <Icon icon="solar:lightbulb-bold-duotone" width={12} />
+                          <span className="line-clamp-1">{book.reason}</span>
+                        </p>
+                      ) : null}
+                    </div>
+                  </NextLink>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-12 text-center">
+                <Icon
+                  className="mx-auto mb-3 text-slate-300"
+                  icon="solar:lightbulb-bolt-bold-duotone"
+                  width={40}
+                />
+                <p className="text-sm text-slate-500">
+                  多借阅、收藏几本图书后，推荐引擎就能为你工作了。
+                </p>
+                <NextLink
+                  className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-indigo-600"
+                  href="/books"
+                >
+                  去发现图书
+                  <Icon icon="solar:arrow-right-bold" width={14} />
+                </NextLink>
+              </div>
+            )}
+
+            <div className="mt-4 text-center sm:hidden">
+              <NextLink
+                className="inline-flex items-center gap-2 text-sm font-medium text-indigo-600"
+                href="/my/personal-recommendations"
+              >
+                查看全部推荐
+                <Icon icon="solar:arrow-right-bold" width={14} />
+              </NextLink>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {/* 新书与快捷服务区：强化新到馆内容和高频功能入口。 */}
       <section className="py-16 bg-white">
         <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8">
           <div className="rounded-3xl border border-slate-100 bg-gradient-to-br from-slate-50 via-white to-indigo-50 p-8">

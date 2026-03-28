@@ -23,7 +23,8 @@ import java.util.Base64;
 import java.util.Optional;
 
 /**
- * Default password reset workflow implementation.
+ * 密码找回服务实现。
+ * 负责找回申请、令牌校验、重置落库以及邮件/日志投递。
  */
 @Slf4j
 @Service
@@ -64,6 +65,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     public PasswordResetActionResponseDto requestPasswordReset(String email) {
         String normalizedEmail = normalizeEmail(email);
         Optional<User> userOpt = userRepository.findByEmailIgnoreCase(normalizedEmail);
+        // 为防止邮箱枚举攻击，不论邮箱是否存在都返回统一受理提示。
         String deliveryMethod = resolveEmailService() != null
                 ? DELIVERY_METHOD_EMAIL
                 : DELIVERY_METHOD_LOG;
@@ -88,6 +90,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
                             resetUrl,
                             expirationMinutes);
                 } catch (Exception ex) {
+                    // 邮件发送失败时自动降级为日志投递，保证联调和排障仍可继续。
                     deliveryMethod = DELIVERY_METHOD_LOG;
                     log.warn("Failed to send password reset email to {}: {}", user.getEmail(), ex.getMessage());
                 }
@@ -105,6 +108,9 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         return new PasswordResetActionResponseDto(GENERIC_REQUEST_MESSAGE, deliveryMethod, expirationMinutes);
     }
 
+    /**
+     * 校验重置令牌是否存在、未使用且未过期。
+     */
     @Override
     @Transactional(readOnly = true)
     public PasswordResetTokenValidationDto validateResetToken(String token) {
@@ -131,6 +137,9 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         return new PasswordResetTokenValidationDto(true, VALID_TOKEN_MESSAGE);
     }
 
+    /**
+     * 提交新密码并销毁旧的重置令牌。
+     */
     @Override
     @Transactional
     public PasswordResetActionResponseDto resetPassword(String token, String newPassword) {
@@ -156,20 +165,33 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         return new PasswordResetActionResponseDto(RESET_SUCCESS_MESSAGE, DELIVERY_METHOD_NONE, null);
     }
 
+    /**
+     * 统一标准化邮箱。
+     */
     private String normalizeEmail(String email) {
         return email == null ? "" : email.trim().toLowerCase();
     }
 
+    /**
+     * 延迟获取邮件服务。
+     * 当前项目允许在未启用 SMTP 时退化为仅写日志。
+     */
     private EmailService resolveEmailService() {
         return emailServiceProvider != null ? emailServiceProvider.getIfAvailable() : null;
     }
 
+    /**
+     * 生成一次性原始重置令牌。
+     */
     private String generateToken() {
         byte[] bytes = new byte[32];
         secureRandom.nextBytes(bytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
+    /**
+     * 对外发放原始令牌，对内仅保存哈希值，降低数据库泄露风险。
+     */
     private String hashToken(String token) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

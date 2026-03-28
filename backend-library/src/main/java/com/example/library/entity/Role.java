@@ -11,8 +11,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Dynamic role entity. Roles are stored in the database and can be created
- * at runtime without code changes.
+ * 动态角色实体。
+ * 角色存储在数据库中，可在运行期通过后台配置新增或调整。
  */
 @Entity
 @Table(name = "roles")
@@ -27,15 +27,13 @@ public class Role {
     private Integer roleId;
 
     /**
-     * Unique role name, e.g. "CATALOGER". Used as Spring Security authority
-     * "ROLE_CATALOGER".
+     * 角色唯一编码，例如 `CATALOGER`。
+     * 会映射为 Spring Security 的 `ROLE_CATALOGER` 权限标识。
      */
     @Column(name = "name", nullable = false, unique = true, length = 50)
     private String name;
 
-    /**
-     * Human-readable display name, e.g. "录入员".
-     */
+    /** 角色展示名称，例如“录入员”。 */
     @Column(name = "display_name", length = 100)
     private String displayName;
 
@@ -50,6 +48,9 @@ public class Role {
     @Column(name = "create_time", nullable = false, updatable = false)
     private LocalDateTime createTime;
 
+    /**
+     * 使用名称、展示名和说明构造角色实体。
+     */
     public Role(String name, String displayName, String description) {
         this.name = name;
         this.displayName = displayName;

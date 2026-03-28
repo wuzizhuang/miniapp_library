@@ -13,7 +13,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Loan record for a book copy.
+ * 借阅实体。
+ * 记录某个用户借走某个副本的完整生命周期，包括借出、应还、归还、续借与遗失状态。
  */
 @Entity
 @Table(name = "loans")
@@ -65,6 +66,7 @@ public class Loan {
     @ToString.Exclude
     private Set<Fine> fines = new HashSet<>();
 
+    /** 借阅单状态。 */
     public enum LoanStatus {
         ACTIVE, RETURNED, OVERDUE, LOST
     }

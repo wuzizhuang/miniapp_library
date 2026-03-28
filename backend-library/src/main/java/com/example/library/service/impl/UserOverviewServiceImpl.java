@@ -25,7 +25,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 /**
- * Default user overview aggregation service.
+ * 用户总览服务实现类。
+ * 聚合个人中心首页所需的借阅、预约、罚款、通知、收藏和服务预约统计。
  */
 @Service
 @RequiredArgsConstructor
@@ -48,6 +49,9 @@ public class UserOverviewServiceImpl implements UserOverviewService {
     private final UserFavoriteRepository userFavoriteRepository;
     private final ServiceAppointmentRepository serviceAppointmentRepository;
 
+    /**
+     * 获取指定用户的个人总览信息。
+     */
     @Override
     @Transactional(readOnly = true)
     public UserOverviewDto getOverview(Integer userId) {
@@ -92,6 +96,9 @@ public class UserOverviewServiceImpl implements UserOverviewService {
         return dto;
     }
 
+    /**
+     * 将即将到期的借阅记录转换为预览 DTO。
+     */
     private UserOverviewDueLoanDto toDueSoonLoan(Loan loan, LocalDate today) {
         UserOverviewDueLoanDto dto = new UserOverviewDueLoanDto();
         dto.setLoanId(loan.getLoanId());
@@ -103,10 +110,16 @@ public class UserOverviewServiceImpl implements UserOverviewService {
         return dto;
     }
 
+    /**
+     * 将可能为 null 的 Long 统计值转为 0。
+     */
     private long defaultLong(Long value) {
         return value == null ? 0L : value;
     }
 
+    /**
+     * 将可能为 null 的金额统计值转为 0。
+     */
     private BigDecimal defaultAmount(BigDecimal value) {
         return value == null ? BigDecimal.ZERO : value;
     }

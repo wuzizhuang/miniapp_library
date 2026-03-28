@@ -207,20 +207,30 @@ public class AuthorControllerTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    void testSearchAuthorsByName_ForbiddenForNonAdmin() throws Exception {
+    void testSearchAuthorsByName_UserSuccess() throws Exception {
+        Pageable pageable = PageRequest.of(0, 10);
+        when(authorService.searchAuthorsByName(eq("鲁"), eq(pageable))).thenReturn(authorPage);
+
         mockMvc.perform(get("/api/authors/search")
                 .param("name", "鲁"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].authorId", is(1)));
 
-        verify(authorService, never()).searchAuthorsByName(anyString(), any(Pageable.class));
+        verify(authorService).searchAuthorsByName(eq("鲁"), eq(pageable));
     }
 
     @Test
-    void testSearchAuthorsByName_Unauthorized() throws Exception {
+    void testSearchAuthorsByName_PublicSuccess() throws Exception {
+        Pageable pageable = PageRequest.of(0, 10);
+        when(authorService.searchAuthorsByName(eq("鲁"), eq(pageable))).thenReturn(authorPage);
+
         mockMvc.perform(get("/api/authors/search")
                 .param("name", "鲁"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].authorId", is(1)));
 
-        verify(authorService, never()).searchAuthorsByName(anyString(), any(Pageable.class));
+        verify(authorService).searchAuthorsByName(eq("鲁"), eq(pageable));
     }
 }

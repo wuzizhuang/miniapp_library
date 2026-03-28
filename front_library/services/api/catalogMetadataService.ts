@@ -1,6 +1,10 @@
 import apiClient from "@/lib/axios";
 import { ApiAuthorDto, ApiCategoryDto, ApiPublisherDto, PageResponse } from "@/types/api";
 
+/**
+ * 图书元数据接口服务。
+ * 负责作者、分类、出版社等字典型数据的查询与维护。
+ */
 export const catalogMetadataService = {
   getAuthors: async (page = 0, size = 10): Promise<PageResponse<ApiAuthorDto>> => {
     const { data } = await apiClient.get<PageResponse<ApiAuthorDto>>("/authors", {

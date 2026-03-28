@@ -1,6 +1,10 @@
 import apiClient from "@/lib/axios";
 import { ApiReviewCreateDto, ApiReviewDto, PageResponse } from "@/types/api";
 
+/**
+ * 图书评论接口服务。
+ * 同时覆盖读者评论和管理员审核两条链路。
+ */
 export const reviewService = {
   /**
    * 获取图书公开评论（仅 APPROVED）

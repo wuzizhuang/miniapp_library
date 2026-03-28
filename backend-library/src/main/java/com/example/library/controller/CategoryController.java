@@ -11,7 +11,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Category management endpoints.
+ * 分类管理控制器。
+ * 提供分类查询和后台维护接口。
  */
 @RestController
 @RequestMapping("/api/categories")
@@ -21,7 +22,7 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     /**
-     * Returns paged categories (public).
+     * 分页查询分类列表。
      */
     @GetMapping
     public ResponseEntity<Page<CategoryDto>> getAllCategories(
@@ -31,7 +32,7 @@ public class CategoryController {
     }
 
     /**
-     * Returns a category by id.
+     * 根据分类 ID 查询详情。
      */
     @GetMapping("/{id}")
     public ResponseEntity<CategoryDto> getCategoryById(@PathVariable Integer id) {
@@ -39,7 +40,7 @@ public class CategoryController {
     }
 
     /**
-     * Creates a category (admin only).
+     * 新增分类。
      */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -48,7 +49,7 @@ public class CategoryController {
     }
 
     /**
-     * Updates a category (admin only).
+     * 更新分类信息。
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -57,7 +58,7 @@ public class CategoryController {
     }
 
     /**
-     * Deletes a category (admin only).
+     * 删除分类。
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")

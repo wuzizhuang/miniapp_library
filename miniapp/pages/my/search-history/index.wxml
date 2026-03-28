@@ -32,7 +32,10 @@
   </view>
 
   <view wx:else class="panel">
-    <view class="section-title">最近检索</view>
+    <view class="toolbar-spread">
+      <view class="section-title">最近检索</view>
+      <view class="button-ghost" bindtap="clearHistory">清空历史</view>
+    </view>
     <view wx:for="{{items}}" wx:key="searchId" class="notice-card">
       <view class="toolbar-spread">
         <view class="notice-title">{{item.keyword}}</view>

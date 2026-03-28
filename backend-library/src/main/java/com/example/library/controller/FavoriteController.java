@@ -11,7 +11,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Endpoints for managing user favorites.
+ * 收藏控制器。
+ * 提供用户收藏列表、添加收藏、取消收藏和收藏状态查询接口。
  */
 @RestController
 @RequestMapping("/api/user-favorites")
@@ -21,7 +22,7 @@ public class FavoriteController {
     private final FavoriteService favoriteService;
 
     /**
-     * Gets user's favorite books.
+     * 查询当前用户收藏的图书。
      */
     @GetMapping
     public ResponseEntity<Page<BookDetailDto>> getMyFavorites(
@@ -32,7 +33,7 @@ public class FavoriteController {
     }
 
     /**
-     * Adds a book to favorites.
+     * 添加图书到收藏夹。
      */
     @PostMapping("/{bookId}")
     public ResponseEntity<Void> addFavorite(
@@ -43,7 +44,7 @@ public class FavoriteController {
     }
 
     /**
-     * Removes a book from favorites.
+     * 从收藏夹移除图书。
      */
     @DeleteMapping("/{bookId}")
     public ResponseEntity<Void> removeFavorite(
@@ -53,6 +54,9 @@ public class FavoriteController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * 检查某本书是否已被当前用户收藏。
+     */
     @GetMapping("/{bookId}/check")
     public ResponseEntity<Boolean> checkFavorite(
             @AuthenticationPrincipal UserDetailsImpl userDetails,

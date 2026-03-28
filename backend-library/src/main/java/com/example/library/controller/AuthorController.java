@@ -14,7 +14,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Author management endpoints.
+ * 作者管理控制器。
+ * 提供作者查询、搜索以及后台维护接口。
  */
 @RestController
 @RequestMapping("/api/authors")
@@ -24,7 +25,7 @@ public class AuthorController {
     private final AuthorService authorService;
 
     /**
-     * Returns paged authors (public).
+     * 分页查询作者列表。
      */
     @GetMapping
     public ResponseEntity<Page<AuthorDto>> getAllAuthors(
@@ -38,7 +39,7 @@ public class AuthorController {
     }
 
     /**
-     * Returns an author by id (public).
+     * 根据作者 ID 查询详情。
      */
     @GetMapping("/{authorId}")
     public ResponseEntity<AuthorDto> getAuthorById(@PathVariable Integer authorId) {
@@ -46,7 +47,7 @@ public class AuthorController {
     }
 
     /**
-     * Searches authors by name (public).
+     * 按姓名搜索作者。
      */
     @GetMapping("/search")
     public ResponseEntity<Page<AuthorDto>> searchAuthorsByName(
@@ -58,7 +59,7 @@ public class AuthorController {
     }
 
     /**
-     * Creates an author (admin only).
+     * 新增作者。
      */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -67,7 +68,7 @@ public class AuthorController {
     }
 
     /**
-     * Updates an author (admin only).
+     * 更新作者信息。
      */
     @PutMapping("/{authorId}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -78,7 +79,8 @@ public class AuthorController {
     }
 
     /**
-     * Deletes an author (admin only).
+     * 删除作者。
+     * 当前业务层采用软删除。
      */
     @DeleteMapping("/{authorId}")
     @PreAuthorize("hasRole('ADMIN')")

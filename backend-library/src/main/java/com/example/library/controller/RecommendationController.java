@@ -13,6 +13,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * 推荐动态控制器。
+ * 提供推荐流查看、发帖、点赞以及关注教师推荐人的接口。
+ */
 @RestController
 @RequestMapping("/api/recommendations")
 @RequiredArgsConstructor
@@ -20,6 +24,10 @@ public class RecommendationController {
 
     private final RecommendationService recommendationService;
 
+    /**
+     * 获取推荐动态流。
+     * scope 支持 `all`、`following`、`mine` 三种范围。
+     */
     @GetMapping
     public ResponseEntity<Page<RecommendationPostDto>> getFeed(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -29,6 +37,9 @@ public class RecommendationController {
         return ResponseEntity.ok(recommendationService.getFeed(requireUserId(userDetails), scope, page, size));
     }
 
+    /**
+     * 发布一条新的图书推荐动态。
+     */
     @PostMapping
     public ResponseEntity<RecommendationPostDto> createRecommendation(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -37,6 +48,9 @@ public class RecommendationController {
                 .body(recommendationService.createRecommendation(requireUserId(userDetails), dto));
     }
 
+    /**
+     * 删除推荐动态。
+     */
     @DeleteMapping("/{postId}")
     public ResponseEntity<Void> deleteRecommendation(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -45,6 +59,9 @@ public class RecommendationController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * 点赞推荐动态。
+     */
     @PostMapping("/{postId}/like")
     public ResponseEntity<Void> likeRecommendation(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -53,6 +70,9 @@ public class RecommendationController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * 取消点赞推荐动态。
+     */
     @DeleteMapping("/{postId}/like")
     public ResponseEntity<Void> unlikeRecommendation(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -61,6 +81,9 @@ public class RecommendationController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * 关注某位教师推荐人。
+     */
     @PostMapping("/teachers/{teacherUserId}/follow")
     public ResponseEntity<Void> followTeacher(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -69,6 +92,9 @@ public class RecommendationController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * 取消关注某位教师推荐人。
+     */
     @DeleteMapping("/teachers/{teacherUserId}/follow")
     public ResponseEntity<Void> unfollowTeacher(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -77,6 +103,9 @@ public class RecommendationController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * 从认证上下文中提取用户 ID。
+     */
     private Integer requireUserId(UserDetailsImpl userDetails) {
         if (userDetails == null) {
             throw new BadRequestException("User context is missing");

@@ -16,7 +16,8 @@ import java.util.Set;
 import java.util.LinkedHashSet;
 
 /**
- * User entity.
+ * 用户实体。
+ * 保存账号基础信息、身份属性、认证状态以及与 RBAC 角色、借阅业务之间的关联关系。
  */
 @Entity
 @Table(name = "users")
@@ -109,13 +110,18 @@ public class User {
     @Column(name = "token_valid_after")
     private LocalDateTime tokenValidAfter;
 
+    /** 用户身份类型。 */
     public enum IdentityType {
         STUDENT, TEACHER, STAFF, VISITOR
     }
 
+    /** 用户基础系统角色。 */
     public enum UserRole {
         ADMIN, USER;
 
+        /**
+         * 将字符串安全转换为系统角色枚举。
+         */
         public static UserRole fromString(String role) {
             if (role == null)
                 return null;
@@ -127,9 +133,13 @@ public class User {
         }
     }
 
+    /** 用户账号状态。 */
     public enum UserStatus {
         ACTIVE, INACTIVE;
 
+        /**
+         * 将字符串安全转换为账号状态枚举。
+         */
         public static UserStatus fromString(String status) {
             if (status == null)
                 return null;

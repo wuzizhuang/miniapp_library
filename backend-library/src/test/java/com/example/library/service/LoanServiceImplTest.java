@@ -156,7 +156,7 @@ class LoanServiceImplTest {
         @Test
         @DisplayName("成功：副本可用 & 无罚款 & 未超限")
         void success_allConditionsMet() {
-            when(userRepository.findById(1)).thenReturn(Optional.of(user));
+            when(userRepository.findByIdForUpdate(1)).thenReturn(Optional.of(user));
             when(bookCopyRepository.findByCopyIdWithLock(100)).thenReturn(Optional.of(copy));
             when(fineRepository.countPendingFinesForUser(1)).thenReturn(0L);
             when(reservationRepository.findPendingReservationsForBook(anyInt())).thenReturn(List.of());
@@ -176,43 +176,43 @@ class LoanServiceImplTest {
                     eq("LOAN"),
                     eq("1"),
                     eq("/my/loan-tracking"),
-                    eq("LOAN_BORROW_SUCCESS"));
+                    eq("LOAN_BORROW_SUCCESS:1"));
         }
 
         @Test
         @DisplayName("失败：书籍状态为 INACTIVE，抛出 BadRequestException")
         void fail_inactiveBook() {
             book.setStatus(Book.BookStatus.INACTIVE);
-            when(userRepository.findById(1)).thenReturn(Optional.of(user));
+            when(userRepository.findByIdForUpdate(1)).thenReturn(Optional.of(user));
             when(bookCopyRepository.findByCopyIdWithLock(100)).thenReturn(Optional.of(copy));
 
             assertThatThrownBy(() -> loanService.createLoan(dto))
                     .isInstanceOf(BadRequestException.class)
-                    .hasMessageContaining("inactive");
+                    .hasMessageContaining("下架");
         }
 
         @Test
         @DisplayName("失败：副本状态为 BORROWED，抛出 BadRequestException")
         void fail_copyNotAvailable() {
             copy.setStatus(BookCopy.CopyStatus.BORROWED);
-            when(userRepository.findById(1)).thenReturn(Optional.of(user));
+            when(userRepository.findByIdForUpdate(1)).thenReturn(Optional.of(user));
             when(bookCopyRepository.findByCopyIdWithLock(100)).thenReturn(Optional.of(copy));
 
             assertThatThrownBy(() -> loanService.createLoan(dto))
                     .isInstanceOf(BadRequestException.class)
-                    .hasMessageContaining("not available");
+                    .hasMessageContaining("不可借阅");
         }
 
         @Test
         @DisplayName("失败：用户有未缴罚款，抛出 BadRequestException")
         void fail_pendingFines() {
-            when(userRepository.findById(1)).thenReturn(Optional.of(user));
+            when(userRepository.findByIdForUpdate(1)).thenReturn(Optional.of(user));
             when(bookCopyRepository.findByCopyIdWithLock(100)).thenReturn(Optional.of(copy));
             when(fineRepository.countPendingFinesForUser(1)).thenReturn(1L);
 
             assertThatThrownBy(() -> loanService.createLoan(dto))
                     .isInstanceOf(BadRequestException.class)
-                    .hasMessageContaining("pending fines");
+                    .hasMessageContaining("未缴罚款");
         }
 
         @Test
@@ -221,7 +221,7 @@ class LoanServiceImplTest {
             User otherUser = TestDataFactory.createUser(2, "bob");
             Reservation reservation = TestDataFactory.createPendingReservation(1, otherUser, book);
 
-            when(userRepository.findById(1)).thenReturn(Optional.of(user));
+            when(userRepository.findByIdForUpdate(1)).thenReturn(Optional.of(user));
             when(bookCopyRepository.findByCopyIdWithLock(100)).thenReturn(Optional.of(copy));
             when(fineRepository.countPendingFinesForUser(1)).thenReturn(0L);
             when(reservationRepository.findPendingReservationsForBook(anyInt())).thenReturn(List.of(reservation));
@@ -235,7 +235,7 @@ class LoanServiceImplTest {
         @Test
         @DisplayName("失败：已达到最大借阅数，抛出 BadRequestException")
         void fail_maxLoansReached() {
-            when(userRepository.findById(1)).thenReturn(Optional.of(user));
+            when(userRepository.findByIdForUpdate(1)).thenReturn(Optional.of(user));
             when(bookCopyRepository.findByCopyIdWithLock(100)).thenReturn(Optional.of(copy));
             when(fineRepository.countPendingFinesForUser(1)).thenReturn(0L);
             when(reservationRepository.findPendingReservationsForBook(anyInt())).thenReturn(List.of());
@@ -243,7 +243,7 @@ class LoanServiceImplTest {
 
             assertThatThrownBy(() -> loanService.createLoan(dto))
                     .isInstanceOf(BadRequestException.class)
-                    .hasMessageContaining("maximum");
+                    .hasMessageContaining("上限");
         }
     }
 
@@ -274,6 +274,11 @@ class LoanServiceImplTest {
             activeLoan.setDueDate(LocalDate.now().minusDays(3)); // 逾期 3 天
             when(loanRepository.findById(1)).thenReturn(Optional.of(activeLoan));
             when(reservationService.allocateInventoryForPendingReservations(copy)).thenReturn(false);
+            when(fineRepository.save(any(Fine.class))).thenAnswer(invocation -> {
+                Fine fine = invocation.getArgument(0);
+                fine.setFineId(200);
+                return fine;
+            });
             when(loanRepository.save(any(Loan.class))).thenReturn(activeLoan);
 
             loanService.returnLoan(1);
@@ -288,9 +293,9 @@ class LoanServiceImplTest {
                     eq("逾期罚款已生成"),
                     contains("罚款"),
                     eq("FINE"),
-                    isNull(),
+                    eq("200"),
                     eq("/my/fines"),
-                    eq("FINE_OVERDUE_CREATED"));
+                    eq("FINE_OVERDUE_CREATED:200"));
         }
 
         @Test
@@ -301,7 +306,7 @@ class LoanServiceImplTest {
 
             assertThatThrownBy(() -> loanService.returnLoan(1))
                     .isInstanceOf(BadRequestException.class)
-                    .hasMessageContaining("already returned");
+                    .hasMessageContaining("已归还");
         }
     }
 
@@ -334,7 +339,7 @@ class LoanServiceImplTest {
 
             assertThatThrownBy(() -> loanService.renewLoan(1))
                     .isInstanceOf(BadRequestException.class)
-                    .hasMessageContaining("active loans");
+                    .hasMessageContaining("借阅中");
         }
 
         @Test
@@ -345,7 +350,7 @@ class LoanServiceImplTest {
 
             assertThatThrownBy(() -> loanService.renewLoan(1))
                     .isInstanceOf(BadRequestException.class)
-                    .hasMessageContaining("Overdue");
+                    .hasMessageContaining("逾期");
         }
 
         @Test
@@ -357,7 +362,7 @@ class LoanServiceImplTest {
 
             assertThatThrownBy(() -> loanService.renewLoan(1))
                     .isInstanceOf(BadRequestException.class)
-                    .hasMessageContaining("pending fines");
+                    .hasMessageContaining("未缴罚款");
         }
 
         @Test
@@ -370,7 +375,7 @@ class LoanServiceImplTest {
 
             assertThatThrownBy(() -> loanService.renewLoan(1))
                     .isInstanceOf(BadRequestException.class)
-                    .hasMessageContaining("cannot be renewed");
+                    .hasMessageContaining("暂不允许续借");
         }
     }
 
@@ -386,6 +391,11 @@ class LoanServiceImplTest {
         void success_fineEqualsToCopyPrice() {
             copy.setPrice(BigDecimal.valueOf(59.90));
             when(loanRepository.findById(1)).thenReturn(Optional.of(activeLoan));
+            when(fineRepository.save(any(Fine.class))).thenAnswer(invocation -> {
+                Fine fine = invocation.getArgument(0);
+                fine.setFineId(300);
+                return fine;
+            });
             when(loanRepository.save(any(Loan.class))).thenReturn(activeLoan);
 
             loanService.markLoanAsLost(1);
@@ -399,9 +409,9 @@ class LoanServiceImplTest {
                     eq("图书遗失已登记"),
                     contains("赔付"),
                     eq("FINE"),
-                    isNull(),
+                    eq("300"),
                     eq("/my/fines"),
-                    eq("FINE_LOST_CREATED"));
+                    eq("FINE_LOST_CREATED:300"));
         }
 
         @Test

@@ -1,3 +1,16 @@
+/**
+ * @file 我的书架页面
+ * @description 聚合收藏、当前借阅和历史借阅的统一管理屏幕。
+ *
+ *   功能特性：
+ *   - 四个分组 Tab：全部 / 收藏 / 当前借阅 / 历史借阅
+ *   - 本地搜索过滤（书名、作者、分类）
+ *   - 分页展示（每页 12 条）
+ *   - 事件驱动自动刷新（favorites / loans / books 事件）
+ *   - 页面聚焦时自动刷新
+ *
+ *   数据来源：favoriteService + loanService
+ */
 import React, { useEffect, useMemo, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -19,6 +32,7 @@ import { joinText } from "../utils/format";
 
 const PAGE_SIZE = 12;
 
+/** 书架分组类型 */
 type ShelfSection = "all" | "favorites" | "active" | "history";
 
 type ShelfItem =
@@ -45,6 +59,7 @@ type ShelfItem =
       onPress: () => void;
     };
 
+/** 将收藏图书转换为统一的 ShelfItem */
 function buildFavoriteItem(book: Book, navigation: NativeStackNavigationProp<RootStackParamList>): ShelfItem {
   return {
     type: "favorite",
@@ -59,6 +74,7 @@ function buildFavoriteItem(book: Book, navigation: NativeStackNavigationProp<Roo
   };
 }
 
+/** 将借阅记录转换为统一的 ShelfItem */
 function buildLoanItem(loan: MyLoan, navigation: NativeStackNavigationProp<RootStackParamList>): ShelfItem {
   const toneMap = {
     BORROWED: "primary",
@@ -190,7 +206,7 @@ export function ShelfScreen() {
 
   if (!user) {
     return (
-      <Screen title="我的书架" subtitle="对应 Web 端收藏、当前借阅和历史借阅的统一入口。">
+      <Screen title="我的书架" subtitle="收藏、借阅和阅读记录，一站管理">
         <LoginPromptCard onLogin={() => navigation.navigate("Login")} />
       </Screen>
     );
@@ -199,7 +215,7 @@ export function ShelfScreen() {
   return (
     <Screen
       title="我的书架"
-      subtitle="对应 Web 端 `/my/shelf` 的收藏、当前借阅与历史借阅聚合。"
+      subtitle="收藏、当前借阅与历史借阅统一管理"
       refreshing={refreshing}
       onRefresh={() => {
         void loadData(true);
@@ -211,7 +227,7 @@ export function ShelfScreen() {
             <MaterialCommunityIcons name="bookshelf" size={26} color={colors.primaryDark} />
           </View>
           <View style={styles.summaryBody}>
-            <InfoPill label="READING HUB" tone="primary" icon="book-open-page-variant-outline" />
+            <InfoPill label="阅读中心" tone="primary" icon="book-open-page-variant-outline" />
             <Text style={styles.summaryTitle}>把你的阅读资产集中起来</Text>
             <Text style={styles.summaryText}>收藏、当前借阅和历史借阅在这里统一管理，方便继续阅读或回看记录。</Text>
           </View>
@@ -320,6 +336,7 @@ export function ShelfScreen() {
   );
 }
 
+/** 统计卡片组件（收藏/当前借阅/历史借阅数量展示） */
 function StatCard({
   icon,
   value,

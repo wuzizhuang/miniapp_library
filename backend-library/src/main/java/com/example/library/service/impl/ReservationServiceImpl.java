@@ -4,6 +4,7 @@ import com.example.library.dto.DashboardBreakdownItemDto;
 import com.example.library.dto.ReservationCreateDto;
 import com.example.library.dto.ReservationDto;
 import com.example.library.entity.*;
+import com.example.library.util.NotificationHelper;
 import com.example.library.exception.BadRequestException;
 import com.example.library.exception.ResourceNotFoundException;
 import com.example.library.repository.*;
@@ -26,7 +27,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 /**
- * Default reservation service implementation.
+ * 预约服务实现类。
+ * 负责预约创建、排队分配、副本锁定、履约转借阅以及过期释放等流程。
  */
 @Slf4j
 @Service
@@ -47,39 +49,49 @@ public class ReservationServiceImpl implements ReservationService {
     private int maxActiveLoans;
     @Value("${library.loan.default-loan-days:14}")
     private int defaultLoanDays;
+    @Value("${library.reservation.max-active-reservations:5}")
+    private int maxActiveReservations;
+    @Value("${library.reservation.expiry-days:14}")
+    private int reservationExpiryDays;
 
     /**
-     * Creates a reservation and attempts immediate allocation.
+     * 创建预约，并在有可用副本时尝试立即锁定给当前读者。
      */
     @Override
     @Transactional
     public ReservationDto createReservation(ReservationCreateDto createDto) {
         User user = userRepository.findByIdForUpdate(createDto.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("未找到用户"));
         Book book = bookRepository.findById(createDto.getBookId())
-                .orElseThrow(() -> new ResourceNotFoundException("Book not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("未找到图书"));
+
+        if (loanRepository.existsActiveLoanForUserAndBook(user.getUserId(), book.getBookId())) {
+            throw new BadRequestException("该用户已有本书的在借记录");
+        }
 
         List<Reservation> existingReservations = reservationRepository.findActiveReservationsByUserAndBook(
                 user.getUserId(),
                 book.getBookId(),
                 PageRequest.of(0, 1));
+        // 同一用户对同一本书只保留一条有效预约，重复提交时直接复用已有记录。
         if (!existingReservations.isEmpty()) {
             return convertToDto(existingReservations.get(0));
         }
 
         Long activeCount = reservationRepository.countActiveReservationsForUser(user.getUserId());
-        if (activeCount >= 5) {
-            throw new BadRequestException("Max reservation limit reached");
+        if (activeCount >= maxActiveReservations) {
+            throw new BadRequestException("预约数量已达上限");
         }
 
         Reservation reservation = new Reservation();
         reservation.setUser(user);
         reservation.setBook(book);
         reservation.setReservationDate(LocalDate.now());
-        reservation.setExpiryDate(LocalDate.now().plusDays(14));
+        reservation.setExpiryDate(LocalDate.now().plusDays(reservationExpiryDays));
         reservation.setStatus(Reservation.ReservationStatus.PENDING);
         Reservation saved = reservationRepository.save(reservation);
 
+        // 如果当前有空闲副本，则立刻将其锁定给预约人并进入待取书状态。
         List<BookCopy> availableCopies = bookCopyRepository.findAvailableCopiesByBookIdWithLock(
                 book.getBookId(),
                 PageRequest.of(0, 1));
@@ -101,23 +113,23 @@ public class ReservationServiceImpl implements ReservationService {
                     "RESERVATION",
                     saved.getReservationId() == null ? null : String.valueOf(saved.getReservationId()),
                     "/my/reservations",
-                    buildBusinessKey("RESERVATION_CREATED", saved.getReservationId()));
+                    NotificationHelper.buildBusinessKey("RESERVATION_CREATED", saved.getReservationId()));
         }
         return convertToDto(saved);
     }
 
     /**
-     * Cancels a reservation and releases inventory if needed.
+     * 取消预约，并在必要时释放或重新分配已锁定的副本。
      */
     @Override
     @Transactional
     public void cancelReservation(Integer reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("未找到预约记录"));
 
         if (reservation.getStatus() == Reservation.ReservationStatus.FULFILLED ||
                 reservation.getStatus() == Reservation.ReservationStatus.EXPIRED) {
-            throw new BadRequestException("Cannot cancel finished reservation");
+            throw new BadRequestException("该预约已完成或已过期，无法取消");
         }
 
         reservation.setStatus(Reservation.ReservationStatus.CANCELLED);
@@ -128,6 +140,7 @@ public class ReservationServiceImpl implements ReservationService {
 
             reservation.setAllocatedCopy(null);
 
+            // 取消后优先把副本转给队列中的下一位读者。
             boolean assignedToNext = allocateInventoryForPendingReservations(copy);
 
             if (!assignedToNext) {
@@ -139,7 +152,7 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     /**
-     * Allocates a copy to the earliest pending reservation.
+     * 将指定副本分配给最早排队的待处理预约。
      */
     @Override
     @Transactional
@@ -163,31 +176,32 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     /**
-     * Marks a reservation as fulfilled.
+     * 完成预约履约，将待取书预约正式转换为借阅记录。
      */
     @Override
     @Transactional
     public void fulfillReservation(Integer reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("未找到预约记录"));
 
         if (reservation.getStatus() != Reservation.ReservationStatus.AWAITING_PICKUP) {
-            throw new BadRequestException("Only reservations awaiting pickup can be fulfilled");
+            throw new BadRequestException("仅待取书状态的预约可以履约");
         }
         if (reservation.getAllocatedCopy() == null) {
-            throw new BadRequestException("Reservation has no allocated copy to fulfill");
+            throw new BadRequestException("该预约没有已分配的副本可供履约");
         }
 
         Long pendingFinesCount = fineRepository.countPendingFinesForUser(reservation.getUser().getUserId());
         if (pendingFinesCount > 0) {
-            throw new BadRequestException("User has pending fines that must be paid before pickup");
+            throw new BadRequestException("该用户有未缴罚款，请先缴清后再取书");
         }
 
         Long activeLoansCount = loanRepository.countActiveLoansForUser(reservation.getUser().getUserId());
         if (activeLoansCount >= maxActiveLoans) {
-            throw new BadRequestException("User has reached the maximum number of active loans: " + maxActiveLoans);
+            throw new BadRequestException("该用户在借数量已达上限（" + maxActiveLoans + "本）");
         }
 
+        // 履约完成后，副本状态从“已预留”切换为“已借出”，并同时生成借阅单。
         BookCopy copy = reservation.getAllocatedCopy();
         copy.setStatus(BookCopy.CopyStatus.BORROWED);
         bookCopyRepository.save(copy);
@@ -214,11 +228,11 @@ public class ReservationServiceImpl implements ReservationService {
                 "LOAN",
                 loan.getLoanId() == null ? null : String.valueOf(loan.getLoanId()),
                 "/my/loan-tracking",
-                buildBusinessKey("RESERVATION_FULFILLED_TO_LOAN", loan.getLoanId()));
+                NotificationHelper.buildBusinessKey("RESERVATION_FULFILLED_TO_LOAN", loan.getLoanId()));
     }
 
     /**
-     * Returns reservations for a user.
+     * 分页查询指定用户的预约记录。
      */
     @Override
     @Transactional(readOnly = true)
@@ -227,7 +241,7 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     /**
-     * Returns reservations for admin.
+     * 分页查询预约记录，供后台使用。
      */
     @Override
     @Transactional(readOnly = true)
@@ -236,7 +250,7 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     /**
-     * Returns reservations for admin with keyword search.
+     * 分页查询预约记录，并支持后台关键字筛选。
      */
     @Override
     @Transactional(readOnly = true)
@@ -246,6 +260,9 @@ public class ReservationServiceImpl implements ReservationService {
                 .map(this::convertToDto);
     }
 
+    /**
+     * 统计后台预约列表中各状态的数量分布。
+     */
     @Override
     @Transactional(readOnly = true)
     public List<DashboardBreakdownItemDto> getReservationStatusStats(String keyword) {
@@ -279,7 +296,7 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     /**
-     * Locks a copy for a reservation and sets pickup window.
+     * 将副本锁定给某条预约，并设置取书截止时间。
      */
     private void lockCopyToReservation(Reservation reservation, BookCopy copy) {
         copy.setStatus(BookCopy.CopyStatus.RESERVED);
@@ -300,14 +317,14 @@ public class ReservationServiceImpl implements ReservationService {
                 "RESERVATION",
                 reservation.getReservationId() == null ? null : String.valueOf(reservation.getReservationId()),
                 "/my/reservations",
-                buildBusinessKey("RESERVATION_READY_FOR_PICKUP", reservation.getReservationId()));
+                NotificationHelper.buildBusinessKey("RESERVATION_READY_FOR_PICKUP", reservation.getReservationId()));
     }
 
     /**
-     * Expires overdue reservations and releases copies.
+     * 扫描超时未取的预约，并释放对应副本。
      */
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public void checkAndExpireReservations() {
         List<Reservation> expiredReservations = reservationRepository
                 .findExpiredPickupReservations(LocalDateTime.now());
@@ -322,6 +339,7 @@ public class ReservationServiceImpl implements ReservationService {
             reservation.setAllocatedCopy(null);
 
             if (copy != null) {
+                // 过期释放后仍优先尝试分配给队列中的下一位读者。
                 boolean givenToNext = allocateInventoryForPendingReservations(copy);
                 if (!givenToNext) {
                     copy.setStatus(BookCopy.CopyStatus.AVAILABLE);
@@ -332,6 +350,9 @@ public class ReservationServiceImpl implements ReservationService {
         }
     }
 
+    /**
+     * 将预约实体转换为前端使用的 DTO。
+     */
     private ReservationDto convertToDto(Reservation r) {
         ReservationDto dto = new ReservationDto();
         dto.setReservationId(r.getReservationId());
@@ -356,6 +377,10 @@ public class ReservationServiceImpl implements ReservationService {
         return dto;
     }
 
+    /**
+     * 计算某条预约在排队队列中的位置。
+     * 仅待分配状态的预约需要展示排队序号。
+     */
     private Integer resolveQueuePosition(Reservation reservation) {
         if (reservation.getStatus() != Reservation.ReservationStatus.PENDING) {
             return null;
@@ -371,6 +396,9 @@ public class ReservationServiceImpl implements ReservationService {
         return null;
     }
 
+    /**
+     * 构造后台预约状态统计项。
+     */
     private DashboardBreakdownItemDto createBreakdownItem(String key, String label, Long value) {
         DashboardBreakdownItemDto dto = new DashboardBreakdownItemDto();
         dto.setKey(key);
@@ -379,7 +407,4 @@ public class ReservationServiceImpl implements ReservationService {
         return dto;
     }
 
-    private String buildBusinessKey(String prefix, Integer entityId) {
-        return entityId == null ? null : prefix + ":" + entityId;
-    }
 }

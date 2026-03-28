@@ -2,6 +2,7 @@ package com.example.library.controller;
 
 import com.example.library.dto.ReviewDto;
 import com.example.library.dto.ReviewResponseDto;
+import com.example.library.dto.ReviewUpdateDto;
 import com.example.library.security.AuthEntryPointJwt;
 import com.example.library.security.JwtUtils;
 import com.example.library.security.SecurityConfig;
@@ -123,8 +124,7 @@ public class ReviewControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testUpdateReview_AdminSuccess() throws Exception {
-        ReviewDto updateDto = new ReviewDto();
-        updateDto.setBookId(5L);
+        ReviewUpdateDto updateDto = new ReviewUpdateDto();
         updateDto.setRating(4);
         updateDto.setCommentText("内容修正");
 
@@ -132,7 +132,8 @@ public class ReviewControllerTest {
         result.setReviewId(1L);
         result.setCommentText("内容修正");
         when(reviewSecurityService.isReviewOwner(any(), eq(1))).thenReturn(false);
-        when(reviewService.updateReview(eq(1), any(ReviewDto.class))).thenReturn(result);
+        when(reviewService.updateReview(eq(1), org.mockito.ArgumentMatchers.<ReviewUpdateDto>any()))
+                .thenReturn(result);
 
         mockMvc.perform(put("/api/reviews/1")
                 .contentType(MediaType.APPLICATION_JSON)

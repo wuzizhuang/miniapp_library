@@ -247,7 +247,7 @@ export const AdminSidebar = () => {
           <Tooltip color="primary" content="返回前台" placement="right">
             <NextLink
               className="flex items-center justify-center w-10 h-10 rounded-xl text-default-500 hover:bg-primary/10 hover:text-primary transition-all"
-              href="/?view=front"
+              href="/"
             >
               <Icon icon="solar:arrow-left-bold-duotone" width={22} />
             </NextLink>
@@ -255,7 +255,7 @@ export const AdminSidebar = () => {
         ) : (
           <NextLink
             className="flex items-center gap-3 px-3 py-3 rounded-xl text-default-600 hover:bg-primary/10 hover:text-primary transition-all group"
-            href="/?view=front"
+            href="/"
           >
             <Icon
               className="text-default-500 group-hover:text-primary"

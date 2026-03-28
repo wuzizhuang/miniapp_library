@@ -9,7 +9,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 /**
- * Persisted refresh token used for session rotation.
+ * 刷新令牌实体。
+ * 用于支持 JWT 会话续期、轮换和批量失效。
  */
 @Entity
 @Table(name = "refresh_tokens", indexes = {
@@ -25,6 +26,9 @@ public class RefreshToken {
     @Column(name = "refresh_token_id")
     private Long refreshTokenId;
 
+    /**
+     * 令牌归属用户。
+     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

@@ -9,7 +9,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
- * Reservation entity for holding a book.
+ * 图书预约实体。
+ * 表示读者对某本书发起的预约申请，以及从排队到待取书再到完成或过期的状态变化。
  */
 @Entity
 @Table(name = "reservations")
@@ -51,12 +52,15 @@ public class Reservation {
     @JoinColumn(name = "allocated_copy_id")
     private BookCopy allocatedCopy;
 
+    /** 待取书状态下的最晚取书时间。 */
     @Column(name = "pickup_deadline")
     private LocalDateTime pickupDeadline;
 
+    /** 是否已经向读者发送过预约到书通知。 */
     @Column(name = "notification_sent")
     private Boolean notificationSent = false;
 
+    /** 预约状态。 */
     public enum ReservationStatus {
         PENDING,
         AWAITING_PICKUP,

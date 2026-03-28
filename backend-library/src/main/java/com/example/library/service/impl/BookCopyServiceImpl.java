@@ -21,7 +21,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Default implementation for book copy inventory.
+ * 图书副本库存服务实现。
+ * 负责副本的创建、更新、分页筛选与 DTO 转换。
  */
 @Service
 @RequiredArgsConstructor
@@ -31,7 +32,7 @@ public class BookCopyServiceImpl implements BookCopyService {
     private final BookRepository bookRepository;
 
     /**
-     * Creates a new book copy.
+     * 创建单个副本，并挂载到指定图书名下。
      */
     @Override
     @Transactional
@@ -54,7 +55,7 @@ public class BookCopyServiceImpl implements BookCopyService {
     }
 
     /**
-     * Returns a book copy by id.
+     * 根据副本主键读取详情。
      */
     @Override
     @Transactional(readOnly = true)
@@ -65,7 +66,7 @@ public class BookCopyServiceImpl implements BookCopyService {
     }
 
     /**
-     * Updates a book copy.
+     * 更新副本信息，仅覆盖请求中显式提供的字段。
      */
     @Override
     @Transactional
@@ -92,7 +93,7 @@ public class BookCopyServiceImpl implements BookCopyService {
     }
 
     /**
-     * Deletes a book copy.
+     * 删除副本。
      */
     @Override
     @Transactional
@@ -104,7 +105,7 @@ public class BookCopyServiceImpl implements BookCopyService {
     }
 
     /**
-     * Returns all copies for a book.
+     * 查询某本书下的全部副本。
      */
     @Override
     @Transactional(readOnly = true)
@@ -115,18 +116,19 @@ public class BookCopyServiceImpl implements BookCopyService {
     }
 
     /**
-     * Returns paged book copies.
+     * 分页查询副本。
+     * 支持图书、状态和关键词的组合过滤，供后台库存页使用。
      */
     @Override
     @Transactional(readOnly = true)
     public Page<BookCopyDto> getAllBookCopies(int page, int size, String sortBy, String direction, Integer bookId, String status,
             String keyword) {
         Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
-        // Map "id" to the actual entity field "copyId"
+        // 前端列表默认传的是 id，这里映射到实体字段 copyId。
         String actualSortBy = "id".equals(sortBy) ? "copyId" : sortBy;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, actualSortBy));
 
-        // Build dynamic query using Specification
+        // 通过 Specification 按需拼接筛选条件，避免为每种组合再定义一个仓储方法。
         org.springframework.data.jpa.domain.Specification<BookCopy> spec = org.springframework.data.jpa.domain.Specification
                 .where(null);
 
@@ -139,7 +141,7 @@ public class BookCopyServiceImpl implements BookCopyService {
                 BookCopy.CopyStatus copyStatus = BookCopy.CopyStatus.valueOf(status.toUpperCase());
                 spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), copyStatus));
             } catch (IllegalArgumentException ignored) {
-                // invalid status, ignore filter
+                // 非法状态直接忽略，不阻断整个列表请求。
             }
         }
 
@@ -154,7 +156,7 @@ public class BookCopyServiceImpl implements BookCopyService {
     }
 
     /**
-     * Returns available copies for a book.
+     * 查询某本书当前可借的副本。
      */
     @Override
     @Transactional(readOnly = true)
@@ -165,7 +167,7 @@ public class BookCopyServiceImpl implements BookCopyService {
     }
 
     /**
-     * Maps entity to DTO.
+     * 将副本实体整理为前端消费的 DTO。
      */
     private BookCopyDto convertToDto(BookCopy copy) {
         return BookCopyDto.builder()
@@ -189,6 +191,7 @@ public class BookCopyServiceImpl implements BookCopyService {
         if (value == null) {
             return null;
         }
+        // 位置码、RFID 等可选字段遇到空字符串时统一收敛为 null，便于后续过滤。
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
     }

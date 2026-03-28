@@ -11,7 +11,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Publisher management endpoints.
+ * 出版社管理控制器。
+ * 提供出版社查询和后台维护接口。
  */
 @RestController
 @RequestMapping("/api/publishers")
@@ -21,7 +22,7 @@ public class PublisherController {
     private final PublisherService publisherService;
 
     /**
-     * Returns paged publishers (public).
+     * 分页查询出版社列表。
      */
     @GetMapping
     public ResponseEntity<Page<PublisherDto>> getAllPublishers(
@@ -31,7 +32,7 @@ public class PublisherController {
     }
 
     /**
-     * Returns a publisher by id.
+     * 根据出版社 ID 查询详情。
      */
     @GetMapping("/{id}")
     public ResponseEntity<PublisherDto> getPublisherById(@PathVariable Integer id) {
@@ -39,7 +40,7 @@ public class PublisherController {
     }
 
     /**
-     * Creates a publisher (admin only).
+     * 新增出版社。
      */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -48,7 +49,7 @@ public class PublisherController {
     }
 
     /**
-     * Updates a publisher (admin only).
+     * 更新出版社信息。
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -58,7 +59,8 @@ public class PublisherController {
     }
 
     /**
-     * Deletes a publisher (admin only).
+     * 删除出版社。
+     * 当前业务层采用软删除。
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")

@@ -26,7 +26,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Book catalog endpoints.
+ * 图书目录控制器。
+ * 提供图书查询、搜索、详情、馆藏副本和图书维护等接口。
  */
 @RestController
 @RequestMapping("/api/books")
@@ -40,7 +41,7 @@ public class BookController {
     private final ReviewService reviewService;
 
     /**
-     * Returns paged book listings.
+     * 分页查询图书列表。
      */
     @GetMapping
     public ResponseEntity<Page<BookDetailDto>> getAllBooks(
@@ -52,15 +53,15 @@ public class BookController {
     }
 
     /**
-     * Returns details for a single book.
+     * 根据图书 ID 获取详情。
      */
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     public ResponseEntity<BookDetailDto> getBookById(@PathVariable Integer id) {
         return ResponseEntity.ok(bookService.getBookById(id));
     }
 
     /**
-     * Returns book details by ISBN.
+     * 根据 ISBN 获取图书详情。
      */
     @GetMapping("/isbn/{isbn}")
     public ResponseEntity<BookDetailDto> getBookByIsbn(@PathVariable String isbn) {
@@ -68,7 +69,7 @@ public class BookController {
     }
 
     /**
-     * Searches books by keyword.
+     * 按关键字和多维条件搜索图书。
      */
     @GetMapping("/search")
     public ResponseEntity<Page<BookDetailDto>> searchBooks(
@@ -97,7 +98,7 @@ public class BookController {
     }
 
     /**
-     * Returns books within a category.
+     * 查询某个分类下的图书。
      */
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<Page<BookDetailDto>> getBooksByCategory(
@@ -108,7 +109,7 @@ public class BookController {
     }
 
     /**
-     * Returns books by a specific author.
+     * 查询某位作者名下的图书。
      */
     @GetMapping("/author/{authorId}")
     public ResponseEntity<Page<BookDetailDto>> getBooksByAuthor(
@@ -119,23 +120,24 @@ public class BookController {
     }
 
     /**
-     * Returns all copies for a given book.
+     * 查询某本图书的全部馆藏副本。
      */
-    @GetMapping("/{bookId}/copies")
+    @GetMapping("/{bookId:\\d+}/copies")
     public ResponseEntity<List<BookCopyDto>> getBookCopiesByBookId(@PathVariable Integer bookId) {
         return ResponseEntity.ok(bookCopyService.getBookCopiesByBookId(bookId));
     }
 
     /**
-     * Returns a generated default floor map for the book's physical copies.
+     * 获取图书馆藏位置示意图。
      */
-    @GetMapping("/{bookId}/location-map")
+    @GetMapping("/{bookId:\\d+}/location-map")
     public ResponseEntity<BookLocationMapDto> getBookLocationMap(@PathVariable Integer bookId) {
         return ResponseEntity.ok(bookLocationMapService.getBookLocationMap(bookId));
     }
 
     /**
-     * Creates a new book (admin only).
+     * 新增图书。
+     * 仅管理员或具备图书写权限的账号可调用。
      */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('book:write')")
@@ -144,9 +146,9 @@ public class BookController {
     }
 
     /**
-     * Links an author to a book (admin only).
+     * 为图书绑定作者及其展示顺序。
      */
-    @PostMapping("/{bookId}/authors/{authorId}")
+    @PostMapping("/{bookId:\\d+}/authors/{authorId:\\d+}")
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('book:write')")
     public ResponseEntity<BookDetailDto> addAuthorToBook(
             @PathVariable Integer bookId,
@@ -157,9 +159,9 @@ public class BookController {
     }
 
     /**
-     * Removes an author from a book (admin only).
+     * 移除图书与作者之间的关联。
      */
-    @DeleteMapping("/{bookId}/authors/{authorId}")
+    @DeleteMapping("/{bookId:\\d+}/authors/{authorId:\\d+}")
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('book:write')")
     public ResponseEntity<BookDetailDto> removeAuthorFromBook(
             @PathVariable Integer bookId,
@@ -169,9 +171,9 @@ public class BookController {
     }
 
     /**
-     * Updates a book (admin only).
+     * 更新图书信息。
      */
-    @PutMapping("/{id}")
+    @PutMapping("/{id:\\d+}")
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('book:write')")
     public ResponseEntity<BookDetailDto> updateBook(
             @PathVariable Integer id,
@@ -180,9 +182,10 @@ public class BookController {
     }
 
     /**
-     * Deletes a book (admin only).
+     * 删除图书。
+     * 当前实现为业务层软删除，而不是直接物理删除记录。
      */
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:\\d+}")
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('book:delete')")
     public ResponseEntity<Void> deleteBook(@PathVariable Integer id) {
         bookService.deleteBook(id);
@@ -190,7 +193,7 @@ public class BookController {
     }
 
     /**
-     * Returns newly arrived books.
+     * 获取新到馆图书。
      */
     @GetMapping("/new-arrivals")
     public ResponseEntity<Page<BookDetailDto>> getNewArrivals(
@@ -199,18 +202,18 @@ public class BookController {
     }
 
     /**
-     * Returns trending (most borrowed) books.
+     * 获取热门图书。
      */
-    @GetMapping("/trending")
+    @GetMapping({"/trending", "/hot"})
     public ResponseEntity<List<BookDetailDto>> getTrendingBooks(
             @RequestParam(defaultValue = "10") int limit) {
         return ResponseEntity.ok(bookService.getTrendingBooks(limit));
     }
 
     /**
-     * Returns approved reviews for a book.
+     * 获取某本图书的已审核评论。
      */
-    @GetMapping("/{bookId}/reviews")
+    @GetMapping("/{bookId:\\d+}/reviews")
     public ResponseEntity<Page<ReviewResponseDto>> getBookReviews(
             @PathVariable Integer bookId,
             @RequestParam(defaultValue = "0") int page,

@@ -20,20 +20,23 @@ function Test-Command($cmd) {
 }
 
 function Start-VisibleProcess($filePath, $arguments, $workingDirectory) {
+    # Join arguments into a single string so that PowerShell does not
+    # mangle JVM-style -D flags (they look like PS parameter prefixes).
+    $argString = $arguments -join ' '
     return Start-Process -FilePath $filePath `
-        -ArgumentList $arguments `
+        -ArgumentList $argString `
         -WorkingDirectory $workingDirectory `
         -PassThru `
         -WindowStyle Normal
 }
 
-function Wait-HttpReady($url, $timeoutSec) {
+function Wait-HttpReady($url, $timeoutSec, $requestTimeoutSec = 2) {
     $elapsed = 0
     while ($elapsed -lt $timeoutSec) {
         Start-Sleep -Seconds 3
         $elapsed += 3
         try {
-            $response = Invoke-WebRequest -Uri $url -TimeoutSec 2 -ErrorAction Stop
+            $response = Invoke-WebRequest -Uri $url -TimeoutSec $requestTimeoutSec -ErrorAction Stop
             if ($response.StatusCode -eq 200) {
                 return $true
             }
@@ -42,6 +45,44 @@ function Wait-HttpReady($url, $timeoutSec) {
         Write-Host ("   waited {0}s..." -f $elapsed) -ForegroundColor Gray
     }
     return $false
+}
+
+function Get-RepoFrontendProcesses {
+    $frontendDirPattern = "*$FrontendDir*"
+    return Get-CimInstance Win32_Process |
+        Where-Object {
+            $_.CommandLine -and
+            $_.CommandLine -like $frontendDirPattern -and
+            (
+                $_.CommandLine -like "*start-server.js*" -or
+                $_.CommandLine -like "*next\\dist\\bin\\next* dev*"
+            )
+        } |
+        Sort-Object ProcessId -Unique
+}
+
+function Stop-RepoFrontendProcesses {
+    $frontendProcesses = Get-RepoFrontendProcesses
+    if (-not $frontendProcesses) {
+        return
+    }
+
+    Write-Color "Stopping existing frontend dev server for this repo..." "Yellow"
+    foreach ($process in $frontendProcesses) {
+        try {
+            Stop-Process -Id $process.ProcessId -Force -ErrorAction Stop
+            Write-Color ("   stopped frontend PID: {0}" -f $process.ProcessId) "Gray"
+        } catch {
+            Write-Color ("   failed to stop frontend PID {0}: {1}" -f $process.ProcessId, $_.Exception.Message) "Yellow"
+        }
+    }
+
+    Start-Sleep -Seconds 2
+}
+
+function Get-ListeningProcesses($port) {
+    return @(Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyContinue |
+        Select-Object -ExpandProperty OwningProcess -Unique)
 }
 
 function Stop-LibraryProcesses {
@@ -119,12 +160,33 @@ if (-not $BackendOnly) {
         }
     }
 
+    Stop-RepoFrontendProcesses
+
+    $frontendPortOwners = Get-ListeningProcesses -port $FrontendPort
+    if ($frontendPortOwners.Count -gt 0) {
+        Write-Color ("Port {0} is already in use. Frontend was not started to avoid silently drifting to another port." -f $FrontendPort) "Red"
+        foreach ($owner in (Get-CimInstance Win32_Process | Where-Object { $frontendPortOwners -contains $_.ProcessId })) {
+            Write-Color ("   PID {0}: {1}" -f $owner.ProcessId, $owner.CommandLine) "Gray"
+        }
+        Write-Color "Stop the process above or run .\\start.ps1 -Stop, then retry." "Yellow"
+        exit 1
+    }
+
     Write-Color "Launching Next.js dev server in a new window..." "Cyan"
     $frontendProcess = Start-VisibleProcess `
         -filePath "npm.cmd" `
-        -arguments @("run", "dev") `
+        -arguments @("run", "dev", "--", "--port", "$FrontendPort") `
         -workingDirectory $FrontendDir
 
     Write-Color ("   frontend PID: {0}" -f $frontendProcess.Id) "Gray"
-    Write-Color ("Open http://localhost:{0}" -f $FrontendPort) "Cyan"
+
+    Write-Color "Waiting for frontend to serve the home page..." "Yellow"
+    $frontendReady = Wait-HttpReady -url ("http://localhost:{0}" -f $FrontendPort) -timeoutSec 120 -requestTimeoutSec 15
+    if ($frontendReady) {
+        Write-Color "Frontend is ready." "Green"
+        Write-Color ("Open http://localhost:{0}" -f $FrontendPort) "Cyan"
+    } else {
+        Write-Color "Frontend did not respond within 120 seconds. Check the spawned Next.js window for build errors." "Yellow"
+        Write-Color ("If it moved to another port or failed to compile, rerun after stopping stale processes.") "Yellow"
+    }
 }

@@ -65,6 +65,7 @@ export interface AdminBook {
 
 export interface AdminUser {
     id: string;
+    username: string;
     name: string;
     email: string;
     role: string;
@@ -108,6 +109,10 @@ export interface AdminLoan {
     borrowDate: string;
     dueDate: string;
     status: "active" | "overdue" | "returned";
+}
+
+export interface AdminCounterBorrowConfirmation {
+    confirmUsername?: string;
 }
 
 export interface DashboardBreakdownItem {
@@ -287,7 +292,7 @@ function mapApiLoanToAdmin(loan: ApiLoanDto): AdminLoan {
     return {
         id: `LN-${loan.loanId}`,
         bookName: loan.bookTitle,
-        bookCover: undefined, // LoanDto 无 coverUrl 字段
+        bookCover: loan.bookCoverUrl,
         userName: loan.userFullName ?? loan.username,
         borrowDate: String(loan.borrowDate ?? "-").slice(0, 10),
         dueDate: String(loan.dueDate ?? "-").slice(0, 10),
@@ -306,6 +311,7 @@ function mapApiUserToAdmin(u: ApiUserDto): AdminUser {
 
     return {
         id: String(u.userId),
+        username: u.username,
         name: u.fullName ?? u.username,
         email: u.email ?? "-",
         role: roles[0] ?? String(u.role ?? "USER").toUpperCase(),
@@ -634,11 +640,19 @@ export const adminService = {
     },
 
     /**
-     * 柜台代借（ADMIN 可指定 userId）
+     * 柜台代借（具备 loan:manage 的后台账号可指定 userId）
      * POST /api/loans
      */
-    createLoan: async (copyId: number, userId: number): Promise<void> => {
-        await apiClient.post("/loans", { copyId, userId });
+    createLoan: async (
+        copyId: number,
+        userId: number,
+        confirmation?: AdminCounterBorrowConfirmation,
+    ): Promise<void> => {
+        await apiClient.post("/loans", {
+            copyId,
+            userId,
+            confirmUsername: confirmation?.confirmUsername,
+        });
     },
 
     /**

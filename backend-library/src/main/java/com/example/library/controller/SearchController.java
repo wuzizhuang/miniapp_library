@@ -1,7 +1,7 @@
 package com.example.library.controller;
 
 import com.example.library.dto.SearchLogDto;
-import com.example.library.exception.UnauthorizedException;
+import com.example.library.util.ControllerHelper;
 import com.example.library.security.RequestRateLimitService;
 import com.example.library.security.UserDetailsImpl;
 import com.example.library.service.SearchService;
@@ -15,7 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Endpoints for search discovery features.
+ * 搜索发现控制器。
+ * 提供热搜词、搜索建议和用户搜索历史接口。
  */
 @RestController
 @RequestMapping("/api/search")
@@ -26,7 +27,7 @@ public class SearchController {
     private final RequestRateLimitService requestRateLimitService;
 
     /**
-     * Gets trending search keywords.
+     * 获取热门搜索关键词。
      */
     @GetMapping("/hot")
     public ResponseEntity<List<String>> getHotKeywords(
@@ -35,7 +36,7 @@ public class SearchController {
     }
 
     /**
-     * Gets search suggestions based on prefix.
+     * 根据前缀获取搜索建议。
      */
     @GetMapping("/suggestions")
     public ResponseEntity<List<String>> getSearchSuggestions(
@@ -47,23 +48,16 @@ public class SearchController {
     }
 
     /**
-     * Returns the current user's paginated search history.
+     * 分页查询当前用户的搜索历史。
      */
     @GetMapping("/history")
     public ResponseEntity<Page<SearchLogDto>> getMySearchHistory(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        UserDetailsImpl authenticatedUser = requireAuthenticatedUser(userDetails);
+        UserDetailsImpl authenticatedUser = ControllerHelper.requireAuthenticated(userDetails);
 
         return ResponseEntity.ok(searchService.getUserSearchHistory(authenticatedUser.getId(), page, size));
     }
 
-    private UserDetailsImpl requireAuthenticatedUser(UserDetailsImpl userDetails) {
-        if (userDetails == null) {
-            throw new UnauthorizedException("请先登录后再继续");
-        }
-
-        return userDetails;
-    }
 }

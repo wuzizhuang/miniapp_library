@@ -1,3 +1,32 @@
+/**
+ * @file 全局样式表
+ * @description 微信小程序全局 CSS 样式文件。
+ *   定义了整个应用的设计体系（Design System），包括：
+ *     - 全局页面基础样式（背景色、字体、最小高度）
+ *     - 布局容器（.page-shell、.hero-card、.panel）
+ *     - 按钮体系（.button-primary / secondary / danger / ghost）
+ *     - 标签/徽章体系（.chip 及各语义变体）
+ *     - 统计卡片与网格布局（.stat-grid、.card-grid、.stat-card）
+ *     - 列表卡片与图书信息（.list-card、.book-cover、.book-info）
+ *     - 表单输入（.search-input、.text-input、.textarea）
+ *     - 功能入口卡片（.entry-grid、.entry-card）
+ *     - 胶囊切换器（.pill-switch、.pill-item）
+ *     - 信息流/动态卡片（.feed-card）
+ *     - 通知卡片（.notice-card）
+ *     - 评分组件（.rating-row、.rating-pill）
+ *     - 点击反馈动效（:active 伪类）
+ *
+ *   色彩体系：
+ *     主色调 — 深绿 #123c38 / 翡翠绿 #0d8a72
+ *     背景色 — 暖黄 #f4efe6 / 米白 #fffaf2
+ *     辅助色 — 棕灰 #6f6559（次要文本）
+ *     危险色 — 砖红 #b54035
+ *     警告色 — 琥珀 #bb7a2b
+ *     成功色 — 翠绿 #2e8050
+ */
+
+/* ===== 页面基础样式 ===== */
+/* 设置页面最小高度、背景色、文字颜色及字体 */
 page {
   min-height: 100vh;
   background: #f4efe6;
@@ -5,12 +34,16 @@ page {
   font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
+/* ===== 页面外壳容器 ===== */
+/* 统一页面内边距和盒模型 */
 .page-shell {
   min-height: 100vh;
   box-sizing: border-box;
   padding: 28rpx;
 }
 
+/* ===== 顶部主角卡片（Hero Card） ===== */
+/* 用于页面顶部的渐变色大卡片，通常展示欢迎语或概要信息 */
 .hero-card {
   background: linear-gradient(160deg, #123c38 0%, #0d8a72 70%, #68b8a0 100%);
   color: #ffffff;
@@ -20,12 +53,14 @@ page {
   margin-bottom: 24rpx;
 }
 
+/* Hero 卡片主标题 */
 .hero-title {
   font-size: 46rpx;
   font-weight: 700;
   line-height: 1.25;
 }
 
+/* Hero 卡片副标题 */
 .hero-subtitle {
   margin-top: 12rpx;
   font-size: 28rpx;
@@ -33,6 +68,8 @@ page {
   color: rgba(255, 255, 255, 0.82);
 }
 
+/* ===== 面板容器（Panel） ===== */
+/* 通用内容面板，米白背景 + 圆角 + 边框 */
 .panel {
   background: #fffaf2;
   border: 1rpx solid #ddceb8;
@@ -42,30 +79,37 @@ page {
   box-sizing: border-box;
 }
 
+/* ===== 段落标题 ===== */
 .section-title {
   font-size: 34rpx;
   font-weight: 700;
   margin-bottom: 18rpx;
 }
 
+/* ===== 辅助文本样式 ===== */
+/* 次要/灰色文本 */
 .muted-text {
   color: #6f6559;
   font-size: 26rpx;
   line-height: 1.7;
 }
 
+/* 危险/红色文本（如逾期提醒） */
 .danger-text {
   color: #b54035;
   font-size: 26rpx;
   line-height: 1.7;
 }
 
+/* ===== 按钮行容器 ===== */
+/* 水平排列多个按钮，自动换行 */
 .button-row {
   display: flex;
   gap: 16rpx;
   flex-wrap: wrap;
 }
 
+/* ===== 按钮基础样式（所有变体共享） ===== */
 .button-primary,
 .button-secondary,
 .button-danger,
@@ -79,35 +123,42 @@ page {
   font-size: 28rpx;
   font-weight: 600;
   box-sizing: border-box;
+  transition: background 0.15s ease, opacity 0.15s ease;
 }
 
+/* 主要按钮 — 翡翠绿底 + 白字 */
 .button-primary {
   background: #0d8a72;
   color: #ffffff;
 }
 
+/* 次要按钮 — 浅棕底 + 深色字 */
 .button-secondary {
   background: #efe4d2;
   color: #1f1a14;
 }
 
+/* 危险按钮 — 砖红底 + 白字 */
 .button-danger {
   background: #b54035;
   color: #ffffff;
 }
 
+/* 幽灵按钮 — 白底 + 绿边 + 绿字 */
 .button-ghost {
   background: #ffffff;
   color: #0d8a72;
   border: 1rpx solid #8cc7b7;
 }
 
+/* ===== 标签/徽章行容器 ===== */
 .chip-row {
   display: flex;
   gap: 12rpx;
   flex-wrap: wrap;
 }
 
+/* ===== 标签/徽章基础样式（所有变体共享） ===== */
 .chip,
 .chip-primary,
 .chip-warning,
@@ -116,36 +167,43 @@ page {
   display: inline-flex;
   align-items: center;
   padding: 10rpx 18rpx;
-  border-radius: 999rpx;
+  border-radius: 999rpx;    /* 完全圆角，胶囊形 */
   font-size: 24rpx;
   line-height: 1;
 }
 
+/* 默认标签 — 浅棕底 */
 .chip {
   background: #efe4d2;
   color: #1f1a14;
 }
 
+/* 主色标签 — 浅绿底（如"可借"） */
 .chip-primary {
   background: #dff4ee;
   color: #0d6e5c;
 }
 
+/* 警告标签 — 浅黄底（如"即将到期"） */
 .chip-warning {
   background: #fff0d8;
   color: #bb7a2b;
 }
 
+/* 危险标签 — 浅红底（如"已逾期"） */
 .chip-danger {
   background: #f8ddd7;
   color: #b54035;
 }
 
+/* 成功标签 — 浅绿底（如"已归还"） */
 .chip-success {
   background: #e4f6ec;
   color: #2e8050;
 }
 
+/* ===== 统计卡片网格 & 通用卡片网格 ===== */
+/* 两列等宽网格布局 */
 .stat-grid,
 .card-grid {
   display: grid;
@@ -153,24 +211,29 @@ page {
   gap: 16rpx;
 }
 
+/* 统计卡片 — 展示数字指标 */
 .stat-card {
   border-radius: 20rpx;
   background: #f8f1e5;
   padding: 20rpx;
 }
 
+/* 统计数值（大号粗体） */
 .stat-value {
   color: #123c38;
   font-size: 42rpx;
   font-weight: 700;
 }
 
+/* 统计标签（数值下方的说明文字） */
 .stat-label {
   margin-top: 8rpx;
   color: #6f6559;
   font-size: 24rpx;
 }
 
+/* ===== 列表卡片（书籍列表项） ===== */
+/* 水平排列：左侧封面 + 右侧信息 */
 .list-card {
   display: flex;
   gap: 20rpx;
@@ -178,35 +241,41 @@ page {
   border-bottom: 1rpx solid #efe4d2;
 }
 
+/* 最后一项不显示底部分隔线 */
 .list-card:last-child {
   border-bottom: none;
   padding-bottom: 0;
 }
 
+/* ===== 图书封面 ===== */
 .book-cover {
   width: 140rpx;
   height: 196rpx;
   border-radius: 20rpx;
-  background: #e7dcc9;
+  background: #e7dcc9;    /* 封面未加载时的占位背景色 */
   flex-shrink: 0;
 }
 
+/* 小号封面（用于精简列表） */
 .book-cover--small {
   width: 108rpx;
   height: 148rpx;
 }
 
+/* ===== 图书信息区域 ===== */
 .book-info {
   flex: 1;
-  min-width: 0;
+  min-width: 0;    /* 防止 flex 子元素文字溢出 */
 }
 
+/* 图书标题 */
 .book-title {
   font-size: 32rpx;
   font-weight: 700;
   line-height: 1.35;
 }
 
+/* 图书元信息（作者、出版社等） */
 .book-meta {
   margin-top: 8rpx;
   color: #6f6559;
@@ -214,6 +283,8 @@ page {
   line-height: 1.6;
 }
 
+/* ===== 表单输入组件 ===== */
+/* 搜索框、文本输入框、多行文本域的共用样式 */
 .search-input,
 .text-input,
 .textarea {
@@ -225,17 +296,20 @@ page {
   color: #1f1a14;
 }
 
+/* 单行输入框的高度和内边距 */
 .search-input,
 .text-input {
   min-height: 82rpx;
   padding: 0 22rpx;
 }
 
+/* 多行文本域的高度和内边距 */
 .textarea {
   min-height: 180rpx;
   padding: 18rpx 22rpx;
 }
 
+/* ===== 行内操作按钮区 ===== */
 .inline-actions {
   display: flex;
   gap: 14rpx;
@@ -243,6 +317,8 @@ page {
   margin-top: 18rpx;
 }
 
+/* ===== 工具栏 ===== */
+/* 水平排列多个元素 */
 .toolbar {
   display: flex;
   align-items: center;
@@ -250,6 +326,7 @@ page {
   flex-wrap: wrap;
 }
 
+/* 两端对齐工具栏 */
 .toolbar-spread {
   display: flex;
   align-items: center;
@@ -258,17 +335,20 @@ page {
   flex-wrap: wrap;
 }
 
+/* ===== 表单字段堆叠（垂直排列） ===== */
 .field-stack {
   display: flex;
   flex-direction: column;
   gap: 14rpx;
 }
 
+/* 字段标签文字 */
 .field-label {
   font-size: 26rpx;
   color: #6f6559;
 }
 
+/* ===== 分段副标题 ===== */
 .section-subtitle {
   margin-top: -8rpx;
   margin-bottom: 18rpx;
@@ -276,24 +356,29 @@ page {
   font-size: 24rpx;
 }
 
+/* ===== 功能入口网格 ===== */
+/* 两列等宽网格，用于"我的"页面的功能入口 */
 .entry-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16rpx;
 }
 
+/* 功能入口卡片 */
 .entry-card {
   background: #f8f1e5;
   border-radius: 20rpx;
   padding: 22rpx;
 }
 
+/* 入口标题 */
 .entry-title {
   font-size: 30rpx;
   font-weight: 700;
   color: #123c38;
 }
 
+/* 入口描述文字 */
 .entry-desc {
   margin-top: 8rpx;
   color: #6f6559;
@@ -301,12 +386,15 @@ page {
   line-height: 1.6;
 }
 
+/* ===== 胶囊切换器（Pill Switch） ===== */
+/* 用于图书目录的分类筛选等 */
 .pill-switch {
   display: flex;
   gap: 12rpx;
   flex-wrap: wrap;
 }
 
+/* 胶囊按钮（未选中） */
 .pill-item {
   padding: 14rpx 24rpx;
   border-radius: 999rpx;
@@ -315,11 +403,14 @@ page {
   font-size: 26rpx;
 }
 
+/* 胶囊按钮（选中态 — 深色底） */
 .pill-item--active {
   background: #123c38;
   color: #ffffff;
 }
 
+/* ===== 概要信息行（Hero 内的统计摘要） ===== */
+/* 水平滚动行，展示多个摘要指标 */
 .summary-row {
   display: flex;
   gap: 16rpx;
@@ -327,6 +418,7 @@ page {
   padding-bottom: 8rpx;
 }
 
+/* 单个摘要指标卡 */
 .summary-item {
   min-width: 208rpx;
   background: rgba(255, 255, 255, 0.14);
@@ -335,45 +427,54 @@ page {
   box-sizing: border-box;
 }
 
+/* 摘要标签（如"在借"） */
 .summary-label {
   font-size: 22rpx;
   color: rgba(255, 255, 255, 0.76);
 }
 
+/* 摘要数值 */
 .summary-value {
   margin-top: 10rpx;
   font-size: 38rpx;
   font-weight: 700;
 }
 
+/* ===== 封面 + 信息的主角展示（图书详情页） ===== */
 .cover-hero {
   display: flex;
   gap: 24rpx;
 }
 
+/* 详情页大封面 */
 .cover-hero .book-cover {
   width: 188rpx;
   height: 268rpx;
 }
 
+/* ===== 元信息列表 ===== */
 .meta-list {
   display: flex;
   flex-direction: column;
   gap: 12rpx;
 }
 
+/* 单条元信息（如 ISBN、出版社等） */
 .meta-item {
   color: #4b4339;
   font-size: 25rpx;
   line-height: 1.7;
 }
 
+/* ===== 分隔线 ===== */
 .divider {
   height: 1rpx;
   background: #efe4d2;
   margin: 22rpx 0;
 }
 
+/* ===== 空状态卡片 ===== */
+/* 当列表为空时显示的提示卡片 */
 .empty-card {
   border-radius: 20rpx;
   background: #f8f1e5;
@@ -383,6 +484,7 @@ page {
   padding: 24rpx;
 }
 
+/* ===== 信息流/动态卡片（推荐动态） ===== */
 .feed-card {
   background: #fffaf2;
   border: 1rpx solid #ddceb8;
@@ -391,6 +493,7 @@ page {
   margin-bottom: 18rpx;
 }
 
+/* 动态卡片头部（作者名 + 时间） */
 .feed-header {
   display: flex;
   justify-content: space-between;
@@ -398,23 +501,27 @@ page {
   margin-bottom: 14rpx;
 }
 
+/* 动态作者名 */
 .feed-author {
   font-size: 30rpx;
   font-weight: 700;
 }
 
+/* 动态元信息（时间等） */
 .feed-meta {
   color: #6f6559;
   font-size: 24rpx;
   line-height: 1.6;
 }
 
+/* 动态正文内容 */
 .feed-content {
   color: #1f1a14;
   font-size: 27rpx;
   line-height: 1.8;
 }
 
+/* ===== 通知卡片 ===== */
 .notice-card {
   border-radius: 20rpx;
   padding: 22rpx;
@@ -423,11 +530,14 @@ page {
   margin-bottom: 16rpx;
 }
 
+/* 未读通知 — 浅绿背景区分 */
 .notice-card--unread {
   background: #f3fbf8;
   border-color: #9ad0c1;
 }
 
+/* ===== 高亮状态（通知跳转定位） ===== */
+/* 当用户从通知跳转到目标页面时，目标项短暂高亮 */
 .notice-card--highlight,
 .feed-card--highlight,
 .list-card--highlight {
@@ -436,12 +546,14 @@ page {
   box-shadow: 0 10rpx 30rpx rgba(13, 138, 114, 0.1);
 }
 
+/* 通知标题 */
 .notice-title {
   font-size: 30rpx;
   font-weight: 700;
   line-height: 1.4;
 }
 
+/* 通知正文 */
 .notice-content {
   margin-top: 10rpx;
   color: #4b4339;
@@ -449,18 +561,21 @@ page {
   line-height: 1.8;
 }
 
+/* 通知元信息（时间） */
 .notice-meta {
   margin-top: 12rpx;
   color: #6f6559;
   font-size: 22rpx;
 }
 
+/* ===== 金额文本 ===== */
 .amount-text {
   color: #123c38;
   font-size: 40rpx;
   font-weight: 700;
 }
 
+/* ===== 描边标签 ===== */
 .tag-outline {
   display: inline-flex;
   align-items: center;
@@ -471,12 +586,19 @@ page {
   font-size: 23rpx;
 }
 
+/* ===== 通用禁用态 ===== */
+.is-disabled {
+  opacity: 0.55;
+}
+
+/* ===== 评分选择器 ===== */
 .rating-row {
   display: flex;
   gap: 12rpx;
   flex-wrap: wrap;
 }
 
+/* 评分胶囊（未选中） */
 .rating-pill {
   min-width: 84rpx;
   padding: 14rpx 20rpx;
@@ -489,11 +611,13 @@ page {
   box-sizing: border-box;
 }
 
+/* 评分胶囊（选中态） */
 .rating-pill--active {
   background: #123c38;
   color: #ffffff;
 }
 
+/* ===== 卡片备注 ===== */
 .card-note {
   margin-top: 12rpx;
   color: #6f6559;
@@ -501,7 +625,8 @@ page {
   line-height: 1.6;
 }
 
-/* ===== Active / press-down feedback ===== */
+/* ===== 按下反馈动效（:active 伪类） ===== */
+/* 为交互元素提供即时的视觉反馈，提升点击体验 */
 
 .button-primary:active {
   background: #0a6f5c;

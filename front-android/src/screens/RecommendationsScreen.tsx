@@ -1,3 +1,16 @@
+/**
+ * @file 推荐动态页面
+ * @description 对应 Web 端老师荐书流、点赞和关注语义。
+ *
+ *   页面结构：
+ *   1. 概要卡片 - 当前动态数/已关注/已点赞统计
+ *   2. 发布推荐表单 - 图书检索 + 推荐理由（仅教师/管理员可见）
+ *   3. 筛选范围 - 全部 / 关注 / 我的
+ *   4. 动态列表 - 作者信息、图书信息、推荐内容、点赞/关注/删除操作
+ *
+ *   发布权限：仅 ADMIN 角色或 identityType === TEACHER 可发布
+ *   事件驱动：监听 recommendations / notifications / auth 自动刷新
+ */
 import React, { useEffect, useMemo, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -100,6 +113,7 @@ export function RecommendationsScreen() {
       .catch(() => setBookOptions([]));
   }, [debouncedKeyword, canPublish]);
 
+  /** 发布新推荐 */
   async function handleCreate() {
     if (!selectedBook?.bookId) {
       setErrorMessage("请先选择一本图书");
@@ -131,6 +145,7 @@ export function RecommendationsScreen() {
     }
   }
 
+  /** 点赞/取消点赞 */
   async function handleLike(post: RecommendationPost) {
     try {
       setActingId(post.postId);
@@ -148,6 +163,7 @@ export function RecommendationsScreen() {
     }
   }
 
+  /** 关注/取关注推荐人 */
   async function handleFollow(post: RecommendationPost) {
     try {
       setActingId(post.postId);
@@ -165,6 +181,7 @@ export function RecommendationsScreen() {
     }
   }
 
+  /** 删除推荐 */
   async function handleDelete(postId: number) {
     try {
       setActingId(postId);
@@ -180,21 +197,21 @@ export function RecommendationsScreen() {
 
   if (!user) {
     return (
-      <Screen title="推荐动态" subtitle="对应 Web 端老师荐书流、点赞和关注语义。">
+      <Screen title="推荐动态" subtitle="老师荐书和阅读推荐">
         <LoginPromptCard onLogin={() => navigation.navigate("Login")} />
       </Screen>
     );
   }
 
   return (
-    <Screen title="推荐动态" subtitle="对应 Web 端 `/my/recommendations` 的推荐流、关注和点赞。">
+    <Screen title="推荐动态" subtitle="浏览推荐书目、关注和互动">
       <Card tone="tinted" style={styles.summaryCard}>
         <View style={styles.summaryHeader}>
           <View style={styles.summaryIconWrap}>
             <MaterialCommunityIcons name="star-box-outline" size={26} color={colors.primaryDark} />
           </View>
           <View style={styles.summaryBody}>
-            <InfoPill label="READER FEED" tone="primary" icon="star-outline" />
+            <InfoPill label="阅读推荐" tone="primary" icon="star-outline" />
             <Text style={styles.summaryTitle}>发现老师和读者的荐书内容</Text>
             <Text style={styles.summaryText}>你可以浏览、点赞、关注推荐人；教师或管理员还能直接发布荐书动态。</Text>
           </View>
@@ -340,6 +357,7 @@ export function RecommendationsScreen() {
                       void handleLike(post);
                     }}
                     tone={post.likedByMe ? "danger" : "secondary"}
+                    size="sm"
                     disabled={actingId !== null}
                   />
                   {post.authorUserId !== user.userId ? (
@@ -350,6 +368,7 @@ export function RecommendationsScreen() {
                         void handleFollow(post);
                       }}
                       tone="secondary"
+                      size="sm"
                       disabled={actingId !== null}
                     />
                   ) : null}
@@ -361,6 +380,7 @@ export function RecommendationsScreen() {
                         void handleDelete(post.postId);
                       }}
                       tone="danger"
+                      size="sm"
                       disabled={actingId !== null}
                     />
                   ) : null}
@@ -369,6 +389,7 @@ export function RecommendationsScreen() {
                     icon="book-open-variant"
                     onPress={() => navigation.navigate("BookDetail", { bookId: post.bookId })}
                     tone="secondary"
+                    size="sm"
                   />
                 </View>
               </View>

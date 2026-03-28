@@ -29,8 +29,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Admin endpoints for managing roles, permissions, and user-role assignments.
- * All endpoints require ADMIN authority.
+ * 后台 RBAC 管理控制器。
+ * 提供角色、权限、用户角色绑定以及 RBAC 审计日志相关接口。
  */
 @RestController
 @RequestMapping("/api/admin")
@@ -41,20 +41,29 @@ public class AdminRoleController {
     private final PermissionService permissionService;
     private final RbacAuditLogService rbacAuditLogService;
 
-    // ─── Role Management ──────────────────────────────────────────────
+    // 角色管理
 
+    /**
+     * 查询全部角色。
+     */
     @GetMapping("/roles")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<RoleDto>> getAllRoles() {
         return ResponseEntity.ok(roleService.getAllRoles());
     }
 
+    /**
+     * 根据角色 ID 查询详情。
+     */
     @GetMapping("/roles/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RoleDto> getRoleById(@PathVariable Integer id) {
         return ResponseEntity.ok(roleService.getRoleById(id));
     }
 
+    /**
+     * 新增角色，并记录 RBAC 审计日志。
+     */
     @PostMapping("/roles")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RoleDto> createRole(
@@ -70,6 +79,9 @@ public class AdminRoleController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
+    /**
+     * 删除角色，并记录 RBAC 审计日志。
+     */
     @DeleteMapping("/roles/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteRole(@PathVariable Integer id, Authentication authentication) {
@@ -78,14 +90,20 @@ public class AdminRoleController {
         return ResponseEntity.noContent().build();
     }
 
-    // ─── Permission Management ────────────────────────────────────────
+    // 权限管理
 
+    /**
+     * 查询全部权限点。
+     */
     @GetMapping("/permissions")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<PermissionDto>> getAllPermissions() {
         return ResponseEntity.ok(permissionService.getAllPermissions());
     }
 
+    /**
+     * 新增权限点，并写入审计日志。
+     */
     @PostMapping("/permissions")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PermissionDto> createPermission(
@@ -101,6 +119,9 @@ public class AdminRoleController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
+    /**
+     * 删除权限点，并写入审计日志。
+     */
     @DeleteMapping("/permissions/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deletePermission(@PathVariable Integer id, Authentication authentication) {
@@ -109,8 +130,11 @@ public class AdminRoleController {
         return ResponseEntity.noContent().build();
     }
 
-    // ─── Role–Permission Assignment ───────────────────────────────────
+    // 角色与权限绑定
 
+    /**
+     * 为角色分配单个权限。
+     */
     @PostMapping("/roles/{roleId}/permissions/{permissionId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RoleDto> assignPermission(
@@ -127,6 +151,9 @@ public class AdminRoleController {
         return ResponseEntity.ok(updated);
     }
 
+    /**
+     * 从角色移除单个权限。
+     */
     @DeleteMapping("/roles/{roleId}/permissions/{permissionId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RoleDto> revokePermission(
@@ -143,6 +170,9 @@ public class AdminRoleController {
         return ResponseEntity.ok(updated);
     }
 
+    /**
+     * 批量为角色分配权限。
+     */
     @PostMapping("/roles/{roleId}/permissions/batch/assign")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RoleDto> assignPermissionsBatch(
@@ -159,6 +189,9 @@ public class AdminRoleController {
         return ResponseEntity.ok(updated);
     }
 
+    /**
+     * 批量从角色移除权限。
+     */
     @PostMapping("/roles/{roleId}/permissions/batch/revoke")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RoleDto> revokePermissionsBatch(
@@ -175,14 +208,20 @@ public class AdminRoleController {
         return ResponseEntity.ok(updated);
     }
 
-    // ─── User–Role Assignment ─────────────────────────────────────────
+    // 用户与角色绑定
 
+    /**
+     * 查询指定用户当前绑定的角色。
+     */
     @GetMapping("/users/{userId}/roles")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<RoleDto>> getUserRoles(@PathVariable Integer userId) {
         return ResponseEntity.ok(roleService.getUserRoles(userId));
     }
 
+    /**
+     * 为指定用户分配角色。
+     */
     @PostMapping("/users/{userId}/roles/{roleId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> assignRoleToUser(
@@ -199,6 +238,9 @@ public class AdminRoleController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * 从指定用户撤销角色。
+     */
     @DeleteMapping("/users/{userId}/roles/{roleId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> revokeRoleFromUser(
@@ -215,6 +257,9 @@ public class AdminRoleController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * 将某个角色批量分配给多个用户。
+     */
     @PostMapping("/roles/{roleId}/users/batch/assign")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserRoleBatchUpdateResultDto> assignRoleToUsersBatch(
@@ -231,6 +276,9 @@ public class AdminRoleController {
         return ResponseEntity.ok(result);
     }
 
+    /**
+     * 将某个角色从多个用户身上批量撤销。
+     */
     @PostMapping("/roles/{roleId}/users/batch/revoke")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserRoleBatchUpdateResultDto> revokeRoleFromUsersBatch(
@@ -247,6 +295,9 @@ public class AdminRoleController {
         return ResponseEntity.ok(result);
     }
 
+    /**
+     * 预览批量分配/撤销角色的影响结果，不真正提交变更。
+     */
     @PostMapping("/roles/{roleId}/users/batch/preview")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserRoleBatchPreviewDto> previewRoleOperationBatch(
@@ -255,6 +306,9 @@ public class AdminRoleController {
         return ResponseEntity.ok(roleService.previewRoleOperation(dto.getUserIds(), roleId));
     }
 
+    /**
+     * 分页查询 RBAC 审计日志。
+     */
     @GetMapping("/rbac/audits")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<RbacAuditLogDto>> getRbacAuditLogs(
@@ -267,6 +321,9 @@ public class AdminRoleController {
         return ResponseEntity.ok(rbacAuditLogService.getLogs(page, size, actionType, actorUsername, fromTime, toTime));
     }
 
+    /**
+     * 导出 RBAC 审计日志为 CSV 文件。
+     */
     @GetMapping("/rbac/audits/export")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> exportRbacAuditLogs(
@@ -303,6 +360,9 @@ public class AdminRoleController {
                 .body("\uFEFF" + csv);
     }
 
+    /**
+     * 统一写入 RBAC 审计日志。
+     */
     private void audit(
             Authentication authentication,
             String actionType,
@@ -324,6 +384,9 @@ public class AdminRoleController {
         rbacAuditLogService.log(actorUserId, actorUsername, actionType, targetType, targetId, detail);
     }
 
+    /**
+     * 对 CSV 字段值做转义，避免逗号、双引号和换行破坏格式。
+     */
     private String escapeCsv(Object value) {
         if (value == null) {
             return "";

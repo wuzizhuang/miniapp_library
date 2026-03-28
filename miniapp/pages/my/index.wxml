@@ -43,9 +43,6 @@
           <view class="summary-value">{{overview.pendingFineCount}}</view>
         </view>
       </view>
-      <view class="inline-actions">
-        <view class="button-ghost" bindtap="logout">退出当前账号</view>
-      </view>
     </view>
 
     <view class="panel">
@@ -73,6 +70,14 @@
               {{item.status === 'OVERDUE' ? '已逾期' : '剩余 ' + item.daysRemaining + ' 天'}}
             </view>
           </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="panel">
+      <view class="inline-actions" style="justify-content: center;">
+        <view class="{{loggingOut ? 'button-ghost is-disabled' : 'button-ghost'}}" bindtap="logout">
+          {{loggingOut ? '退出中...' : '退出当前账号'}}
         </view>
       </view>
     </view>

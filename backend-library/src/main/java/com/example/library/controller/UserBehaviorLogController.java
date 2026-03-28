@@ -12,8 +12,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Endpoints for client-side user behavior tracking.
- * Both authenticated and anonymous users may submit events.
+ * 用户行为日志控制器。
+ * 提供客户端行为埋点上报接口，支持匿名和登录用户提交。
  */
 @RestController
 @RequestMapping("/api/behavior-logs")
@@ -24,11 +24,8 @@ public class UserBehaviorLogController {
     private final RequestRateLimitService requestRateLimitService;
 
     /**
-     * Records a user behavior event (e.g. view book detail, add to shelf).
-     * Returns 204 No Content immediately; the actual write is async.
-     *
-     * @param userDetails null when the caller is unauthenticated
-     * @param requestDto  the behavior payload
+     * 记录一条用户行为事件。
+     * 该接口会立即返回 204，实际写库由异步服务完成。
      */
     @PostMapping
     public ResponseEntity<Void> logBehavior(

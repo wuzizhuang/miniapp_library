@@ -8,7 +8,8 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * Join entity for book-author relationships.
+ * 图书与作者关系实体。
+ * 用于维护多作者场景下的关联顺序。
  */
 @Entity
 @Table(name = "book_authors")
@@ -41,6 +42,9 @@ public class BookAuthor implements Comparable<BookAuthor> {
     @Column(name = "create_time", nullable = false, updatable = false)
     private LocalDateTime createTime;
 
+    /**
+     * 通过图书、作者和顺序快速构造关联关系。
+     */
     public BookAuthor(Book book, Author author, Integer authorOrder) {
         this.book = book;
         this.author = author;
@@ -50,6 +54,9 @@ public class BookAuthor implements Comparable<BookAuthor> {
         this.id.setAuthorId(author.getAuthorId());
     }
 
+    /**
+     * 让作者关系在集合排序时按 authorOrder 输出。
+     */
     @Override
     public int compareTo(BookAuthor other) {
         return this.authorOrder.compareTo(other.authorOrder);
@@ -60,6 +67,9 @@ public class BookAuthor implements Comparable<BookAuthor> {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class BookAuthorId implements Serializable {
+        /**
+         * 复合主键，分别对应图书 id 与作者 id。
+         */
         @Column(name = "book_id")
         private Integer bookId;
 

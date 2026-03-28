@@ -1,7 +1,7 @@
 <scroll-view class="page-shell" scroll-y>
   <view class="panel">
     <view class="section-title">找回密码</view>
-    <view class="section-subtitle">当前会发起真实的重置密码请求，后端会返回投递结果并生成重置链接。</view>
+    <view class="section-subtitle">输入注册时填写的邮箱，我们会发送重置链接到你的邮箱。</view>
     <view class="field-stack">
       <input class="text-input" placeholder="请输入注册邮箱" data-field="email" value="{{email}}" bindinput="onInput" />
       <view wx:if="{{errorMessage}}" class="danger-text">{{errorMessage}}</view>

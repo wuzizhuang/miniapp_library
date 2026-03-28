@@ -24,7 +24,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Builds a deterministic default floor map from copy location metadata.
+ * 图书定位地图服务实现。
+ * 根据副本位置码、楼层信息和馆藏模板动态拼装默认馆藏地图。
  */
 @Service
 @RequiredArgsConstructor
@@ -59,10 +60,11 @@ public class BookLocationMapServiceImpl implements BookLocationMapService {
                         .comparing(ParsedCopyLocation::available).reversed()
                         .thenComparing(ParsedCopyLocation::floorOrder)
                         .thenComparing(ParsedCopyLocation::zoneCode)
-                        .thenComparing(ParsedCopyLocation::shelfCode)
-                        .thenComparing(ParsedCopyLocation::locationCode))
+                .thenComparing(ParsedCopyLocation::shelfCode)
+                .thenComparing(ParsedCopyLocation::locationCode))
                 .toList();
 
+        // 先按楼层聚合，再把每层拆成区域和书架，确保前端拿到的是稳定的结构化数据。
         Map<Integer, List<ParsedCopyLocation>> copiesByFloor = parsedLocations.stream()
                 .collect(Collectors.groupingBy(
                         ParsedCopyLocation::floorPlanId,
@@ -93,6 +95,9 @@ public class BookLocationMapServiceImpl implements BookLocationMapService {
                 .build();
     }
 
+    /**
+     * 将解析后的位置信息转换为平铺明细，供前端列表/高亮联动使用。
+     */
     private BookLocationMapDto.Location toLocationDto(ParsedCopyLocation parsed) {
         return BookLocationMapDto.Location.builder()
                 .copyId(parsed.copyId())
@@ -108,6 +113,9 @@ public class BookLocationMapServiceImpl implements BookLocationMapService {
                 .build();
     }
 
+    /**
+     * 生成单层楼的地图结构。
+     */
     private BookLocationMapDto.Floor buildFloor(Integer floorPlanId, List<ParsedCopyLocation> copies) {
         int floorOrder = copies.stream().map(ParsedCopyLocation::floorOrder).min(Integer::compareTo).orElse(floorPlanId);
         String floorName = copies.stream().map(ParsedCopyLocation::floorName).filter(Objects::nonNull).findFirst()
@@ -173,6 +181,9 @@ public class BookLocationMapServiceImpl implements BookLocationMapService {
                 .build();
     }
 
+    /**
+     * 在某个区域模板内按网格布局书架。
+     */
     private List<BookLocationMapDto.Shelf> layoutShelves(ZoneTemplate template, List<ShelfAggregate> zoneShelves) {
         List<BookLocationMapDto.Shelf> shelves = new ArrayList<>();
         int columns = template.columns();
@@ -210,6 +221,9 @@ public class BookLocationMapServiceImpl implements BookLocationMapService {
         return shelves;
     }
 
+    /**
+     * 生成本层的摘要文案，突出可借副本和覆盖分区。
+     */
     private String buildFloorSummary(List<ParsedCopyLocation> copies) {
         long availableCount = copies.stream().filter(ParsedCopyLocation::available).count();
         Set<String> zones = copies.stream()
@@ -222,6 +236,9 @@ public class BookLocationMapServiceImpl implements BookLocationMapService {
                 : "当前楼层仅展示馆藏位置，覆盖 " + zoneText;
     }
 
+    /**
+     * 把副本实体解析成地图绘制所需的标准位置信息。
+     */
     private ParsedCopyLocation parseCopyLocation(BookCopy copy) {
         String normalizedLocation = normalizeLocationCode(copy.getLocationCode(), copy.getCopyId());
         int floorPlanId = deriveFloorPlanId(copy.getFloorPlanId(), normalizedLocation);
@@ -244,6 +261,9 @@ public class BookLocationMapServiceImpl implements BookLocationMapService {
                 copy.getStatus() == BookCopy.CopyStatus.AVAILABLE);
     }
 
+    /**
+     * 优先使用显式楼层平面图 id，缺失时再从位置码中推断楼层。
+     */
     private int deriveFloorPlanId(Integer floorPlanId, String locationCode) {
         if (floorPlanId != null && floorPlanId > 0) {
             return floorPlanId;
@@ -257,6 +277,9 @@ public class BookLocationMapServiceImpl implements BookLocationMapService {
         return 1;
     }
 
+    /**
+     * 从位置码解析区域编码，解析失败时回落到默认 A 区。
+     */
     private String deriveZoneCode(String locationCode) {
         String withoutFloor = stripFloorPrefix(locationCode);
         Matcher matcher = ZONE_PATTERN.matcher(withoutFloor);
@@ -267,6 +290,9 @@ public class BookLocationMapServiceImpl implements BookLocationMapService {
         return "A";
     }
 
+    /**
+     * 提取书架编码，缺失时根据副本 id 生成兜底编码，避免地图无法落点。
+     */
     private String deriveShelfCode(String locationCode, String zoneCode, Integer copyId) {
         String withoutFloor = stripFloorPrefix(locationCode);
         String canonical = canonicalizeSegments(withoutFloor);
@@ -278,6 +304,9 @@ public class BookLocationMapServiceImpl implements BookLocationMapService {
         return zoneCode + "-" + String.format(Locale.ROOT, "%02d", copyId % 100);
     }
 
+    /**
+     * 标准化位置码，统一大小写与分隔符格式。
+     */
     private String normalizeLocationCode(String locationCode, Integer copyId) {
         if (locationCode == null || locationCode.isBlank()) {
             return "1F-A-" + String.format(Locale.ROOT, "%02d", copyId % 100);
@@ -319,6 +348,9 @@ public class BookLocationMapServiceImpl implements BookLocationMapService {
                 .orElse("默认馆藏区");
     }
 
+    /**
+     * 当遇到模板外的新区域时，动态生成一个额外区域块，避免前端丢失位置数据。
+     */
     private ZoneTemplate createDynamicZoneTemplate(String zoneCode, int index) {
         int baseX = 72 + (index % 3) * 210;
         int baseY = 354 + (index / 3) * 178;
@@ -372,6 +404,9 @@ public class BookLocationMapServiceImpl implements BookLocationMapService {
             this.zoneName = zoneName;
         }
 
+        /**
+         * 归并同一书架上的副本数量和可借数量。
+         */
         private void add(ParsedCopyLocation copy) {
             copyCount += 1;
             if (copy.available()) {

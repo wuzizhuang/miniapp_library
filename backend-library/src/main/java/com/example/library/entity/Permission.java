@@ -9,8 +9,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 /**
- * System permission entity (e.g., "book:write", "loan:read").
- * Permissions follow the format "resource:action".
+ * 权限实体。
+ * 权限点通常遵循 `资源:动作` 命名格式，例如 `book:write`、`loan:read`。
  */
 @Entity
 @Table(name = "permissions")
@@ -24,9 +24,7 @@ public class Permission {
     @Column(name = "permission_id")
     private Integer permissionId;
 
-    /**
-     * Unique permission name, e.g. "book:write".
-     */
+    /** 权限唯一编码。 */
     @Column(name = "name", nullable = false, unique = true, length = 100)
     private String name;
 
@@ -37,6 +35,9 @@ public class Permission {
     @Column(name = "create_time", nullable = false, updatable = false)
     private LocalDateTime createTime;
 
+    /**
+     * 使用名称和说明构造权限实体。
+     */
     public Permission(String name, String description) {
         this.name = name;
         this.description = description;

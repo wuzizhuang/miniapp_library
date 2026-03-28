@@ -8,7 +8,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 /**
- * Service appointment entity.
+ * 服务预约实体。
+ * 表示读者预约到馆服务、还书审核或咨询服务的记录。
  */
 @Entity
 @Table(name = "service_appointments")
@@ -57,14 +58,17 @@ public class ServiceAppointment {
     @Column(name = "update_time", nullable = false)
     private LocalDateTime updateTime;
 
+    /** 服务预约类型。 */
     public enum ServiceType {
         RETURN_BOOK, PICKUP_BOOK, CONSULTATION
     }
 
+    /** 服务办理方式。 */
     public enum ServiceMethod {
         COUNTER, SMART_LOCKER
     }
 
+    /** 服务预约处理状态。 */
     public enum AppointmentStatus {
         PENDING, COMPLETED, CANCELLED, MISSED
     }

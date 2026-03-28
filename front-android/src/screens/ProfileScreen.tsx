@@ -1,3 +1,14 @@
+/**
+ * @file 个人资料编辑页面
+ * @description 对应 Web 端 `/my/profile` 的资料编辑与概览统计。
+ *
+ *   页面结构：
+ *   1. Hero 卡片 - 头像、姓名、用户名、角色、身份类型、待缴罚款、院系
+ *   2. 编辑表单 - 姓名、邮箱、院系、专业、入学年份、兴趣标签
+ *
+ *   数据来源：authService.getMyProfile + userService.getMyOverview
+ *   事件驱动：监听 profile / overview / auth 事件自动刷新
+ */
 import React, { useEffect, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { StyleSheet, Text, View } from "react-native";
@@ -22,7 +33,10 @@ export function ProfileScreen() {
   const [pendingFineTotal, setPendingFineTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  /** 初始加载错误（显示 ErrorCard + 重试） */
+  const [loadError, setLoadError] = useState("");
+  /** 操作错误（保存失败等，显示行内可关闭横幅） */
+  const [actionError, setActionError] = useState("");
   const [form, setForm] = useState<ApiProfileUpdateDto>({
     fullName: "",
     email: "",
@@ -37,7 +51,7 @@ export function ProfileScreen() {
       setLoading(true);
     }
 
-    setErrorMessage("");
+    setLoadError("");
     try {
       const [nextProfile, overview] = await Promise.all([
         authService.getMyProfile(),
@@ -55,7 +69,7 @@ export function ProfileScreen() {
         interestTags: nextProfile.interestTags ?? [],
       });
     } catch (error) {
-      setErrorMessage(getErrorMessage(error, "个人资料加载失败"));
+      setLoadError(getErrorMessage(error, "个人资料加载失败"));
     } finally {
       setLoading(false);
     }
@@ -73,8 +87,9 @@ export function ProfileScreen() {
     });
   }, [user]);
 
+  /** 保存个人资料并刷新会话 */
   async function handleSave() {
-    setErrorMessage("");
+    setActionError("");
     setSaving(true);
     try {
       await authService.updateProfile({
@@ -87,7 +102,7 @@ export function ProfileScreen() {
       emitAppEvent("overview");
       await loadData(true);
     } catch (error) {
-      setErrorMessage(getErrorMessage(error, "保存失败"));
+      setActionError(getErrorMessage(error, "保存失败"));
     } finally {
       setSaving(false);
     }
@@ -95,23 +110,23 @@ export function ProfileScreen() {
 
   if (!user) {
     return (
-      <Screen title="个人资料" subtitle="对应 Web 端 `/my/profile` 的个人资料与统计入口。">
+      <Screen title="个人资料" subtitle="查看和编辑你的读者信息">
         <LoginPromptCard onLogin={() => navigation.navigate("Login")} />
       </Screen>
     );
   }
 
   return (
-    <Screen title="个人资料" subtitle="对应 Web 端 `/my/profile` 的资料编辑与概览统计。">
+    <Screen title="个人资料" subtitle="编辑你的个人信息和阅读偏好">
       {loading ? (
         <Card tone="muted">
           <Text style={styles.helperText}>正在加载个人资料...</Text>
         </Card>
       ) : null}
 
-      {!loading && errorMessage ? (
+      {!loading && loadError && !profile ? (
         <ErrorCard
-          message={errorMessage}
+          message={loadError}
           onRetry={() => {
             void loadData(true);
           }}
@@ -120,6 +135,16 @@ export function ProfileScreen() {
 
       {!loading && profile ? (
         <>
+          {actionError ? (
+            <Card tone="muted" style={styles.sectionCard}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}>
+                <MaterialCommunityIcons name="alert-circle-outline" size={18} color={colors.danger} />
+                <Text style={{ flex: 1, color: colors.danger, lineHeight: 21 }}>{actionError}</Text>
+              </View>
+              <ActionButton label="知道了" icon="check" onPress={() => setActionError("")} tone="secondary" size="sm" />
+            </Card>
+          ) : null}
+
           <Card tone="tinted" style={styles.heroCard}>
             <View style={styles.heroHeader}>
               <View style={styles.avatar}>
@@ -216,6 +241,7 @@ export function ProfileScreen() {
   );
 }
 
+/** 指标卡片组件（待缴罚款/院系展示） */
 function MetricCard({
   icon,
   value,

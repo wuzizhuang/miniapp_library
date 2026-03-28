@@ -1,5 +1,20 @@
-const { libraryService } = require('../../services/library')
+/**
+ * @file "我的"页面逻辑
+ * @description 用户中心 Tab 页，功能：
+ *   - 展示当前用户基本信息
+ *   - 概览统计（在借数/预约数/罚款数/通知数等）
+ *   - 功能入口列表（书架/预约/评论/罚款/通知/反馈/资料/预约/座位/推荐）
+ *   - 退出登录
+ *   - 未登录状态提示
+ */
 
+const { libraryService } = require('../../services/library')
+const { confirmAction } = require('../../utils/interaction')
+
+/**
+ * 功能入口配置列表
+ * 每项定义了 key（用于匹配概览数据）、标题、描述和跳转路径
+ */
 const ENTRY_LIST = [
   { key: 'shelf', title: '我的书架', desc: '收藏、当前借阅和历史借阅', url: '/pages/my/shelf/index' },
   { key: 'reservation', title: '我的预约', desc: '查看排队与待取书', url: '/pages/my/reservations/index' },
@@ -14,6 +29,12 @@ const ENTRY_LIST = [
   { key: 'recommendation', title: '推荐动态', desc: '老师荐书与我的分享', url: '/pages/my/recommendations/index' },
 ]
 
+/**
+ * 根据概览统计数据为入口列表添加角标信息
+ * 例如"3 本在借"、"2 条待缴"等
+ * @param {Object|null} overview - 概览统计数据
+ * @returns {Object[]} 带 badge 的入口列表
+ */
 function buildEntries(overview) {
   return ENTRY_LIST.map((entry) => {
     if (!overview) {
@@ -67,28 +88,45 @@ function buildEntries(overview) {
 }
 
 Page({
+  /**
+   * 页面数据
+   * @property {Object|null} user    - 当前用户信息
+   * @property {Object|null} overview - 概览统计
+   * @property {boolean} loading     - 加载中
+   * @property {string} errorMessage - 错误信息
+   * @property {Object[]} entries    - 功能入口列表（含动态角标）
+   */
   data: {
     user: null,
     overview: null,
     loading: true,
     errorMessage: '',
     entries: ENTRY_LIST,
+    loggingOut: false,
   },
 
+  /** 每次显示页面时刷新数据 */
   onShow() {
     this.loadPageData()
   },
 
+  /** 下拉刷新 */
   onPullDownRefresh() {
     this.loadPageData({ stopPullDownRefresh: true })
   },
 
+  /**
+   * 加载页面数据
+   * 并行请求用户资料和概览统计
+   * 未登录时显示登录引导
+   */
   async loadPageData(options) {
     const nextOptions = options || {}
     const app = getApp()
 
     await app.whenReady()
 
+    // 未登录 → 显示登录引导
     if (!app.isLoggedIn()) {
       this.setData({
         loading: false,
@@ -109,6 +147,7 @@ Page({
     })
 
     try {
+      // 并行请求用户资料和概览统计
       const [user, overview] = await Promise.all([
         libraryService.getMyProfile(),
         libraryService.getMyOverview(),
@@ -134,31 +173,60 @@ Page({
     }
   },
 
+  /** 跳转到指定功能页面 */
   openPage(event) {
     wx.navigateTo({
       url: event.currentTarget.dataset.url,
     })
   },
 
+  /** 跳转到借阅追踪页 */
   openLoan(event) {
     wx.navigateTo({
       url: `/pages/my/loan-tracking/index?loanId=${event.currentTarget.dataset.loanId}`,
     })
   },
 
+  /** 退出登录 → 跳转到登录页 */
   async logout() {
-    await getApp().logout()
-    wx.reLaunch({
-      url: '/pages/login/index',
+    if (this.data.loggingOut) {
+      return
+    }
+
+    const confirmed = await confirmAction({
+      title: '确认退出登录',
+      content: '退出后需要重新输入账号密码才能继续使用。',
+      confirmText: '退出登录',
     })
+
+    if (!confirmed) {
+      return
+    }
+
+    this.setData({
+      loggingOut: true,
+    })
+
+    try {
+      await getApp().logout()
+      wx.reLaunch({
+        url: '/pages/login/index',
+      })
+    } finally {
+      this.setData({
+        loggingOut: false,
+      })
+    }
   },
 
+  /** 跳转到登录页 */
   goLogin() {
     wx.navigateTo({
       url: '/pages/login/index',
     })
   },
 
+  /** 重试加载 */
   retryLoadPageData() {
     this.loadPageData()
   },

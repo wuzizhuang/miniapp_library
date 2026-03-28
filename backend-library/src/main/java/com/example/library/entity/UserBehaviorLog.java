@@ -7,7 +7,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 /**
- * User behavior log entry.
+ * 用户行为日志实体。
+ * 用于记录图书浏览、加书架、分享、借阅点击等行为事件。
  */
 @Entity
 @Table(name = "user_behavior_logs")
@@ -39,6 +40,7 @@ public class UserBehaviorLog {
     @Column(name = "create_time", nullable = false, updatable = false)
     private LocalDateTime createTime;
 
+    /** 行为类型。 */
     public enum ActionType {
         VIEW_DETAIL, ADD_TO_SHELF, CLICK_PREVIEW, SHARE, BORROW_BOOK, RESERVE_BOOK
     }

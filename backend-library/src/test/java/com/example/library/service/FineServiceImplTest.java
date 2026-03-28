@@ -148,10 +148,11 @@ class FineServiceImplTest {
             when(fineRepository.findById(1)).thenReturn(Optional.of(pendingFine));
             when(fineRepository.save(any(Fine.class))).thenReturn(pendingFine);
 
-            FineDto result = fineService.waiveFine(1);
+            FineDto result = fineService.waiveFine(1, "首次违规");
 
             assertThat(pendingFine.getStatus()).isEqualTo(Fine.FineStatus.WAIVED);
             assertThat(pendingFine.getDatePaid()).isNotNull();
+            assertThat(pendingFine.getReason()).contains("首次违规");
             assertThat(result).isNotNull();
         }
 
@@ -161,9 +162,9 @@ class FineServiceImplTest {
             pendingFine.setStatus(Fine.FineStatus.PAID);
             when(fineRepository.findById(1)).thenReturn(Optional.of(pendingFine));
 
-            assertThatThrownBy(() -> fineService.waiveFine(1))
+            assertThatThrownBy(() -> fineService.waiveFine(Integer.valueOf(1), (String) null))
                     .isInstanceOf(BadRequestException.class)
-                    .hasMessageContaining("already been paid");
+                    .hasMessageContaining("已支付");
 
             verify(fineRepository, never()).save(any(Fine.class));
         }
@@ -197,7 +198,7 @@ class FineServiceImplTest {
 
             assertThatThrownBy(() -> fineService.payFine(1))
                     .isInstanceOf(BadRequestException.class)
-                    .hasMessageContaining("already been paid");
+                    .hasMessageContaining("已支付");
         }
 
         @Test
@@ -208,7 +209,7 @@ class FineServiceImplTest {
 
             assertThatThrownBy(() -> fineService.payFine(1))
                     .isInstanceOf(BadRequestException.class)
-                    .hasMessageContaining("waived");
+                    .hasMessageContaining("已豁免");
         }
 
         @Test

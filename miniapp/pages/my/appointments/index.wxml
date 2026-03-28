@@ -42,11 +42,11 @@
           <view class="picker-field">{{appointmentTime}}</view>
         </picker>
       </view>
-      <view class="field-helper-text">提交时会自动组合为完整预约时间。</view>
+
 
       <view class="helper-card">
-        <view class="helper-card__title">当前支持的预约类型</view>
-        <view class="helper-card__text">到馆还书需要关联一条借阅记录，并选择实际归还地点。</view>
+        <view class="helper-card__title">温馨提示</view>
+        <view class="helper-card__text">还书预约需选择借阅记录和归还地点，其他类型可直接提交。</view>
       </view>
 
       <view class="field-label">关联借阅</view>
@@ -77,7 +77,9 @@
       <view class="field-label">备注</view>
       <textarea class="textarea" value="{{notes}}" data-field="notes" bindinput="onFieldInput" placeholder="填写到馆说明、咨询主题或特殊需求"></textarea>
 
-      <view class="button-primary" bindtap="createAppointment">{{submitting ? '提交中...' : '提交预约'}}</view>
+      <view class="{{submitting ? 'button-primary is-disabled' : 'button-primary'}}" bindtap="createAppointment">
+        {{submitting ? '提交中...' : '提交预约'}}
+      </view>
     </view>
   </view>
 
@@ -108,7 +110,13 @@
       <view wx:if="{{item.returnLocation}}" class="notice-content">归还地点：{{item.returnLocation}}</view>
       <view wx:if="{{item.notes}}" class="notice-content">备注：{{item.notes}}</view>
       <view wx:if="{{item.status === 'PENDING'}}" class="inline-actions">
-        <view class="button-secondary" bindtap="cancelAppointment" data-appointment-id="{{item.appointmentId}}">取消预约</view>
+        <view
+          class="{{cancellingAppointmentId === item.appointmentId ? 'button-secondary is-disabled' : 'button-secondary'}}"
+          bindtap="cancelAppointment"
+          data-appointment-id="{{item.appointmentId}}"
+        >
+          {{cancellingAppointmentId === item.appointmentId ? '取消中...' : '取消预约'}}
+        </view>
       </view>
     </view>
   </view>

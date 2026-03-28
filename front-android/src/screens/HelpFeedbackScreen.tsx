@@ -1,3 +1,22 @@
+/**
+ * @file 帮助与反馈页面
+ * @description 对应 Web 端帮助与反馈页的真实业务语义。
+ *
+ *   页面结构：
+ *   1. 概要卡片 - 功能介绍
+ *   2. 提交反馈表单 - 分类选择、联系方式、主题、详细描述
+ *   3. 我的反馈记录 - 历史反馈列表（含管理员回复）
+ *
+ *   反馈分类：
+ *   - BOOK_INFO → 图书信息
+ *   - SYSTEM_BUG → 系统缺陷
+ *   - SERVICE_EXPERIENCE → 服务体验
+ *   - SUGGESTION → 建议意见
+ *   - OTHER → 其他
+ *
+ *   状态：OPEN / SUBMITTED / IN_PROGRESS / RESOLVED / CLOSED / REJECTED
+ *   事件驱动：监听 feedback 自动刷新
+ */
 import React, { useEffect, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -15,6 +34,7 @@ import { colors, radius, spacing } from "../theme";
 import type { ApiFeedbackCategory, ApiFeedbackDto } from "../types/api";
 import { emitAppEvent, subscribeAppEvent } from "../utils/events";
 
+/** 反馈分类选项配置 */
 const categories: Array<{
   value: ApiFeedbackCategory;
   label: string;
@@ -27,6 +47,7 @@ const categories: Array<{
   { value: "OTHER", label: "其他", icon: "dots-horizontal-circle-outline" },
 ];
 
+/** 反馈状态文案映射 */
 const statusLabelMap: Record<string, string> = {
   OPEN: "待处理",
   SUBMITTED: "待处理",
@@ -89,6 +110,7 @@ export function HelpFeedbackScreen() {
     });
   }, [user]);
 
+  /** 提交反馈 */
   async function handleSubmit() {
     setErrorMessage("");
 
@@ -128,7 +150,7 @@ export function HelpFeedbackScreen() {
   return (
     <Screen
       title="帮助与反馈"
-      subtitle="对应 Web 端帮助与反馈页的真实业务语义。"
+      subtitle="常见问题解答和意见反馈"
       refreshing={refreshing}
       onRefresh={() => {
         void loadData(true);
@@ -140,7 +162,7 @@ export function HelpFeedbackScreen() {
             <MaterialCommunityIcons name="message-alert-outline" size={26} color={colors.primaryDark} />
           </View>
           <View style={styles.summaryBody}>
-            <InfoPill label="HELP DESK" tone="primary" icon="headset" />
+            <InfoPill label="帮助中心" tone="primary" icon="headset" />
             <Text style={styles.summaryTitle}>把问题和建议直接发给系统</Text>
             <Text style={styles.summaryText}>你可以提交图书信息、系统缺陷、服务体验和其他建议，并在下方查看处理进度。</Text>
           </View>
@@ -266,6 +288,7 @@ export function HelpFeedbackScreen() {
   );
 }
 
+/** 反馈状态对应的色调 */
 function getFeedbackTone(status: string) {
   switch (status) {
     case "RESOLVED":
@@ -279,6 +302,7 @@ function getFeedbackTone(status: string) {
   }
 }
 
+/** 反馈状态对应的图标 */
 function getFeedbackIcon(status: string) {
   switch (status) {
     case "RESOLVED":

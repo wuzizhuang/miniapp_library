@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Dashboard endpoints for admin statistics.
+ * 后台看板控制器。
+ * 提供后台首页统计卡片和分析图表数据接口。
  */
 @RestController
 @RequestMapping("/api/admin/dashboard")
@@ -21,7 +22,7 @@ public class DashboardController {
     private final StatisticsService statisticsService;
 
     /**
-     * Returns core dashboard statistics (admin only).
+     * 获取后台核心统计卡片数据。
      */
     @GetMapping("/stats")
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('report:view')")
@@ -30,7 +31,7 @@ public class DashboardController {
     }
 
     /**
-     * Returns dashboard analytics payload (admin only).
+     * 获取后台分析图表数据。
      */
     @GetMapping("/analytics")
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('report:view')")

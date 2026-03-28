@@ -9,6 +9,10 @@ import DefaultLayout from "@/components/layouts/default";
 import { getApiErrorMessage } from "@/lib/apiError";
 import { authService } from "@/services/api/authService";
 
+/**
+ * 注册页。
+ * 提供读者自助注册入口，并在提交前做最基础的密码一致性校验。
+ */
 export default function RegisterPage() {
   const [isVisible, setIsVisible] = useState(false);
   const [isConfirmVisible, setIsConfirmVisible] = useState(false);
@@ -27,7 +31,7 @@ export default function RegisterPage() {
     const formData = new FormData(e.currentTarget);
     const data = Object.fromEntries(formData);
 
-    // 1. 前端简单校验
+    // 先做前端基础校验，避免明显错误直接打到后端。
     if (data.password !== data.confirmPassword) {
       setErrorMsg("两次输入的密码不一致");
       setIsRegistering(false);
@@ -78,7 +82,7 @@ export default function RegisterPage() {
               variant="bordered"
             />
 
-            {/* ✅ 新增 FullName 字段 */}
+            {/* 真实姓名会同步到馆员端和个人中心展示。 */}
             <Input
               isRequired
               label="真实姓名"

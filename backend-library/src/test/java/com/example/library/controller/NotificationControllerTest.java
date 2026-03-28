@@ -135,8 +135,8 @@ public class NotificationControllerTest {
     @Test
     @WithMockUser
     void testGetMyNotifications_Unauthorized() throws Exception {
-        // When no real UserDetailsImpl principal, controller throws BadRequestException
+        // 仅有 Spring Security 默认 principal、缺少真实 UserDetailsImpl 时，应视为未登录。
         mockMvc.perform(get("/api/notifications"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnauthorized());
     }
 }

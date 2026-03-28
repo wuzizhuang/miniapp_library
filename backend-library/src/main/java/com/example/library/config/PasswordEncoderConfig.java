@@ -6,13 +6,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
- * Password encoder configuration.
+ * 密码编码器配置类。
+ * 为登录、注册、密码重置等场景提供统一的密码哈希实现。
  */
 @Configuration
 public class PasswordEncoderConfig {
 
     /**
-     * BCrypt encoder for user passwords.
+     * 注册 BCrypt 密码编码器 Bean。
      */
     @Bean
     public PasswordEncoder passwordEncoder() {

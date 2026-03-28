@@ -61,7 +61,7 @@ export default function AdminUserDetailPage() {
     "loan:write",
     "loan:manage",
   ]);
-  const canCreateLoan = hasAnyPermission(currentUser, ["loan:write", "loan:manage"]);
+  const canCreateLoan = hasAnyPermission(currentUser, ["loan:manage"]);
   const canManageAppointments = hasAnyPermission(currentUser, ["appointment:manage"]);
   const canManageReservations = hasAnyPermission(currentUser, ["reservation:manage"]);
   const canManageFines = hasAnyPermission(currentUser, ["fine:waive", "loan:manage"]);
@@ -494,7 +494,7 @@ export default function AdminUserDetailPage() {
                               color="primary"
                               size="sm"
                               variant="flat"
-                              onPress={() => router.push("/dashboard/loans")}
+                              onPress={() => router.push({ pathname: "/dashboard/loans", query: { userId: user?.id } })}
                             >
                               查看借阅台
                             </Button>
@@ -516,7 +516,7 @@ export default function AdminUserDetailPage() {
               </CardHeader>
               <CardBody className="space-y-3 px-5 pb-5 pt-4">
                 {canViewLoans ? (
-                  <Button color="primary" variant="flat" onPress={() => router.push("/dashboard/loans")}>
+                  <Button color="primary" variant="flat" onPress={() => router.push({ pathname: "/dashboard/loans", query: { userId: user?.id } })}>
                     查看借阅管理
                   </Button>
                 ) : null}
@@ -534,17 +534,17 @@ export default function AdminUserDetailPage() {
                   </Button>
                 ) : null}
                 {canManageAppointments ? (
-                  <Button variant="flat" onPress={() => router.push("/dashboard/appointments")}>
+                  <Button variant="flat" onPress={() => router.push({ pathname: "/dashboard/appointments", query: { keyword: user?.name || user?.email || '' } })}>
                     查看服务预约
                   </Button>
                 ) : null}
                 {canManageReservations ? (
-                  <Button variant="flat" onPress={() => router.push("/dashboard/reservations")}>
+                  <Button variant="flat" onPress={() => router.push({ pathname: "/dashboard/reservations", query: { keyword: user?.name || user?.email || '' } })}>
                     查看馆藏预约
                   </Button>
                 ) : null}
                 {canManageFines ? (
-                  <Button variant="flat" onPress={() => router.push("/dashboard/fines")}>
+                  <Button variant="flat" onPress={() => router.push({ pathname: "/dashboard/fines", query: { keyword: user?.name || user?.email || '' } })}>
                     查看罚款处理
                   </Button>
                 ) : null}
@@ -607,7 +607,7 @@ export default function AdminUserDetailPage() {
                           color="primary"
                           size="sm"
                           variant="flat"
-                          onPress={() => router.push("/dashboard/loans")}
+                          onPress={() => router.push({ pathname: "/dashboard/loans", query: { userId: user?.id } })}
                         >
                           查看后台借阅
                         </Button>

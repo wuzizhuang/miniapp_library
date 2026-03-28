@@ -6,6 +6,10 @@ import {
   PageResponse,
 } from "@/types/api";
 
+/**
+ * 推荐帖子前端视图结构。
+ * 兼顾帖子内容、作者关系状态和当前用户是否可管理等 UI 所需字段。
+ */
 export interface RecommendationPost {
   postId: number;
   authorUserId: number;
@@ -25,6 +29,9 @@ export interface RecommendationPost {
   canManage: boolean;
 }
 
+/**
+ * 统一整理后端推荐帖子 DTO。
+ */
 function mapDto(dto: ApiRecommendationPostDto): RecommendationPost {
   return {
     postId: dto.postId,
@@ -46,12 +53,16 @@ function mapDto(dto: ApiRecommendationPostDto): RecommendationPost {
   };
 }
 
+/**
+ * 书单推荐社区接口服务。
+ */
 export const recommendationService = {
   getFeed: async (
     scope: ApiRecommendationScope,
     page = 0,
     size = 20,
   ): Promise<PageResponse<RecommendationPost>> => {
+    // feed 范围由后端决定具体查询逻辑，前端只负责把 DTO 变成稳定列表结构。
     const { data } = await apiClient.get<PageResponse<ApiRecommendationPostDto>>(
       "/recommendations",
       { params: { scope, page, size } },

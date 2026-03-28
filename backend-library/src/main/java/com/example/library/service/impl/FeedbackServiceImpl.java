@@ -29,7 +29,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Default feedback service implementation.
+ * 反馈服务实现类。
+ * 负责反馈创建、后台回复、消息串构建、状态统计以及通知下发。
  */
 @Service
 @RequiredArgsConstructor
@@ -39,6 +40,9 @@ public class FeedbackServiceImpl implements FeedbackService {
     private final UserFeedbackRepository feedbackRepository;
     private final NotificationRepository notificationRepository;
 
+    /**
+     * 创建用户反馈工单，并写入首条用户消息。
+     */
     @Override
     @Transactional
     public FeedbackDto createFeedback(Integer userId, FeedbackCreateDto dto) {
@@ -62,6 +66,9 @@ public class FeedbackServiceImpl implements FeedbackService {
         return toDto(feedbackRepository.save(feedback));
     }
 
+    /**
+     * 分页查询当前用户的反馈工单。
+     */
     @Override
     @Transactional(readOnly = true)
     public Page<FeedbackDto> getMyFeedback(Integer userId, int page, int size) {
@@ -69,6 +76,9 @@ public class FeedbackServiceImpl implements FeedbackService {
         return feedbackRepository.findByUserUserIdOrderByCreateTimeDesc(userId, pageable).map(this::toDto);
     }
 
+    /**
+     * 分页查询全部反馈工单。
+     */
     @Override
     @Transactional(readOnly = true)
     public Page<FeedbackDto> getAllFeedback(int page, int size, UserFeedback.FeedbackStatus status) {
@@ -79,6 +89,9 @@ public class FeedbackServiceImpl implements FeedbackService {
         return feedbackRepository.findByStatus(status, pageable).map(this::toDto);
     }
 
+    /**
+     * 统计反馈工单各状态数量，供后台看板展示。
+     */
     @Override
     @Transactional(readOnly = true)
     public List<DashboardBreakdownItemDto> getFeedbackStatusStats() {
@@ -97,6 +110,9 @@ public class FeedbackServiceImpl implements FeedbackService {
                 createBreakdownItem("REJECTED", "已驳回", counts.getOrDefault(UserFeedback.FeedbackStatus.REJECTED, 0L)));
     }
 
+    /**
+     * 管理员回复反馈，并追加一条后台消息记录。
+     */
     @Override
     @Transactional
     public FeedbackDto replyFeedback(Long feedbackId, FeedbackReplyDto dto, String adminUsername) {
@@ -120,6 +136,10 @@ public class FeedbackServiceImpl implements FeedbackService {
         return toDto(saved);
     }
 
+    /**
+     * 用户对已有反馈继续补充消息。
+     * 若工单已关闭，会重新回到待处理状态。
+     */
     @Override
     @Transactional
     public FeedbackDto appendUserMessage(Long feedbackId, Integer userId, FeedbackFollowUpDto dto) {
@@ -143,6 +163,9 @@ public class FeedbackServiceImpl implements FeedbackService {
         return toDto(saved);
     }
 
+    /**
+     * 向用户推送“反馈已回复”通知。
+     */
     private void pushReplyNotification(UserFeedback feedback) {
         Notification notification = new Notification();
         notification.setUser(feedback.getUser());
@@ -157,6 +180,9 @@ public class FeedbackServiceImpl implements FeedbackService {
         notificationRepository.save(notification);
     }
 
+    /**
+     * 将反馈实体转换为 DTO，并拼装完整消息会话。
+     */
     private FeedbackDto toDto(UserFeedback feedback) {
         FeedbackDto dto = new FeedbackDto();
         dto.setFeedbackId(feedback.getFeedbackId());
@@ -176,6 +202,10 @@ public class FeedbackServiceImpl implements FeedbackService {
         return dto;
     }
 
+    /**
+     * 构建反馈消息时间线。
+     * 兼容历史字段与新消息表并存的情况，避免旧数据丢失对话内容。
+     */
     private List<FeedbackMessageDto> buildMessages(UserFeedback feedback) {
         List<UserFeedbackMessage> storedMessages = feedback.getMessages();
         List<FeedbackMessageDto> fallback = new ArrayList<>();
@@ -226,6 +256,9 @@ public class FeedbackServiceImpl implements FeedbackService {
         return fallback;
     }
 
+    /**
+     * 判断消息表中是否已存在等价消息，避免历史字段和消息表重复展示。
+     */
     private boolean containsEquivalentMessage(
             List<UserFeedbackMessage> storedMessages,
             UserFeedbackMessage.SenderType senderType,
@@ -239,6 +272,9 @@ public class FeedbackServiceImpl implements FeedbackService {
                         && content.equals(message.getContent()));
     }
 
+    /**
+     * 为历史反馈数据构造一条用户首消息。
+     */
     private FeedbackMessageDto createLegacyUserMessage(UserFeedback feedback) {
         FeedbackMessageDto message = new FeedbackMessageDto();
         message.setSenderType(UserFeedbackMessage.SenderType.USER);
@@ -250,6 +286,9 @@ public class FeedbackServiceImpl implements FeedbackService {
         return message;
     }
 
+    /**
+     * 将反馈消息实体转换为 DTO。
+     */
     private FeedbackMessageDto toMessageDto(UserFeedbackMessage message) {
         FeedbackMessageDto dto = new FeedbackMessageDto();
         dto.setMessageId(message.getMessageId());
@@ -262,6 +301,9 @@ public class FeedbackServiceImpl implements FeedbackService {
         return dto;
     }
 
+    /**
+     * 构造一条反馈消息实体。
+     */
     private UserFeedbackMessage createMessage(
             UserFeedbackMessage.SenderType senderType,
             Integer senderUserId,
@@ -277,6 +319,9 @@ public class FeedbackServiceImpl implements FeedbackService {
         return message;
     }
 
+    /**
+     * 推断消息展示用的用户名称。
+     */
     private String resolveDisplayName(User user) {
         if (user == null) {
             return "用户";
@@ -290,6 +335,9 @@ public class FeedbackServiceImpl implements FeedbackService {
         return "用户";
     }
 
+    /**
+     * 去除字符串首尾空白，空串返回 null。
+     */
     private String trimNullable(String value) {
         if (value == null) {
             return null;
@@ -298,10 +346,16 @@ public class FeedbackServiceImpl implements FeedbackService {
         return trimmed.isEmpty() ? null : trimmed;
     }
 
+    /**
+     * 去除文本首尾空白，null 时返回空串。
+     */
     private String trimText(String value) {
         return value == null ? "" : value.trim();
     }
 
+    /**
+     * 构造反馈状态统计项。
+     */
     private DashboardBreakdownItemDto createBreakdownItem(String key, String label, Long value) {
         DashboardBreakdownItemDto dto = new DashboardBreakdownItemDto();
         dto.setKey(key);

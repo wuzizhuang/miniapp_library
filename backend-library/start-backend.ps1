@@ -47,8 +47,11 @@ if (Test-Command "Get-NetTCPConnection") {
 Write-Info "Starting backend on http://localhost:$Port"
 Write-Info "Command: .\\mvnw.cmd -Dmaven.test.skip=true spring-boot:run"
 
+# Join into a single argument string so PowerShell does not
+# mangle JVM-style -D flags (they look like PS parameter prefixes).
+$argString = @("-Dmaven.test.skip=true", "spring-boot:run") -join ' '
 $process = Start-Process -FilePath $mvnw `
-    -ArgumentList @("-Dmaven.test.skip=true", "spring-boot:run") `
+    -ArgumentList $argString `
     -WorkingDirectory $PSScriptRoot `
     -PassThru `
     -WindowStyle Normal

@@ -15,7 +15,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Admin endpoints for handling user feedback tickets.
+ * 后台反馈工单控制器。
+ * 负责反馈列表、状态统计和管理员回复接口。
  */
 @RestController
 @RequestMapping("/api/admin/feedback")
@@ -25,7 +26,7 @@ public class AdminFeedbackController {
     private final FeedbackService feedbackService;
 
     /**
-     * Returns paged feedback list for admin.
+     * 分页查询全部反馈工单。
      */
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -37,7 +38,7 @@ public class AdminFeedbackController {
     }
 
     /**
-     * Returns grouped feedback counts by status.
+     * 统计反馈工单各状态数量。
      */
     @GetMapping("/stats")
     @PreAuthorize("hasRole('ADMIN')")
@@ -46,7 +47,7 @@ public class AdminFeedbackController {
     }
 
     /**
-     * Reply and update status for a feedback ticket.
+     * 回复反馈并更新工单状态。
      */
     @PutMapping("/{id}/reply")
     @PreAuthorize("hasRole('ADMIN')")

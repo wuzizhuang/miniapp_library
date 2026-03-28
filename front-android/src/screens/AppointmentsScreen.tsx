@@ -1,3 +1,23 @@
+/**
+ * @file 服务预约页面
+ * @description 对应 Web 端到馆还书、取书和馆员咨询预约。
+ *
+ *   页面结构：
+ *   1. 概要卡片 - 待处理/历史/可关联借阅数量
+ *   2. 新建预约表单 - 服务类型、办理方式、预约时间、关联借阅、归还地点、备注
+ *   3. 待处理预约 - 支持取消
+ *   4. 历史记录 - 只读展示
+ *
+ *   服务类型：
+ *   - RETURN_BOOK → 到馆还书（必须关联借阅 + 选择归还地点）
+ *   - PICKUP_BOOK → 预约取书
+ *   - CONSULTATION → 馆员咨询
+ *
+ *   办理方式：COUNTER / SMART_LOCKER
+ *   状态：PENDING / COMPLETED / CANCELLED / MISSED
+ *
+ *   事件驱动：监听 appointments / loans / notifications 自动刷新
+ */
 import React, { useEffect, useMemo, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -19,8 +39,11 @@ import type {
 } from "../types/api";
 import { emitAppEvent, subscribeAppEvent } from "../utils/events";
 
+/** 服务类型枚举 */
 const serviceTypes: ApiServiceAppointmentType[] = ["RETURN_BOOK", "PICKUP_BOOK", "CONSULTATION"];
+/** 办理方式枚举 */
 const methods: ApiServiceAppointmentMethod[] = ["COUNTER", "SMART_LOCKER"];
+/** 归还地点选项（按办理方式过滤） */
 const returnLocationOptions: Array<{
   value: string;
   label: string;
@@ -142,6 +165,7 @@ export function AppointmentsScreen() {
     }));
   }, [availableReturnLocations, form.returnLocation, form.serviceType]);
 
+  /** 提交新预约 */
   async function handleCreate() {
     if (!form.scheduledTime) {
       setErrorMessage("请选择预约时间");
@@ -188,6 +212,7 @@ export function AppointmentsScreen() {
     }
   }
 
+  /** 取消预约 */
   async function handleCancel(appointmentId: number) {
     try {
       setActingId(appointmentId);
@@ -205,7 +230,7 @@ export function AppointmentsScreen() {
 
   if (!user) {
     return (
-      <Screen title="服务预约" subtitle="对应 Web 端到馆还书、取书和馆员咨询预约。">
+      <Screen title="服务预约" subtitle="还书、取书和馆员咨询预约">
         <LoginPromptCard onLogin={() => navigation.navigate("Login")} />
       </Screen>
     );
@@ -214,7 +239,7 @@ export function AppointmentsScreen() {
   return (
     <Screen
       title="服务预约"
-      subtitle="对应 Web 端 `/my/appointments` 的创建、查询与取消。"
+      subtitle="创建、查看和取消服务预约"
       refreshing={refreshing}
       onRefresh={() => {
         void loadData(true);
@@ -226,7 +251,7 @@ export function AppointmentsScreen() {
             <MaterialCommunityIcons name="desk-lamp" size={26} color={colors.primaryDark} />
           </View>
           <View style={styles.summaryBody}>
-            <InfoPill label="SERVICE DESK" tone="primary" icon="calendar-check-outline" />
+            <InfoPill label="服务预约" tone="primary" icon="calendar-check-outline" />
             <Text style={styles.summaryTitle}>把线下业务预约好再出发</Text>
             <Text style={styles.summaryText}>支持到馆还书、预约取书和馆员咨询，让线下流程更可控。</Text>
           </View>
@@ -402,6 +427,7 @@ export function AppointmentsScreen() {
   );
 }
 
+/** 单条服务预约卡片组件 */
 function AppointmentCard({
   item,
   highlighted,
@@ -456,6 +482,7 @@ function StatCard({
   );
 }
 
+/** 服务预约状态元数据映射 */
 function getAppointmentMeta(status: ServiceAppointment["status"]) {
   switch (status) {
     case "PENDING":

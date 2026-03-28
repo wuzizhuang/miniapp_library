@@ -9,6 +9,10 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
+/**
+ * 推荐动态实体。
+ * 表示教师或管理员发布的一条图书推荐内容。
+ */
 @Entity
 @Table(name = "recommendation_posts")
 @Getter

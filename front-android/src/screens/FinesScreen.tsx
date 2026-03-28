@@ -1,3 +1,21 @@
+/**
+ * @file 罚款管理页面
+ * @description 读者罚款列表屏幕，对应 Web 端待缴与历史罚款记录。
+ *
+ *   页面结构：
+ *   1. 概要卡片 - 待处理数量、待缴总额、历史记录数量
+ *   2. 待缴罚款 - 支持立即缴纳操作
+ *   3. 历史记录 - 只读展示
+ *
+ *   罚款类型：
+ *   - OVERDUE → 逾期罚款
+ *   - LOST → 遗失赔偿
+ *   - DAMAGE → 损坏赔偿
+ *
+ *   状态映射：PENDING / PAID / WAIVED
+ *
+ *   事件驱动：监听 fines / loans / overview / notifications 自动刷新
+ */
 import React, { useEffect, useMemo, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { StyleSheet, Text, View } from "react-native";
@@ -63,6 +81,7 @@ export function FinesScreen() {
     [pending],
   );
 
+  /** 处理罚款支付 */
   async function handlePay(fineId: number) {
     try {
       setActingId(fineId);
@@ -80,7 +99,7 @@ export function FinesScreen() {
 
   if (!user) {
     return (
-      <Screen title="我的罚款" subtitle="对应 Web 端待缴与历史罚款记录。">
+      <Screen title="我的罚款" subtitle="待缴费用和历史记录">
         <LoginPromptCard onLogin={() => navigation.navigate("Login")} />
       </Screen>
     );
@@ -89,7 +108,7 @@ export function FinesScreen() {
   return (
     <Screen
       title="我的罚款"
-      subtitle="对应 Web 端 `/my/fines` 的待缴与历史罚款语义。"
+      subtitle="待缴费用和处理记录"
       refreshing={refreshing}
       onRefresh={() => {
         void loadData(true);
@@ -101,7 +120,7 @@ export function FinesScreen() {
             <MaterialCommunityIcons name="cash-multiple" size={26} color={colors.danger} />
           </View>
           <View style={styles.summaryBody}>
-            <InfoPill label="FINE CENTER" tone="warning" icon="cash-lock" />
+            <InfoPill label="罚款中心" tone="warning" icon="cash-lock" />
             <Text style={styles.summaryTitle}>及时处理借阅费用</Text>
             <Text style={styles.summaryText}>逾期、遗失或损坏产生的费用会汇总在这里，处理完成后会同步更新总览与通知。</Text>
           </View>
@@ -176,6 +195,7 @@ export function FinesScreen() {
   );
 }
 
+/** 单条罚款卡片组件 */
 function FineCard({
   item,
   highlighted,
@@ -234,6 +254,7 @@ function StatCard({
   );
 }
 
+/** 根据罚款状态和类型返回元数据（标题、图标、状态文案、色调） */
 function getFineMeta(itemStatus: MyFine["status"], type: MyFine["type"]) {
   const titleMap = {
     OVERDUE: "逾期罚款",

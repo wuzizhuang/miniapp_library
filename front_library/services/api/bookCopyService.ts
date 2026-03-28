@@ -63,11 +63,19 @@ interface ApiBookCopyDto {
     updateTime?: string;
 }
 
+/**
+ * 副本 DTO 到前端模型的直接映射。
+ */
 function mapDto(dto: ApiBookCopyDto): BookCopy {
     return { ...dto };
 }
 
 // ─── Service ─────────────────────────────────────────────────
+
+/**
+ * 图书副本接口服务。
+ * 既给后台副本管理页使用，也给图书详情页读取馆藏副本列表。
+ */
 
 export const bookCopyService = {
     /**
@@ -88,6 +96,7 @@ export const bookCopyService = {
         if (status) params.status = status;
         if (keyword) params.keyword = keyword;
         if (typeof bookId === "number") params.bookId = bookId;
+        // 统一把后端 PageResponse 整理成后台表格直接可消费的结构。
         const { data } = await apiClient.get<PageResponse<ApiBookCopyDto>>("/book-copies", { params });
 
         return {

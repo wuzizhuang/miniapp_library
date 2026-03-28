@@ -15,7 +15,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 /**
- * Default category service implementation.
+ * 分类服务实现类。
+ * 负责分类的查询、层级维护以及软删除逻辑。
  */
 @Service
 @RequiredArgsConstructor
@@ -24,7 +25,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
 
     /**
-     * Returns paged categories.
+     * 分页查询分类列表。
      */
     @Override
     public Page<CategoryDto> getAllCategories(Pageable pageable) {
@@ -32,7 +33,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     /**
-     * Returns a single category by id.
+     * 根据分类 ID 查询详情。
      */
     @Override
     public CategoryDto getCategoryById(Integer id) {
@@ -42,7 +43,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     /**
-     * Creates a category.
+     * 创建分类。
      */
     @Override
     @Transactional
@@ -61,7 +62,8 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     /**
-     * Updates a category.
+     * 更新分类。
+     * 允许调整父分类，但不允许把自己设为自己的父节点。
      */
     @Override
     @Transactional
@@ -87,7 +89,8 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     /**
-     * Deletes a category via soft delete.
+     * 软删除分类。
+     * 若仍存在有效子分类，则禁止删除，避免破坏分类树结构。
      */
     @Override
     @Transactional
@@ -105,6 +108,9 @@ public class CategoryServiceImpl implements CategoryService {
         categoryRepository.save(category);
     }
 
+    /**
+     * 将分类实体转换为 DTO。
+     */
     private CategoryDto convertToDto(Category category) {
         CategoryDto dto = new CategoryDto();
         dto.setCategoryId(category.getCategoryId());

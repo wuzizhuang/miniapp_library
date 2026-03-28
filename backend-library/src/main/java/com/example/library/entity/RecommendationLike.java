@@ -8,6 +8,10 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
+/**
+ * 推荐点赞实体。
+ * 表示用户对某条推荐动态的点赞关系，并通过联合唯一键避免重复点赞。
+ */
 @Entity
 @Table(
         name = "recommendation_likes",

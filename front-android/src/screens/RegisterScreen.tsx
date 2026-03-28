@@ -1,3 +1,14 @@
+/**
+ * @file 注册页面
+ * @description 用户注册屏幕，对应 Web 端的账号注册接口。
+ *
+ *   功能流程：
+ *   1. 用户填写用户名、姓名、邮箱、密码和确认密码
+ *   2. 前端校验：必填项 + 密码一致性
+ *   3. 调用 authService.register() 提交注册
+ *   4. 注册成功显示提示文案，用户可手动返回登录
+ */
+
 import React, { useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { StyleSheet, Text, View } from "react-native";
@@ -13,6 +24,8 @@ import { colors, spacing } from "../theme";
 
 export function RegisterScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  // ── 表单与状态 ──
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -24,15 +37,18 @@ export function RegisterScreen() {
     confirmPassword: "",
   });
 
+  /** 处理注册提交 */
   async function handleSubmit() {
     setErrorMessage("");
     setSuccessMessage("");
 
+    // 前端校验：必填项
     if (!form.username.trim() || !form.fullName.trim() || !form.email.trim() || !form.password) {
       setErrorMessage("请完整填写注册信息");
       return;
     }
 
+    // 前端校验：密码一致性
     if (form.password !== form.confirmPassword) {
       setErrorMessage("两次输入的密码不一致");
       return;
@@ -56,7 +72,8 @@ export function RegisterScreen() {
   }
 
   return (
-    <Screen title="注册" subtitle="保持与 Web 端相同的账号注册接口和字段语义。">
+    <Screen title="注册" subtitle="填写基本信息，创建你的读者账号">
+      {/* 介绍卡片 */}
       <Card tone="tinted" style={styles.introCard}>
         <View style={styles.introRow}>
           <View style={styles.iconWrap}>
@@ -70,6 +87,7 @@ export function RegisterScreen() {
         </View>
       </Card>
 
+      {/* 注册表单卡片 */}
       <Card style={styles.formCard}>
         <TextField
           label="用户名"
@@ -117,9 +135,11 @@ export function RegisterScreen() {
           placeholder="请再次输入密码"
         />
 
+        {/* 错误 / 成功提示 */}
         {errorMessage ? <StateText tone="danger">{errorMessage}</StateText> : null}
         {successMessage ? <StateText>{successMessage}</StateText> : null}
 
+        {/* 提交按钮 */}
         <ActionButton
           label={submitting ? "提交中..." : "注册"}
           icon="account-plus"
@@ -129,6 +149,7 @@ export function RegisterScreen() {
           disabled={submitting}
         />
 
+        {/* 返回登录按钮 */}
         <ActionButton
           label="返回登录"
           icon="arrow-left"
@@ -140,14 +161,11 @@ export function RegisterScreen() {
   );
 }
 
+// ─── 样式定义 ─────────────────────────────────
+
 const styles = StyleSheet.create({
-  introCard: {
-    gap: spacing.md,
-  },
-  introRow: {
-    flexDirection: "row",
-    gap: spacing.md,
-  },
+  introCard: { gap: spacing.md },
+  introRow: { flexDirection: "row", gap: spacing.md },
   iconWrap: {
     width: 60,
     height: 60,
@@ -156,20 +174,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  introBody: {
-    flex: 1,
-    gap: spacing.xs,
-  },
-  introTitle: {
-    color: colors.text,
-    fontSize: 22,
-    fontWeight: "800",
-  },
-  introText: {
-    color: colors.textMuted,
-    lineHeight: 22,
-  },
-  formCard: {
-    gap: spacing.md,
-  },
+  introBody: { flex: 1, gap: spacing.xs },
+  introTitle: { color: colors.text, fontSize: 22, fontWeight: "800" },
+  introText: { color: colors.textMuted, lineHeight: 22 },
+  formCard: { gap: spacing.md },
 });

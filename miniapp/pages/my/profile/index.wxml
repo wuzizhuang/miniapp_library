@@ -6,7 +6,7 @@
 
   <view class="panel">
     <view class="section-title">基础信息</view>
-    <view class="section-subtitle">修改后即时生效</view>
+    <view class="section-subtitle">修改后请点击底部保存按钮</view>
 
     <view wx:if="{{loading}}" class="empty-card">正在加载资料...</view>
     <view wx:elif="{{errorMessage}}" class="empty-card danger-text">

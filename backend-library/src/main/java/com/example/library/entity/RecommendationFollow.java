@@ -8,6 +8,10 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
+/**
+ * 推荐关注实体。
+ * 表示普通读者关注某位教师推荐人的关系。
+ */
 @Entity
 @Table(
         name = "recommendation_follows",

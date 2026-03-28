@@ -7,7 +7,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 /**
- * Book review entity.
+ * 图书评论实体。
+ * 保存用户对图书的评分、评论内容以及审核状态。
  */
 @Entity
 @Table(
@@ -48,6 +49,7 @@ public class BookReview {
     @UpdateTimestamp
     private LocalDateTime updateTime;
 
+    /** 评论审核状态。 */
     public enum ReviewStatus {
         PENDING, APPROVED, REJECTED
     }

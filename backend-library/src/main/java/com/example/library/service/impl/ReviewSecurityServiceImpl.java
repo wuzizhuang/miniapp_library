@@ -11,7 +11,8 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 /**
- * Checks whether the authenticated user owns a review.
+ * 评论数据权限服务。
+ * 用于校验当前登录用户是否拥有指定评论。
  */
 @Service
 @RequiredArgsConstructor
@@ -20,7 +21,7 @@ public class ReviewSecurityServiceImpl implements ReviewSecurityService {
     private final BookReviewRepository bookReviewRepository;
 
     /**
-     * Returns true when the current user owns the review.
+     * 判断当前用户是否拥有指定评论。
      */
     @Override
     public boolean isReviewOwner(Authentication authentication, Integer reviewId) {
@@ -34,6 +35,7 @@ public class ReviewSecurityServiceImpl implements ReviewSecurityService {
         }
 
         Integer userId = userDetails.getId();
+        // 评论主键在仓储层使用 Long，这里做一次安全转换后再查归属。
         Optional<BookReview> reviewOpt = bookReviewRepository.findById((long) reviewId);
         if (reviewOpt.isEmpty()) {
             return false;

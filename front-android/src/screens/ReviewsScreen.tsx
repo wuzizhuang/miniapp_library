@@ -1,3 +1,16 @@
+/**
+ * @file 我的评论页面
+ * @description 读者评论列表屏幕，查看审核状态，并支持编辑和删除。
+ *
+ *   功能特性：
+ *   - 评论列表 - 分页展示，每页 10 条
+ *   - 审核状态：PENDING / APPROVED / REJECTED
+ *   - 单条操作：查看图书 + 编辑评论 + 删除评论
+ *   - 内联编辑：在页面底部展开编辑表单（评分 + 文字）
+ *   - 分页导航
+ *
+ *   事件驱动：监听 reviews / books / auth 自动刷新
+ */
 import React, { useEffect, useMemo, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -14,6 +27,7 @@ import { colors, radius, spacing } from "../theme";
 import type { ApiReviewDto } from "../types/api";
 import { emitAppEvent, subscribeAppEvent } from "../utils/events";
 
+/** 评论审核状态元数据映射 */
 const statusMap: Record<string, { label: string; tone: "warning" | "success" | "danger" | "neutral"; icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"] }> = {
   PENDING: { label: "待审核", tone: "warning", icon: "clock-outline" },
   APPROVED: { label: "已通过", tone: "success", icon: "check-circle-outline" },
@@ -93,6 +107,7 @@ export function ReviewsScreen() {
     rejected: reviews.filter((item) => item.status === "REJECTED").length,
   }), [reviews]);
 
+  /** 打开评论编辑模式 */
   function openEdit(review: ApiReviewDto) {
     setEditingReview(review);
     setRating(review.rating ?? 0);
@@ -105,6 +120,7 @@ export function ReviewsScreen() {
     setCommentText("");
   }
 
+  /** 提交评论修改 */
   async function handleUpdate() {
     if (!editingReview?.reviewId || !editingReview.bookId) {
       setErrorMessage("当前评论缺少图书信息，暂时无法更新");
@@ -134,6 +150,7 @@ export function ReviewsScreen() {
     }
   }
 
+  /** 删除评论（删除后自动调整分页） */
   async function handleDelete(review: ApiReviewDto) {
     try {
       setDeletingId(Number(review.reviewId));
@@ -172,7 +189,7 @@ export function ReviewsScreen() {
             <MaterialCommunityIcons name="comment-text-outline" size={26} color={colors.primaryDark} />
           </View>
           <View style={styles.summaryBody}>
-            <InfoPill label="REVIEW CENTER" tone="primary" icon="star-outline" />
+            <InfoPill label="评论中心" tone="primary" icon="star-outline" />
             <Text style={styles.summaryTitle}>管理你的书评内容</Text>
             <Text style={styles.summaryText}>在这里查看审核状态、继续编辑文字内容，或删除不再保留的评论。</Text>
           </View>
@@ -237,6 +254,7 @@ export function ReviewsScreen() {
                           icon="book-open-variant"
                           onPress={() => navigation.navigate("BookDetail", { bookId: review.bookId })}
                           tone="secondary"
+                          size="sm"
                         />
                       ) : null}
                       <ActionButton
@@ -244,6 +262,7 @@ export function ReviewsScreen() {
                         icon="square-edit-outline"
                         onPress={() => openEdit(review)}
                         tone="secondary"
+                        size="sm"
                       />
                       <ActionButton
                         label={deletingId === Number(review.reviewId) ? "删除中..." : "删除评论"}
@@ -252,6 +271,7 @@ export function ReviewsScreen() {
                           void handleDelete(review);
                         }}
                         tone="danger"
+                        size="sm"
                         disabled={deletingId !== null}
                       />
                     </View>

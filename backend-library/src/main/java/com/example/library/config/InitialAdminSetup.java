@@ -19,7 +19,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Seeds default users, permissions, and roles at application startup.
+ * 系统初始化配置。
+ * 在应用启动时补齐默认管理员、演示账号、权限点以及基础角色数据。
  */
 @Configuration
 @RequiredArgsConstructor
@@ -33,12 +34,13 @@ public class InitialAdminSetup {
     private final PasswordEncoder passwordEncoder;
 
     /**
-     * Creates default users, permissions, and the CATALOGER role if missing.
+     * 创建默认用户、权限和基础角色。
+     * 采用“存在则跳过，不存在则补齐”的方式，避免重复初始化。
      */
     @Bean
     public CommandLineRunner initializeAdminUser() {
         return args -> {
-            // ─── 1. Seed Users ──────────────────────────────────────────
+            // 1. 初始化默认用户
             if (userRepository.findByUsername("admin").isEmpty()) {
                 User admin = new User();
                 admin.setUsername("admin");
@@ -77,7 +79,7 @@ public class InitialAdminSetup {
                 logger.info("演示教师创建成功: teacher/teacher123");
             }
 
-            // ─── 2. Seed Permissions ─────────────────────────────────────
+            // 2. 初始化系统权限
             Map<String, String> defaultPermissions = new LinkedHashMap<>();
             defaultPermissions.put("book:read", "查询图书");
             defaultPermissions.put("book:write", "新增/修改图书");
@@ -100,14 +102,14 @@ public class InitialAdminSetup {
                 }
             }
 
-            // ─── 3. Seed CATALOGER Role ───────────────────────────────────
+            // 3. 初始化录入员角色
             upsertRoleWithPermissions(
                     "CATALOGER",
                     "录入员",
                     "负责图书信息录入与维护",
                     List.of("book:read", "book:write", "book:delete", "catalog:import"));
 
-            // ─── 4. Seed LIBRARIAN Role ───────────────────────────────────
+            // 4. 初始化图书管理员角色
             upsertRoleWithPermissions(
                     "LIBRARIAN",
                     "图书管理员",
@@ -124,7 +126,7 @@ public class InitialAdminSetup {
                             "appointment:manage",
                             "report:view"));
 
-            // ─── 5. Seed demo cataloger user ─────────────────────────────
+            // 5. 初始化演示录入员账号
             if (userRepository.findByUsername("cataloger").isEmpty()) {
                 Role catalogerRole = roleRepository.findByName("CATALOGER").orElse(null);
                 User catalogerUser = new User();
@@ -142,7 +144,7 @@ public class InitialAdminSetup {
                 logger.info("演示录入员创建成功: cataloger/cat123");
             }
 
-            // ─── 6. Seed demo librarian user ──────────────────────────────
+            // 6. 初始化演示图书管理员账号
             if (userRepository.findByUsername("librarian").isEmpty()) {
                 Role librarianRole = roleRepository.findByName("LIBRARIAN").orElse(null);
                 User librarianUser = new User();
@@ -162,6 +164,9 @@ public class InitialAdminSetup {
         };
     }
 
+    /**
+     * 创建或更新角色，并同步它应持有的权限集合。
+     */
     private void upsertRoleWithPermissions(
             String roleName,
             String displayName,

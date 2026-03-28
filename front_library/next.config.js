@@ -1,8 +1,18 @@
+const path = require("path");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   // 生成独立的 standalone 输出，用于 Docker 部署
   output: 'standalone',
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      "@iconify/react$": path.resolve(__dirname, "lib/iconify.tsx"),
+    };
+
+    return config;
+  },
   async rewrites() {
     return [
       {

@@ -14,7 +14,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Endpoints for user feedback submission and querying.
+ * 用户反馈控制器。
+ * 提供反馈提交、我的反馈查询和追问补充接口。
  */
 @RestController
 @RequestMapping("/api/feedback")
@@ -24,7 +25,7 @@ public class FeedbackController {
     private final FeedbackService feedbackService;
 
     /**
-     * Submit a feedback ticket.
+     * 提交一条新的反馈工单。
      */
     @PostMapping
     public ResponseEntity<FeedbackDto> createFeedback(
@@ -35,7 +36,7 @@ public class FeedbackController {
     }
 
     /**
-     * Returns current user's feedback tickets.
+     * 分页查询当前用户的反馈工单。
      */
     @GetMapping("/me")
     public ResponseEntity<Page<FeedbackDto>> getMyFeedback(
@@ -46,7 +47,7 @@ public class FeedbackController {
     }
 
     /**
-     * Appends a follow-up message to an existing feedback ticket.
+     * 为现有反馈追加一条用户补充消息。
      */
     @PostMapping("/{feedbackId}/follow-up")
     public ResponseEntity<FeedbackDto> appendFollowUp(

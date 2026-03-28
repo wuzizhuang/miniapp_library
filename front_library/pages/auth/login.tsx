@@ -12,6 +12,9 @@ import { useAuth } from "@/config/authContext";
 import { authService, parseApiError } from "@/services/api/authService";
 import { canAccessAdminPanel, getDefaultAdminRoute } from "@/utils/rbac";
 
+/**
+ * 校验登录后跳转地址，只允许站内相对路径。
+ */
 function safeRedirect(redirect: string | string[] | undefined): string | null {
   if (typeof redirect !== "string") {
     return null;
@@ -29,6 +32,10 @@ function safeRedirect(redirect: string | string[] | undefined): string | null {
   return redirect;
 }
 
+/**
+ * 登录页。
+ * 负责认证提交、错误提示以及按角色决定登录后落点。
+ */
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
@@ -76,6 +83,7 @@ export default function LoginPage() {
       );
       const normalizedPermissions = permissions ?? [];
 
+      // 先把登录态写入上下文，再根据 redirect / 管理后台权限决定去向。
       await login(response);
 
       const adminRoute = getDefaultAdminRoute({
@@ -135,9 +143,6 @@ export default function LoginPage() {
             validationBehavior="native"
             onSubmit={handleSubmit}
           >
-            {/* 这里的全局错误提示条可以保留，也可以去掉，因为下面 Input 已经有提示了 */}
-            {/* 为了美观，我建议去掉这个红条，只保留 Input 下方的红字和红框 */}
-
             <Input
               isRequired
               isInvalid={isError}
@@ -146,9 +151,7 @@ export default function LoginPage() {
               name="email"
               placeholder="请输入用户名 (如: admin)"
               onValueChange={clearError}
-              // 核心优化 3：状态绑定
               variant="bordered"
-              // 监听输入，清除错误
               type="text"
             />
 
@@ -169,11 +172,9 @@ export default function LoginPage() {
               name="password"
               placeholder="请输入密码"
               type={isVisible ? "text" : "password"}
-              errorMessage={isError ? errorMsg : ""} // 只有出错时才显示文字
-              // 监听输入，清除错误
+              errorMessage={isError ? errorMsg : ""}
               onValueChange={clearError}
               variant="bordered"
-              // 核心优化 3：状态绑定 + 错误信息展示
               isInvalid={isError}
             />
 
@@ -188,7 +189,7 @@ export default function LoginPage() {
 
             <Button
               className="w-full font-medium"
-              color={isError ? "danger" : "primary"} // 出错时按钮也可以变红一下提示
+              color={isError ? "danger" : "primary"}
               isLoading={isLoading}
               type="submit"
             >

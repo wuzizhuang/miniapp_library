@@ -1,3 +1,19 @@
+/**
+ * @file 登录页面
+ * @description 用户登录屏幕，对应 Web 端的 JWT 登录接口。
+ *
+ *   功能流程：
+ *   1. 用户输入用户名和密码
+ *   2. 调用 AuthContext.signIn() 进行登录
+ *   3. 登录成功后自动 goBack() 返回上一级
+ *   4. 登录失败显示错误文案
+ *
+ *   页面结构：
+ *   - 介绍卡片：说明登录后可恢复的数据（书架、预约、通知等）
+ *   - 表单卡片：用户名 + 密码 + 登录按钮 + 注册/找回链接
+ *   - 环境说明卡片：模拟器后端地址提示
+ */
+
 import React, { useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -14,10 +30,13 @@ import { colors, radius, spacing } from "../theme";
 export function LoginScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { signIn, isSigningIn } = useAuth();
+
+  // ── 表单状态 ──
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
+  /** 处理登录提交 */
   async function handleLogin() {
     setErrorMessage("");
 
@@ -26,6 +45,7 @@ export function LoginScreen() {
         username: username.trim(),
         password,
       });
+      // 登录成功，返回上一页
       navigation.goBack();
     } catch (error) {
       setErrorMessage(getErrorMessage(error, "登录失败"));
@@ -35,9 +55,10 @@ export function LoginScreen() {
   return (
     <Screen
       title="登录"
-      subtitle="沿用 Web 端的 JWT 登录接口、个人资料接口和登录态恢复策略。"
+      subtitle="输入账号密码，开始使用阅读服务"
       keyboardShouldPersistTaps="handled"
     >
+      {/* 介绍卡片：登录后可恢复的功能说明 */}
       <Card tone="tinted" style={styles.introCard}>
         <View style={styles.introTop}>
           <View style={styles.introIconWrap}>
@@ -52,12 +73,14 @@ export function LoginScreen() {
           </View>
         </View>
 
+        {/* 功能亮点列表 */}
         <View style={styles.featureList}>
           <FeatureRow icon="bookmark-box-multiple-outline" text="同步收藏、当前借阅和历史借阅" />
           <FeatureRow icon="bell-badge-outline" text="接收预约到馆、逾期和系统消息提醒" />
         </View>
       </Card>
 
+      {/* 登录表单卡片 */}
       <Card style={styles.formCard}>
         <TextField
           label="用户名"
@@ -80,8 +103,10 @@ export function LoginScreen() {
           returnKeyType="done"
         />
 
+        {/* 错误提示 */}
         {errorMessage ? <StateText tone="danger">{errorMessage}</StateText> : null}
 
+        {/* 登录按钮 */}
         <ActionButton
           label={isSigningIn ? "登录中..." : "登录"}
           icon="login"
@@ -91,6 +116,7 @@ export function LoginScreen() {
           disabled={isSigningIn}
         />
 
+        {/* 底部链接：注册 / 找回密码 */}
         <View style={styles.linkRow}>
           <Pressable onPress={() => navigation.navigate("Register")}>
             <Text style={styles.linkText}>注册账号</Text>
@@ -101,15 +127,12 @@ export function LoginScreen() {
         </View>
       </Card>
 
-      <Card>
-        <Text style={styles.tipTitle}>环境说明</Text>
-        <Text style={styles.tipText}>Android 模拟器默认后端地址建议使用 `10.0.2.2:8089`。</Text>
-        <Text style={styles.tipText}>如果接口不可达，优先检查 `.env` 里的 API 地址。</Text>
-      </Card>
+
     </Screen>
   );
 }
 
+/** 功能亮点行组件 */
 function FeatureRow({
   icon,
   text,
@@ -127,14 +150,11 @@ function FeatureRow({
   );
 }
 
+// ─── 样式定义 ─────────────────────────────────
+
 const styles = StyleSheet.create({
-  introCard: {
-    gap: spacing.md,
-  },
-  introTop: {
-    flexDirection: "row",
-    gap: spacing.md,
-  },
+  introCard: { gap: spacing.md },
+  introTop: { flexDirection: "row", gap: spacing.md },
   introIconWrap: {
     width: 60,
     height: 60,
@@ -143,22 +163,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  introBody: {
-    flex: 1,
-    gap: spacing.xs,
-  },
-  introTitle: {
-    color: colors.text,
-    fontSize: 22,
-    fontWeight: "800",
-  },
-  introText: {
-    color: colors.textMuted,
-    lineHeight: 22,
-  },
-  featureList: {
-    gap: spacing.sm,
-  },
+  introBody: { flex: 1, gap: spacing.xs },
+  introTitle: { color: colors.text, fontSize: 22, fontWeight: "800" },
+  introText: { color: colors.textMuted, lineHeight: 22 },
+  featureList: { gap: spacing.sm },
   featureRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -177,30 +185,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  featureText: {
-    flex: 1,
-    color: colors.text,
-    lineHeight: 20,
-  },
-  formCard: {
-    gap: spacing.md,
-  },
+  featureText: { flex: 1, color: colors.text, lineHeight: 20 },
+  formCard: { gap: spacing.md },
   linkRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: spacing.xs,
   },
-  linkText: {
-    color: colors.primaryDark,
-    fontWeight: "700",
-  },
-  tipTitle: {
-    color: colors.text,
-    fontSize: 16,
-    fontWeight: "800",
-  },
-  tipText: {
-    color: colors.textMuted,
-    lineHeight: 22,
-  },
+  linkText: { color: colors.primaryDark, fontWeight: "700" },
+  tipTitle: { color: colors.text, fontSize: 16, fontWeight: "800" },
+  tipText: { color: colors.textMuted, lineHeight: 22 },
 });

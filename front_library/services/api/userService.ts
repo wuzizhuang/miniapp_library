@@ -1,6 +1,9 @@
 import apiClient from "@/lib/axios";
 import { ApiUserOverviewDto } from "@/types/api";
 
+/**
+ * 个人中心里的“即将到期借阅”预览项。
+ */
 export interface OverviewDueSoonLoan {
   loanId: number;
   bookId: number;
@@ -27,6 +30,9 @@ export interface UserOverview {
   completedServiceAppointmentCount: number;
 }
 
+/**
+ * 将后端用户总览 DTO 转换为前端页面直接可用的结构。
+ */
 function mapOverview(dto: ApiUserOverviewDto): UserOverview {
   return {
     userId: dto.userId,
@@ -53,6 +59,9 @@ function mapOverview(dto: ApiUserOverviewDto): UserOverview {
   };
 }
 
+/**
+ * 用户总览 API 服务。
+ */
 export const userService = {
   /**
    * 获取当前用户总览

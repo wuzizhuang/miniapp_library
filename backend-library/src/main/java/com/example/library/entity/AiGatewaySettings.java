@@ -12,7 +12,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 /**
- * Persisted AI gateway settings editable from the admin console.
+ * AI 网关配置实体。
+ * 保存后台管理页可编辑的 AI 开关、模型、基础地址和加密后的 API Key。
  */
 @Entity
 @Table(name = "ai_gateway_settings")
@@ -20,6 +21,9 @@ import java.time.LocalDateTime;
 @Setter
 public class AiGatewaySettings {
 
+    /**
+     * 当前表采用单例配置模式，固定只维护一条记录。
+     */
     @Id
     @Column(name = "settings_id")
     private Integer settingsId;

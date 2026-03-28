@@ -180,6 +180,7 @@ npm run typecheck
 - 这是 React Native 客户端，不复用 Web 的 DOM 组件
 - 页面能力要和后端接口保持一致，优先补主流程闭环
 - 工具链以 `JDK 17 + Node 20 LTS` 为稳定基线
+- 当前仓库不是以 Expo Prebuild/CNG 作为原生配置真源；Android 包名、新架构开关等原生配置应直接维护在 `android/` 工程中，而不是通过 `app.json` 的 `android` 或 `plugins` 字段驱动
 
 ## 当前边界
 

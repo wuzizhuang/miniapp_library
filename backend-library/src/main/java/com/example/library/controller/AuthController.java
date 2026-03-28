@@ -12,6 +12,7 @@ import com.example.library.dto.user.UserCreateDto;
 import com.example.library.dto.user.UserDto;
 import com.example.library.dto.user.UserLoginDto;
 import com.example.library.exception.UnauthorizedException;
+import com.example.library.util.ControllerHelper;
 import com.example.library.security.JwtUtils;
 import com.example.library.security.RequestRateLimitService;
 import com.example.library.security.TokenBlacklistService;
@@ -33,7 +34,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Authentication endpoints for user login, registration, and session context.
+ * 认证控制器。
+ * 负责登录、注册、会话刷新、退出登录以及找回密码相关接口。
  */
 @Slf4j
 @RestController
@@ -50,29 +52,28 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
 
     /**
-     * Returns the current authenticated user's profile.
-     *
-     * @return 200 with user profile, or 401 if unauthenticated.
+     * 获取当前登录用户的个人资料。
      */
     @GetMapping("/me")
     public ResponseEntity<UserDto> getCurrentUser(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        UserDetailsImpl authenticatedUser = requireAuthenticatedUser(userDetails);
+        UserDetailsImpl authenticatedUser = ControllerHelper.requireAuthenticated(userDetails);
 
         return ResponseEntity.ok(userService.getUserByUsername(authenticatedUser.getUsername()));
     }
 
     /**
-     * Returns current user's auth context for RBAC UI rendering.
+     * 获取当前用户的认证上下文。
+     * 主要用于前端根据角色和权限渲染 RBAC 相关界面。
      */
     @GetMapping("/context")
     public ResponseEntity<AuthContextDto> getCurrentAuthContext(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        UserDetailsImpl authenticatedUser = requireAuthenticatedUser(userDetails);
+        UserDetailsImpl authenticatedUser = ControllerHelper.requireAuthenticated(userDetails);
 
         return ResponseEntity.ok(userService.getAuthContextByUsername(authenticatedUser.getUsername()));
     }
 
     /**
-     * Registers a new user account.
+     * 注册新用户。
      */
     @PostMapping("/register")
     public ResponseEntity<UserDto> registerUser(
@@ -84,7 +85,7 @@ public class AuthController {
     }
 
     /**
-     * Authenticates a user and returns a JWT.
+     * 用户登录并签发访问令牌与刷新令牌。
      */
     @PostMapping("/login")
     public ResponseEntity<JwtResponseDto> authenticateUser(
@@ -103,7 +104,8 @@ public class AuthController {
     }
 
     /**
-     * Logs out the current user.
+     * 当前用户退出登录。
+     * 除了清理安全上下文外，还会尝试撤销刷新令牌并将访问令牌加入黑名单。
      */
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
@@ -132,7 +134,7 @@ public class AuthController {
     }
 
     /**
-     * Rotates a refresh token into a new access token and refresh token.
+     * 使用刷新令牌换取一组新的访问令牌与刷新令牌。
      */
     @PostMapping("/refresh")
     public ResponseEntity<JwtResponseDto> refreshToken(@Valid @RequestBody RefreshTokenRequestDto requestDto) {
@@ -140,7 +142,8 @@ public class AuthController {
     }
 
     /**
-     * Requests a password reset token without leaking whether the email exists.
+     * 发起找回密码流程。
+     * 无论邮箱是否存在，都返回统一响应，避免泄露账号存在性。
      */
     @PostMapping("/forgot-password")
     public ResponseEntity<PasswordResetActionResponseDto> requestPasswordReset(
@@ -151,7 +154,7 @@ public class AuthController {
     }
 
     /**
-     * Validates whether a reset token is still usable.
+     * 校验密码重置令牌是否仍可使用。
      */
     @GetMapping("/reset-password/validate")
     public ResponseEntity<PasswordResetTokenValidationDto> validateResetToken(@RequestParam String token) {
@@ -159,7 +162,7 @@ public class AuthController {
     }
 
     /**
-     * Completes password reset with a valid reset token.
+     * 使用有效的重置令牌完成密码重置。
      */
     @PostMapping("/reset-password")
     public ResponseEntity<PasswordResetActionResponseDto> resetPassword(
@@ -169,11 +172,4 @@ public class AuthController {
         return ResponseEntity.ok(passwordResetService.resetPassword(requestDto.getToken(), requestDto.getPassword()));
     }
 
-    private UserDetailsImpl requireAuthenticatedUser(UserDetailsImpl userDetails) {
-        if (userDetails == null) {
-            throw new UnauthorizedException("请先登录后再继续");
-        }
-
-        return userDetails;
-    }
 }

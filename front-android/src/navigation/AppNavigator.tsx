@@ -1,3 +1,20 @@
+/**
+ * @file 根栈导航器
+ * @description 应用的顶层导航容器，职责：
+ *   1. 设置 NavigationContainer 和自定义主题
+ *   2. 注册所有屏幕到 NativeStackNavigator
+ *   3. MainTabs 作为默认首屏（底部 Tab 导航器）
+ *   4. 其余屏幕通过 push 方式进入
+ *
+ *   屏幕注册顺序：
+ *   - MainTabs（无 header）
+ *   - 认证：Login / Register / ForgotPassword
+ *   - 功能：BookDetail / Shelf / LoanTracking / Reservations / Fines
+ *   - 功能：Notifications / HelpFeedback / Profile
+ *   - 功能：Appointments / SeatReservations / Recommendations
+ *   - 功能：Reviews / SearchHistory
+ */
+
 import React from "react";
 import {
   NavigationContainer,
@@ -25,8 +42,10 @@ import { SearchHistoryScreen } from "../screens/SearchHistoryScreen";
 import { SeatReservationsScreen } from "../screens/SeatReservationsScreen";
 import { ShelfScreen } from "../screens/ShelfScreen";
 
+/** 创建根栈导航器实例 */
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+/** 自定义导航主题（基于应用设计令牌） */
 const navTheme = {
   ...DefaultTheme,
   colors: {
@@ -39,6 +58,10 @@ const navTheme = {
   },
 };
 
+/**
+ * 应用根导航器组件
+ * 包含 NavigationContainer + NativeStackNavigator
+ */
 export function AppNavigator() {
   return (
     <NavigationContainer theme={navTheme}>
@@ -57,11 +80,14 @@ export function AppNavigator() {
           },
         }}
       >
+        {/* 主页面（底部 Tab 导航器，隐藏顶栏） */}
         <Stack.Screen
           name="MainTabs"
           component={MainTabs}
           options={{ headerShown: false }}
         />
+
+        {/* ── 认证相关屏幕 ── */}
         <Stack.Screen
           name="Login"
           component={LoginScreen}
@@ -77,11 +103,15 @@ export function AppNavigator() {
           component={ForgotPasswordScreen}
           options={{ title: "找回密码" }}
         />
+
+        {/* ── 图书相关屏幕 ── */}
         <Stack.Screen
           name="BookDetail"
           component={BookDetailScreen}
           options={{ title: "图书详情" }}
         />
+
+        {/* ── 用户功能屏幕 ── */}
         <Stack.Screen
           name="Shelf"
           component={ShelfScreen}

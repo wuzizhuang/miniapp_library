@@ -23,7 +23,12 @@
   <view class="panel">
     <view class="section-title">历史反馈</view>
     <view wx:if="{{loading}}" class="empty-card">正在加载反馈记录...</view>
-    <view wx:elif="{{errorMessage}}" class="empty-card danger-text">{{errorMessage}}</view>
+    <view wx:elif="{{errorMessage}}" class="empty-card danger-text">
+      <view>{{errorMessage}}</view>
+      <view class="inline-actions">
+        <view class="button-secondary" bindtap="retryLoadFeedback">重新加载</view>
+      </view>
+    </view>
     <view wx:elif="{{!items.length}}" class="empty-card">还没有提交过反馈。</view>
     <view
       wx:for="{{items}}"

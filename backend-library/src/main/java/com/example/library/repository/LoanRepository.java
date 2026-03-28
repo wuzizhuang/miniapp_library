@@ -40,6 +40,15 @@ public interface LoanRepository extends JpaRepository<Loan, Integer> {
     @Query("SELECT COUNT(l) FROM Loan l WHERE l.user.userId = :userId AND l.status = 'ACTIVE'")
     Long countActiveLoansForUser(@Param("userId") Integer userId);
 
+    @Query("""
+            SELECT CASE WHEN COUNT(l) > 0 THEN true ELSE false END
+            FROM Loan l
+            WHERE l.user.userId = :userId
+              AND l.copy.book.bookId = :bookId
+              AND l.status IN ('ACTIVE', 'OVERDUE')
+            """)
+    boolean existsActiveLoanForUserAndBook(@Param("userId") Integer userId, @Param("bookId") Integer bookId);
+
     @Query("SELECT l FROM Loan l WHERE l.dueDate = :date AND l.status = 'ACTIVE'")
     List<Loan> findLoansByDueDate(@Param("date") LocalDate date);
 
@@ -75,4 +84,45 @@ public interface LoanRepository extends JpaRepository<Loan, Integer> {
 
     @Query("SELECT COUNT(l) FROM Loan l WHERE l.copy.book.bookId = :bookId AND l.createTime >= :since")
     long countLoansForBookSince(@Param("bookId") Integer bookId, @Param("since") java.time.LocalDateTime since);
+
+    // ── 个人推荐所需查询 ──────────────────────────────────────────
+
+    /** 查询用户借阅过的所有图书分类 ID（去重）。 */
+    @Query("SELECT DISTINCT l.copy.book.category.categoryId FROM Loan l WHERE l.user.userId = :userId AND l.copy.book.category IS NOT NULL")
+    List<Integer> findBorrowedCategoryIds(@Param("userId") Integer userId);
+
+    /** 查询用户借阅过的所有作者 ID（去重）。 */
+    @Query("SELECT DISTINCT ba.author.authorId FROM Loan l JOIN l.copy.book.bookAuthors ba WHERE l.user.userId = :userId")
+    List<Integer> findBorrowedAuthorIds(@Param("userId") Integer userId);
+
+    /** 查询用户已经借阅过的所有图书 ID（去重，用于排除已读）。 */
+    @Query("SELECT DISTINCT l.copy.book.bookId FROM Loan l WHERE l.user.userId = :userId")
+    List<Integer> findBorrowedBookIds(@Param("userId") Integer userId);
+
+    /** 查询与当前用户有相似借阅记录的其他用户（至少借过同一本书），返回相似度最高的 N 名用户。 */
+    @Query("""
+            SELECT l2.user.userId
+            FROM Loan l1
+            JOIN Loan l2 ON l1.copy.book.bookId = l2.copy.book.bookId
+            WHERE l1.user.userId = :userId
+              AND l2.user.userId <> :userId
+            GROUP BY l2.user.userId
+            ORDER BY COUNT(DISTINCT l2.copy.book.bookId) DESC
+            """)
+    List<Integer> findSimilarUserIds(@Param("userId") Integer userId, Pageable pageable);
+
+    /** 查询指定用户群体借阅的图书 ID，按借阅次数排序（用于协同过滤）。 */
+    @Query("""
+            SELECT l.copy.book.bookId
+            FROM Loan l
+            WHERE l.user.userId IN :userIds
+              AND l.copy.book.bookId NOT IN :excludeBookIds
+              AND l.copy.book.status = 'ACTIVE'
+            GROUP BY l.copy.book.bookId
+            ORDER BY COUNT(l) DESC
+            """)
+    List<Integer> findBookIdsBorrowedByUsers(
+            @Param("userIds") List<Integer> userIds,
+            @Param("excludeBookIds") List<Integer> excludeBookIds,
+            Pageable pageable);
 }

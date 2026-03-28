@@ -10,7 +10,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
- * Fine entity.
+ * 罚款实体。
+ * 记录借阅产生的逾期费、遗失赔偿等费用信息及其处理状态。
  */
 @Entity
 @Table(name = "fines")
@@ -54,6 +55,7 @@ public class Fine {
     @Column(name = "update_time", nullable = false)
     private LocalDateTime updateTime;
 
+    /** 罚款处理状态。 */
     public enum FineStatus {
         PENDING, PAID, WAIVED
     }

@@ -20,6 +20,9 @@ import {
 } from "@/types/api";
 import { User } from "@/types/auth";
 
+/**
+ * 统一整理后端返回的主角色和角色数组，避免前端权限判断时出现空集。
+ */
 function normalizeRoles(primaryRole?: string, roles?: string[]): string[] {
     const set = new Set<string>();
 
@@ -43,6 +46,10 @@ function normalizeRoles(primaryRole?: string, roles?: string[]): string[] {
 export type { ApiErrorInfo };
 export const parseApiError = getApiErrorInfo;
 
+/**
+ * 认证与个人资料相关 API 服务。
+ * 负责登录注册、上下文拉取、找回密码和个人资料维护。
+ */
 export const authService = {
     /**
      * 登录并获取 JWT
@@ -125,7 +132,8 @@ export const authService = {
     },
 
     /**
-     * 退出登录
+     * 退出登录。
+     * 即便服务端退出失败，前端也会继续清理本地登录态。
      * POST /api/auth/logout
      */
     loginOut: async (): Promise<void> => {

@@ -7,7 +7,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 /**
- * Notification entity.
+ * 通知实体。
+ * 用于保存系统发送给用户的站内消息，以及消息跳转和去重相关元数据。
  */
 @Entity
 @Table(
@@ -54,9 +55,11 @@ public class Notification {
     @Column(name = "route_hint", length = 255)
     private String routeHint;
 
+    /** 用于幂等去重的业务主键，同一用户同一主键只保留一条通知。 */
     @Column(name = "business_key", length = 80)
     private String businessKey;
 
+    /** 通知类型。 */
     public enum NotificationType {
         DUE_REMINDER, ARRIVAL_NOTICE, NEW_BOOK_RECOMMEND, SYSTEM
     }

@@ -13,7 +13,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Book copy inventory endpoints.
+ * 图书副本库存控制器。
+ * 负责副本的增删改查以及后台分页筛选。
  */
 @RestController
 @RequestMapping("/api/book-copies")
@@ -23,7 +24,7 @@ public class BookCopyController {
     private final BookCopyService bookCopyService;
 
     /**
-     * Creates a new book copy (admin only).
+     * 新增图书副本，仅管理员可操作。
      */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -33,7 +34,7 @@ public class BookCopyController {
     }
 
     /**
-     * Returns a book copy by id.
+     * 按主键查询单个副本详情。
      */
     @GetMapping("/{id}")
     public ResponseEntity<BookCopyDto> getBookCopyById(@PathVariable Integer id) {
@@ -41,7 +42,7 @@ public class BookCopyController {
     }
 
     /**
-     * Updates a book copy (admin only).
+     * 更新副本信息，仅管理员可操作。
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -52,7 +53,7 @@ public class BookCopyController {
     }
 
     /**
-     * Deletes a book copy (admin only).
+     * 删除副本，仅管理员可操作。
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -62,7 +63,7 @@ public class BookCopyController {
     }
 
     /**
-     * Returns paged book copies (admin only).
+     * 分页查询副本列表，支持按图书、状态和关键字筛选。
      */
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")

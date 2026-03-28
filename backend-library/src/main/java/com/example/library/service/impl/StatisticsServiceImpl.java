@@ -30,7 +30,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Default implementation for admin statistics.
+ * 统计服务实现类。
+ * 负责后台看板核心统计、趋势分析、状态分布和最近借阅列表聚合。
  */
 @Service
 @RequiredArgsConstructor
@@ -45,7 +46,7 @@ public class StatisticsServiceImpl implements StatisticsService {
     private final UserBehaviorLogRepository userBehaviorLogRepository;
 
     /**
-     * Returns core dashboard statistics.
+     * 获取后台核心统计卡片数据。
      */
     @Override
     @Cacheable(cacheNames = "dashboardStats")
@@ -69,7 +70,7 @@ public class StatisticsServiceImpl implements StatisticsService {
     }
 
     /**
-     * Returns analytics payload for dashboard visualizations.
+     * 获取后台分析图表数据。
      */
     @Override
     @Cacheable(cacheNames = "dashboardAnalytics")
@@ -89,6 +90,9 @@ public class StatisticsServiceImpl implements StatisticsService {
         return analytics;
     }
 
+    /**
+     * 构造近 7 天借阅/归还趋势。
+     */
     private List<DashboardTrendPointDto> buildLoanTrend() {
         LocalDate startDate = LocalDate.now().minusDays(6);
         Map<LocalDate, Long> borrowCounts = toDateCountMap(loanRepository.countBorrowedByDateSince(startDate));
@@ -105,6 +109,9 @@ public class StatisticsServiceImpl implements StatisticsService {
                 .toList();
     }
 
+    /**
+     * 构造预约状态分布。
+     */
     private List<DashboardBreakdownItemDto> buildReservationBreakdown() {
         Map<String, Long> counts = toEnumCountMap(reservationRepository.countGroupedByStatus());
 
@@ -113,6 +120,9 @@ public class StatisticsServiceImpl implements StatisticsService {
                 .toList();
     }
 
+    /**
+     * 构造罚款状态分布。
+     */
     private List<DashboardBreakdownItemDto> buildFineBreakdown() {
         Map<String, Long> counts = toEnumCountMap(fineRepository.countGroupedByStatus());
 
@@ -121,6 +131,9 @@ public class StatisticsServiceImpl implements StatisticsService {
                 .toList();
     }
 
+    /**
+     * 构造热门搜索词分布。
+     */
     private List<DashboardBreakdownItemDto> buildTopKeywordBreakdown() {
         return searchHistoryRepository.findTopKeywordsWithCount(PageRequest.of(0, 8))
                 .stream()
@@ -128,6 +141,9 @@ public class StatisticsServiceImpl implements StatisticsService {
                 .toList();
     }
 
+    /**
+     * 构造用户行为类型分布。
+     */
     private List<DashboardBreakdownItemDto> buildBehaviorBreakdown() {
         Map<String, Long> counts = toEnumCountMap(userBehaviorLogRepository.countGroupedByActionType());
 
@@ -139,6 +155,9 @@ public class StatisticsServiceImpl implements StatisticsService {
                 .toList();
     }
 
+    /**
+     * 构造看板分布图通用项。
+     */
     private DashboardBreakdownItemDto createBreakdownItem(String key, String label, Long value) {
         DashboardBreakdownItemDto item = new DashboardBreakdownItemDto();
         item.setKey(key);
@@ -147,6 +166,9 @@ public class StatisticsServiceImpl implements StatisticsService {
         return item;
     }
 
+    /**
+     * 将行为类型枚举转换为中文标签。
+     */
     private String describeActionType(UserBehaviorLog.ActionType actionType) {
         return switch (actionType) {
             case VIEW_DETAIL -> "查看详情";
@@ -158,6 +180,9 @@ public class StatisticsServiceImpl implements StatisticsService {
         };
     }
 
+    /**
+     * 将借阅实体转换为后台最近借阅展示 DTO。
+     */
     private DashboardRecentLoanDto toRecentLoanDto(Loan loan) {
         DashboardRecentLoanDto dto = new DashboardRecentLoanDto();
         dto.setLoanId(loan.getLoanId());
@@ -172,12 +197,18 @@ public class StatisticsServiceImpl implements StatisticsService {
         return dto;
     }
 
+    /**
+     * 将按日期分组统计结果转为 Map。
+     */
     private Map<LocalDate, Long> toDateCountMap(List<Object[]> rows) {
         return rows.stream().collect(Collectors.toMap(
                 row -> (LocalDate) row[0],
                 row -> (Long) row[1]));
     }
 
+    /**
+     * 将按枚举值分组的统计结果转为 Map。
+     */
     private Map<String, Long> toEnumCountMap(List<Object[]> rows) {
         return rows.stream().collect(Collectors.toMap(
                 row -> String.valueOf(row[0]),

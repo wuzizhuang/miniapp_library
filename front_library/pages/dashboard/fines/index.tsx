@@ -1,5 +1,6 @@
 // Admin Fines Management Page
 import React, { useMemo, useState } from "react";
+import { useRouter } from "next/router";
 import {
     Table,
     TableHeader,
@@ -17,6 +18,13 @@ import {
     Button,
     Input,
     Pagination,
+    Modal,
+    ModalContent,
+    ModalHeader,
+    ModalBody,
+    ModalFooter,
+    Textarea,
+    Divider,
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { toast } from "sonner";
@@ -25,7 +33,7 @@ import useSWR from "swr";
 import AdminLayout from "@/components/layouts/AdminLayout";
 import { useAuth } from "@/config/authContext";
 import { getApiErrorMessage } from "@/lib/apiError";
-import { fineService, FineStatus } from "@/services/api/fineService";
+import { AdminFine, fineService, FineStatus } from "@/services/api/fineService";
 import {
     ADMIN_FINES_PENDING_TOTAL_KEY,
     refreshFineData,
@@ -48,13 +56,31 @@ const typeLabel: Record<string, string> = {
 };
 
 export default function AdminFinesPage() {
+    const router = useRouter();
     const { user } = useAuth();
     const [filter, setFilter] = useState("all");
     const [waivingId, setWaivingId] = useState<number | null>(null);
     const [payingId, setPayingId] = useState<number | null>(null);
+
+    // ── 二次确认弹窗状态 ──────────────────────────────────────
+    const [confirmTarget, setConfirmTarget] = useState<{ fine: AdminFine; action: "pay" | "waive" } | null>(null);
+    const [waiveReason, setWaiveReason] = useState("");
     const [page, setPage] = useState(1);
     const [searchInput, setSearchInput] = useState("");
     const [keyword, setKeyword] = useState("");
+
+    // 从 URL query 中读取 keyword（从用户详情页跳转时携带）
+    React.useEffect(() => {
+      if (!router.isReady) return;
+      const qKeyword = Array.isArray(router.query.keyword)
+        ? router.query.keyword[0]
+        : router.query.keyword;
+
+      if (qKeyword) {
+        setSearchInput(qKeyword);
+        setKeyword(qKeyword);
+      }
+    }, [router.isReady]);  
 
     const { data, error, isLoading, mutate } = useAdminFines(filter, page, PAGE_SIZE, keyword);
     const { data: pendingTotal = 0, mutate: mutatePendingTotal } = useSWR(
@@ -116,39 +142,58 @@ export default function AdminFinesPage() {
         { key: "WAIVED", label: "已豁免", icon: "solar:shield-check-bold" },
     ];
 
-    const handleWaive = async (fineId: number) => {
-        if (!confirm("确认豁免这笔罚款？")) return;
-
-        setWaivingId(fineId);
-        try {
-            await fineService.waiveFine(fineId);
-            await updateFineInCurrentPage(fineId, "WAIVED");
-            await refreshFineData();
-            await mutate();
-            await mutatePendingTotal();
-            toast.success("罚款已豁免");
-        } catch (error: unknown) {
-            toast.error(getApiErrorMessage(error, "豁免失败，请稍后重试"));
-        } finally {
-            setWaivingId(null);
-        }
+    // ── 打开二次确认弹窗 ──────────────────────────────────────
+    const openConfirm = (fine: AdminFine, action: "pay" | "waive") => {
+        setWaiveReason("");
+        setConfirmTarget({ fine, action });
     };
 
-    const handlePay = async (fineId: number) => {
-        if (!confirm("确认已在柜台收取这笔罚款？")) return;
+    const closeConfirm = () => {
+        setConfirmTarget(null);
+        setWaiveReason("");
+    };
 
-        setPayingId(fineId);
-        try {
-            await fineService.payFine(fineId);
-            await updateFineInCurrentPage(fineId, "PAID");
-            await refreshFineData();
-            await mutate();
-            await mutatePendingTotal();
-            toast.success("罚款已登记为已缴");
-        } catch (error: unknown) {
-            toast.error(getApiErrorMessage(error, "收款失败，请稍后重试"));
-        } finally {
-            setPayingId(null);
+    const handleConfirmSubmit = async () => {
+        if (!confirmTarget) return;
+
+        const { fine, action } = confirmTarget;
+
+        if (action === "waive" && !waiveReason.trim()) {
+            toast.error("请填写豁免理由后再提交");
+
+            return;
+        }
+
+        if (action === "pay") {
+            setPayingId(fine.fineId);
+            try {
+                await fineService.payFine(fine.fineId);
+                await updateFineInCurrentPage(fine.fineId, "PAID");
+                await refreshFineData();
+                await mutate();
+                await mutatePendingTotal();
+                toast.success("罚款已登记为已缴");
+                closeConfirm();
+            } catch (err: unknown) {
+                toast.error(getApiErrorMessage(err, "收款失败，请稍后重试"));
+            } finally {
+                setPayingId(null);
+            }
+        } else {
+            setWaivingId(fine.fineId);
+            try {
+                await fineService.waiveFine(fine.fineId, waiveReason.trim());
+                await updateFineInCurrentPage(fine.fineId, "WAIVED");
+                await refreshFineData();
+                await mutate();
+                await mutatePendingTotal();
+                toast.success("罚款已豁免");
+                closeConfirm();
+            } catch (err: unknown) {
+                toast.error(getApiErrorMessage(err, "豁免失败，请稍后重试"));
+            } finally {
+                setWaivingId(null);
+            }
         }
     };
 
@@ -351,7 +396,7 @@ export default function AdminFinesPage() {
                                                                 startContent={payingId === item.fineId ? undefined : <Icon icon="solar:wallet-money-bold" width={14} />}
                                                                 isDisabled={waivingId === item.fineId}
                                                                 isLoading={payingId === item.fineId}
-                                                                onPress={() => handlePay(item.fineId)}
+                                                                onPress={() => openConfirm(item, "pay")}
                                                             >
                                                                 柜台收款
                                                             </Button>
@@ -364,7 +409,7 @@ export default function AdminFinesPage() {
                                                                 startContent={waivingId === item.fineId ? undefined : <Icon icon="solar:shield-cross-bold" width={14} />}
                                                                 isDisabled={payingId === item.fineId}
                                                                 isLoading={waivingId === item.fineId}
-                                                                onPress={() => handleWaive(item.fineId)}
+                                                                onPress={() => openConfirm(item, "waive")}
                                                             >
                                                                 豁免
                                                             </Button>
@@ -384,6 +429,105 @@ export default function AdminFinesPage() {
                         </TableBody>
                     </Table>
                 )}
+
+                {/* ── 二次确认弹窗 ──────────────────────────── */}
+                <Modal
+                    isOpen={!!confirmTarget}
+                    onOpenChange={(open) => { if (!open) closeConfirm(); }}
+                    size="lg"
+                    backdrop="blur"
+                >
+                    <ModalContent>
+                        {() => (
+                            <>
+                                <ModalHeader className="flex items-center gap-2">
+                                    <Icon
+                                        icon={confirmTarget?.action === "pay" ? "solar:wallet-money-bold-duotone" : "solar:shield-cross-bold-duotone"}
+                                        width={22}
+                                        className={confirmTarget?.action === "pay" ? "text-success" : "text-warning"}
+                                    />
+                                    {confirmTarget?.action === "pay" ? "柜台收款确认" : "罚款豁免确认"}
+                                </ModalHeader>
+                                <ModalBody className="pb-2">
+                                    {confirmTarget && (
+                                        <>
+                                            <Card className="border border-default-100 shadow-none">
+                                                <CardBody className="grid gap-3 p-4 text-sm md:grid-cols-2">
+                                                    <div>
+                                                        <p className="text-xs text-default-400">读者</p>
+                                                        <p className="mt-1 font-semibold">{confirmTarget.fine.userFullName || confirmTarget.fine.username}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-default-400">来源书目</p>
+                                                        <p className="mt-1 font-semibold">{confirmTarget.fine.bookTitle || "-"}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-default-400">罚款类型</p>
+                                                        <p className="mt-1 font-semibold">{typeLabel[confirmTarget.fine.type] || confirmTarget.fine.type}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-default-400">罚款金额</p>
+                                                        <p className="mt-1 text-lg font-black text-danger">¥{confirmTarget.fine.amount.toFixed(2)}</p>
+                                                    </div>
+                                                    {confirmTarget.fine.reason ? (
+                                                        <div className="md:col-span-2">
+                                                            <p className="text-xs text-default-400">原因</p>
+                                                            <p className="mt-1 text-default-600">{confirmTarget.fine.reason}</p>
+                                                        </div>
+                                                    ) : null}
+                                                </CardBody>
+                                            </Card>
+
+                                            <Divider />
+
+                                            {confirmTarget.action === "pay" ? (
+                                                <div className="rounded-xl border border-success-200 bg-success-50 p-4">
+                                                    <p className="text-sm font-medium text-success-800">
+                                                        请确认已在柜台实际收取该笔罚款后，再点击下方确认按钮。
+                                                    </p>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div className="rounded-xl border border-warning-200 bg-warning-50 p-4">
+                                                        <p className="text-sm font-medium text-warning-800">
+                                                            豁免将直接减免该笔罚款，请填写理由，以留存审计记录。
+                                                        </p>
+                                                    </div>
+                                                    <Textarea
+                                                        isRequired
+                                                        label="豁免理由"
+                                                        labelPlacement="outside"
+                                                        placeholder="请输入豁免理由（必填），例如：首次逾期减免、图书馆系统故障补偿等"
+                                                        minRows={3}
+                                                        value={waiveReason}
+                                                        onValueChange={setWaiveReason}
+                                                    />
+                                                </>
+                                            )}
+                                        </>
+                                    )}
+                                </ModalBody>
+                                <ModalFooter>
+                                    <Button variant="flat" onPress={closeConfirm}>
+                                        取消
+                                    </Button>
+                                    <Button
+                                        color={confirmTarget?.action === "pay" ? "success" : "warning"}
+                                        isLoading={
+                                            confirmTarget?.action === "pay"
+                                                ? payingId === confirmTarget?.fine.fineId
+                                                : waivingId === confirmTarget?.fine.fineId
+                                        }
+                                        isDisabled={confirmTarget?.action === "waive" && !waiveReason.trim()}
+                                        onPress={() => void handleConfirmSubmit()}
+                                    >
+                                        {confirmTarget?.action === "pay" ? "确认收款" : "确认豁免"}
+                                    </Button>
+                                </ModalFooter>
+                            </>
+                        )}
+                    </ModalContent>
+                </Modal>
             </div>
         </AdminLayout>
     );

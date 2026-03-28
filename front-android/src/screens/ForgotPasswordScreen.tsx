@@ -1,3 +1,13 @@
+/**
+ * @file 找回密码页面
+ * @description 密码找回屏幕，对应 Web 端 `/auth/forgot-password` 流程。
+ *
+ *   功能流程：
+ *   1. 用户输入注册邮箱
+ *   2. 调用 authService.forgotPassword() 提交找回请求
+ *   3. 后端处理后前端展示成功/失败提示
+ */
+
 import React, { useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { StyleSheet, Text, View } from "react-native";
@@ -13,11 +23,14 @@ import { colors, spacing } from "../theme";
 
 export function ForgotPasswordScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [submitting, setSubmitting] = useState(false);
-  const [value, setValue] = useState("");
-  const [message, setMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
 
+  // ── 表单与状态 ──
+  const [submitting, setSubmitting] = useState(false);
+  const [value, setValue] = useState("");          // 邮箱输入值
+  const [message, setMessage] = useState("");      // 成功提示
+  const [errorMessage, setErrorMessage] = useState("");  // 错误提示
+
+  /** 处理找回密码提交 */
   async function handleSubmit() {
     setErrorMessage("");
     setMessage("");
@@ -41,7 +54,8 @@ export function ForgotPasswordScreen() {
   }
 
   return (
-    <Screen title="找回密码" subtitle="对应 Web 端 `/auth/forgot-password` 的找回流程语义。">
+    <Screen title="找回密码" subtitle="输入注册邮箱，系统将协助你重置密码。">
+      {/* 介绍卡片 */}
       <Card tone="tinted" style={styles.introCard}>
         <View style={styles.introRow}>
           <View style={styles.iconWrap}>
@@ -55,6 +69,7 @@ export function ForgotPasswordScreen() {
         </View>
       </Card>
 
+      {/* 找回密码表单卡片 */}
       <Card style={styles.formCard}>
         <TextField
           label="邮箱"
@@ -66,9 +81,11 @@ export function ForgotPasswordScreen() {
           placeholder="请输入注册邮箱"
         />
 
+        {/* 状态提示 */}
         {errorMessage ? <StateText tone="danger">{errorMessage}</StateText> : null}
         {message ? <StateText>{message}</StateText> : null}
 
+        {/* 提交按钮 */}
         <ActionButton
           label={submitting ? "提交中..." : "发送找回请求"}
           icon="send-outline"
@@ -78,6 +95,7 @@ export function ForgotPasswordScreen() {
           disabled={submitting}
         />
 
+        {/* 返回登录 */}
         <ActionButton
           label="返回登录"
           icon="arrow-left"
@@ -89,14 +107,11 @@ export function ForgotPasswordScreen() {
   );
 }
 
+// ─── 样式定义 ─────────────────────────────────
+
 const styles = StyleSheet.create({
-  introCard: {
-    gap: spacing.md,
-  },
-  introRow: {
-    flexDirection: "row",
-    gap: spacing.md,
-  },
+  introCard: { gap: spacing.md },
+  introRow: { flexDirection: "row", gap: spacing.md },
   iconWrap: {
     width: 60,
     height: 60,
@@ -105,20 +120,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  introBody: {
-    flex: 1,
-    gap: spacing.xs,
-  },
-  introTitle: {
-    color: colors.text,
-    fontSize: 22,
-    fontWeight: "800",
-  },
-  introText: {
-    color: colors.textMuted,
-    lineHeight: 22,
-  },
-  formCard: {
-    gap: spacing.md,
-  },
+  introBody: { flex: 1, gap: spacing.xs },
+  introTitle: { color: colors.text, fontSize: 22, fontWeight: "800" },
+  introText: { color: colors.textMuted, lineHeight: 22 },
+  formCard: { gap: spacing.md },
 });

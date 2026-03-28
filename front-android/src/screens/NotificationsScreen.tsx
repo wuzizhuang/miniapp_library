@@ -1,3 +1,16 @@
+/**
+ * @file 通知中心页面
+ * @description 统一消息中心屏幕，对应 Web 端消息中心与业务跳转语义。
+ *
+ *   功能特性：
+ *   - 消息列表：展示所有通知，区分已读/未读
+ *   - 单条操作：标记已读 + 查看相关 + 删除
+ *   - 批量操作：全部已读 + 清空已读
+ *   - 业务跳转：根据通知类型和关联数据跳转到对应屏幕
+ *   - 相对时间："刚刚" / "N 小时前" / 日期
+ *
+ *   事件驱动：监听 notifications / reservations / fines / appointments / seatReservations 自动刷新
+ */
 import React, { useEffect, useMemo, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -17,6 +30,7 @@ import { useAuth } from "../store/auth";
 import { colors, radius, spacing } from "../theme";
 import { emitAppEvent, subscribeAppEvent } from "../utils/events";
 
+/** 将时间戳转换为相对时间文案 */
 function formatRelativeTime(value: string): string {
   const current = Date.now();
   const timestamp = new Date(value).getTime();
@@ -88,6 +102,7 @@ export function NotificationsScreen() {
   const unreadCount = useMemo(() => items.filter((item) => !item.isRead).length, [items]);
   const readCount = useMemo(() => items.filter((item) => item.isRead).length, [items]);
 
+  /** 标记单条通知已读 */
   async function markRead(notificationId: number) {
     try {
       setActingId(notificationId);
@@ -102,6 +117,7 @@ export function NotificationsScreen() {
     }
   }
 
+  /** 打开通知关联的业务页面 */
   async function openTarget(item: NotificationItem) {
     try {
       if (!item.isRead) {
@@ -149,6 +165,7 @@ export function NotificationsScreen() {
     }
   }
 
+  /** 删除单条通知 */
   async function deleteOne(notificationId: number) {
     try {
       setActingId(notificationId);
@@ -163,6 +180,7 @@ export function NotificationsScreen() {
     }
   }
 
+  /** 全部标记已读 */
   async function markAllRead() {
     try {
       setActingType("markAll");
@@ -177,6 +195,7 @@ export function NotificationsScreen() {
     }
   }
 
+  /** 清空所有已读通知 */
   async function clearRead() {
     try {
       setActingType("clearRead");
@@ -193,7 +212,7 @@ export function NotificationsScreen() {
 
   if (!user) {
     return (
-      <Screen title="我的通知" subtitle="对应 Web 端消息中心与业务跳转语义。">
+      <Screen title="我的通知" subtitle="到馆提醒、逾期通知和系统消息">
         <LoginPromptCard onLogin={() => navigation.navigate("Login")} />
       </Screen>
     );
@@ -202,7 +221,7 @@ export function NotificationsScreen() {
   return (
     <Screen
       title="我的通知"
-      subtitle="支持单条已读、全部已读、删除、清空已读和业务跳转。"
+      subtitle="借阅提醒、到馆通知和系统消息中心"
       refreshing={refreshing}
       onRefresh={() => {
         void loadData(true);
@@ -214,7 +233,7 @@ export function NotificationsScreen() {
             <MaterialCommunityIcons name="bell-badge-outline" size={26} color={colors.primaryDark} />
           </View>
           <View style={styles.summaryBody}>
-            <InfoPill label="MESSAGE CENTER" tone="primary" icon="message-badge-outline" />
+            <InfoPill label="消息中心" tone="primary" icon="message-badge-outline" />
             <Text style={styles.summaryTitle}>统一处理阅读提醒</Text>
             <Text style={styles.summaryText}>到馆待取、逾期提醒和系统消息都会沉淀在这里，方便集中处理。</Text>
           </View>
@@ -319,6 +338,7 @@ export function NotificationsScreen() {
                             void markRead(item.notificationId);
                           }}
                           tone="secondary"
+                          size="sm"
                           disabled={actingId !== null}
                         />
                       ) : null}
@@ -330,6 +350,7 @@ export function NotificationsScreen() {
                             void openTarget(item);
                           }}
                           tone="secondary"
+                          size="sm"
                           disabled={actingId !== null}
                         />
                       ) : null}
@@ -340,6 +361,7 @@ export function NotificationsScreen() {
                           void deleteOne(item.notificationId);
                         }}
                         tone="danger"
+                        size="sm"
                         disabled={actingId !== null}
                       />
                     </View>
@@ -372,6 +394,7 @@ function StatCard({
   );
 }
 
+/** 根据通知类型返回对应的图标、文案和色调 */
 function getNotificationMeta(type: NotificationItem["type"]) {
   switch (type) {
     case "DUE_REMINDER":

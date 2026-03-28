@@ -10,6 +10,9 @@ import {
   PageResponse,
 } from "@/types/api";
 
+/**
+ * 到馆服务预约前端视图结构。
+ */
 export interface ServiceAppointment {
   appointmentId: number;
   userId: number;
@@ -33,6 +36,9 @@ export interface ServiceAppointmentPageResult<T> {
   totalElements: number;
 }
 
+/**
+ * 统一整理服务预约 DTO。
+ */
 function mapAppointment(dto: ApiServiceAppointmentDto): ServiceAppointment {
   return {
     appointmentId: dto.appointmentId,
@@ -52,6 +58,10 @@ function mapAppointment(dto: ApiServiceAppointmentDto): ServiceAppointment {
   };
 }
 
+/**
+ * 服务预约接口服务。
+ * 既服务读者端的预约申请，也服务管理员端的处理与统计。
+ */
 export const serviceAppointmentService = {
   createAppointment: async (payload: ApiServiceAppointmentCreateDto): Promise<ServiceAppointment> => {
     const { data } = await apiClient.post<ApiServiceAppointmentDto>("/service-appointments", payload);
@@ -76,6 +86,7 @@ export const serviceAppointmentService = {
     page = 0,
     size = 10,
   ): Promise<ServiceAppointmentPageResult<ServiceAppointment>> => {
+    // "all" 只是前端筛选项，占位时不应向后端传递具体状态值。
     const normalizedStatus = status && status !== "all" ? status : undefined;
     const { data } = await apiClient.get<PageResponse<ApiServiceAppointmentDto>>("/service-appointments", {
       params: {

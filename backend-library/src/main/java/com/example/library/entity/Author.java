@@ -12,7 +12,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Author entity.
+ * 作者实体。
+ * 保存作者基础信息以及与图书的关联关系。
  */
 @Entity
 @Table(name = "authors")
@@ -50,6 +51,7 @@ public class Author {
     @Lob
     private String biography;
 
+    /** 是否已被软删除。 */
     @Column(name = "is_deleted", nullable = false)
     private Boolean deleted = false;
 }

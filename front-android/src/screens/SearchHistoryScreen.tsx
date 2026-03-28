@@ -1,3 +1,15 @@
+/**
+ * @file 搜索历史页面
+ * @description 查看最近检索记录，并一键回到对应的书目结果页。
+ *
+ *   页面结构：
+ *   1. 概要卡片 - 热门词数量、历史记录数量
+ *   2. 热门搜索 - 热门关键词 Tag 列表（可点击跳转搜索）
+ *   3. 历史记录 - 搜索关键词、结果数、时间、“再搜一次”按钮
+ *
+ *   数据来源：searchService.getMyHistory + searchService.getHotKeywords
+ *   页面聚焦时自动刷新
+ */
 import React, { useEffect, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -13,6 +25,7 @@ import { useAuth } from "../store/auth";
 import { colors, radius, spacing } from "../theme";
 import type { ApiSearchLogDto } from "../types/api";
 
+/** 格式化时间戳为可读字符串 */
 function formatTime(value: string): string {
   const date = new Date(value);
 
@@ -70,6 +83,7 @@ export function SearchHistoryScreen() {
     }, [user]),
   );
 
+  /** 点击关键词跳转到馆藏目录搜索 */
   function openBooksSearch(keyword: string) {
     navigation.navigate("MainTabs", {
       screen: "BooksTab",

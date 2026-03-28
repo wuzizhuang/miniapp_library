@@ -6,7 +6,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 /**
- * Search history entry.
+ * 搜索历史实体。
+ * 记录用户或匿名场景下的一次搜索关键词及结果数量。
  */
 @Entity
 @Table(name = "search_history")

@@ -1,3 +1,21 @@
+/**
+ * @file 预约管理页面
+ * @description 读者预约列表屏幕，对应 Web 端预约队列和到馆待取状态。
+ *
+ *   页面结构：
+ *   1. 概要卡片 - 进行中/待取/历史数量统计
+ *   2. 进行中的预约 - 支持取消操作
+ *   3. 历史预约 - 只读展示
+ *
+ *   状态映射：
+ *   - PENDING → 排队中
+ *   - AWAITING_PICKUP → 可取书
+ *   - FULFILLED → 已完成
+ *   - CANCELLED → 已取消
+ *   - EXPIRED → 已过期
+ *
+ *   事件驱动：监听 reservations / books / notifications 自动刷新
+ */
 import React, { useEffect, useMemo, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -64,6 +82,7 @@ export function ReservationsScreen() {
     [items],
   );
 
+  /** 取消预约 */
   async function handleCancel(reservationId: number) {
     try {
       setActingId(reservationId);
@@ -82,7 +101,7 @@ export function ReservationsScreen() {
 
   if (!user) {
     return (
-      <Screen title="我的预约" subtitle="对应 Web 端预约队列和到馆待取状态。">
+      <Screen title="我的预约" subtitle="排队取书和预约进度查看">
         <LoginPromptCard onLogin={() => navigation.navigate("Login")} />
       </Screen>
     );
@@ -91,7 +110,7 @@ export function ReservationsScreen() {
   return (
     <Screen
       title="我的预约"
-      subtitle="对应 Web 端 `/my/reservations` 的进行中与历史预约。"
+      subtitle="进行中的预约和历史记录"
       refreshing={refreshing}
       onRefresh={() => {
         void loadData(true);
@@ -103,7 +122,7 @@ export function ReservationsScreen() {
             <MaterialCommunityIcons name="calendar-clock-outline" size={26} color={colors.primaryDark} />
           </View>
           <View style={styles.summaryBody}>
-            <InfoPill label="RESERVATION FLOW" tone="primary" icon="calendar-check-outline" />
+            <InfoPill label="预约进度" tone="primary" icon="calendar-check-outline" />
             <Text style={styles.summaryTitle}>追踪排队与待取状态</Text>
             <Text style={styles.summaryText}>当图书没有可借副本时，可以在详情页发起预约，并在这里跟进排队进度。</Text>
           </View>
@@ -182,6 +201,7 @@ export function ReservationsScreen() {
   );
 }
 
+/** 单条预约卡片组件 */
 function ReservationCard({
   item,
   highlighted,
@@ -242,6 +262,7 @@ function StatCard({
   );
 }
 
+/** 预约状态元数据映射 */
 function getReservationMeta(status: ReservationStatus) {
   switch (status) {
     case "AWAITING_PICKUP":

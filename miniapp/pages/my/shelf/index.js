@@ -1,7 +1,23 @@
+/**
+ * @file 我的书架页面逻辑
+ * @description 展示用户个人书架，包含三个标签页：
+ *   - 收藏（favorites）：已收藏的图书列表
+ *   - 当前借阅（active）：正在借阅中的图书
+ *   - 借阅历史（history）：已归还的借阅记录
+ *
+ *   支持客户端分页（每页 10 条）和下拉刷新
+ */
+
 const { libraryService } = require('../../../services/library')
 
+/** 每页显示条数 */
 const PAGE_SIZE = 10
 
+/**
+ * 装饰借阅列表项，补充状态标签和样式
+ * @param {Object[]} items - 借阅记录列表
+ * @returns {Object[]} 装饰后的列表
+ */
 function decorateLoans(items) {
   return (items || []).map((item) => ({
     ...item,
@@ -21,6 +37,11 @@ function decorateLoans(items) {
   }))
 }
 
+/**
+ * 装饰收藏列表项，补充作者/分类/可用状态等展示字段
+ * @param {Object[]} items - 收藏图书列表
+ * @returns {Object[]} 装饰后的列表
+ */
 function decorateFavorites(items) {
   return (items || []).map((item) => ({
     ...item,
@@ -33,6 +54,11 @@ function decorateFavorites(items) {
   }))
 }
 
+/**
+ * 构建书架摘要统计
+ * @param {Object} shelf - 书架数据
+ * @returns {Object} { favoriteCount, activeLoanCount, overdueCount, historyCount }
+ */
 function buildShelfSummary(shelf) {
   const activeLoans = shelf.activeLoans || []
   const historyLoans = shelf.historyLoans || []
@@ -46,6 +72,17 @@ function buildShelfSummary(shelf) {
 }
 
 Page({
+  /**
+   * 页面数据
+   * @property {string} section      - 当前激活的标签页 (favorites/active/history)
+   * @property {number} currentPage  - 当前页码（1-indexed）
+   * @property {number} pageCount    - 总页数
+   * @property {boolean} loading     - 加载中
+   * @property {string} errorMessage - 错误信息
+   * @property {Object} shelf        - 书架原始数据
+   * @property {Object[]} visibleItems - 当前页显示的列表项
+   * @property {Object} summary      - 书架摘要统计
+   */
   data: {
     section: 'favorites',
     currentPage: 1,
@@ -66,14 +103,20 @@ Page({
     },
   },
 
+  /** 每次显示页面时加载书架数据 */
   onShow() {
     this.loadShelf()
   },
 
+  /** 下拉刷新 */
   onPullDownRefresh() {
     this.loadShelf({ stopPullDownRefresh: true })
   },
 
+  /**
+   * 加载书架数据
+   * 并行获取收藏、当前借阅和借阅历史
+   */
   async loadShelf(options) {
     const nextOptions = options || {}
 
@@ -111,6 +154,7 @@ Page({
     }
   },
 
+  /** 切换标签页（收藏/当前借阅/历史） */
   pickSection(event) {
     this.setData({
       section: event.currentTarget.dataset.section,
@@ -119,6 +163,10 @@ Page({
     this.updateVisibleItems()
   },
 
+  /**
+   * 更新当前页显示的列表项
+   * 根据激活的标签页和当前页码进行客户端分页
+   */
   updateVisibleItems() {
     const section = this.data.section
     const shelf = this.data.shelf
@@ -143,6 +191,7 @@ Page({
     })
   },
 
+  /** 上一页 */
   prevPage() {
     if (this.data.currentPage <= 1) {
       return
@@ -153,6 +202,7 @@ Page({
     this.updateVisibleItems()
   },
 
+  /** 下一页 */
   nextPage() {
     if (this.data.currentPage >= this.data.pageCount) {
       return
@@ -163,24 +213,28 @@ Page({
     this.updateVisibleItems()
   },
 
+  /** 跳转到图书详情页 */
   openBook(event) {
     wx.navigateTo({
       url: `/pages/books/detail/index?bookId=${event.currentTarget.dataset.bookId}`,
     })
   },
 
+  /** 跳转到借阅追踪页 */
   openLoan(event) {
     wx.navigateTo({
       url: `/pages/my/loan-tracking/index?loanId=${event.currentTarget.dataset.loanId}`,
     })
   },
 
+  /** 跳转到图书目录 */
   goCatalog() {
     wx.switchTab({
       url: '/pages/index/index',
     })
   },
 
+  /** 重试加载 */
   retryLoadShelf() {
     this.loadShelf()
   },

@@ -37,10 +37,16 @@ export interface ReservationPageResult<T> {
   size?: number;
 }
 
+/**
+ * 将后端预约状态转换为前端联合类型。
+ */
 function mapStatus(status: ApiReservationDto["status"]): ReservationStatus {
   return status as ReservationStatus;
 }
 
+/**
+ * 将预约 DTO 转换为后台和个人页共用的预约视图对象。
+ */
 function mapDto(dto: ApiReservationDto): AdminReservation {
   return {
     reservationId: dto.reservationId,
@@ -58,6 +64,10 @@ function mapDto(dto: ApiReservationDto): AdminReservation {
   };
 }
 
+/**
+ * 预约 API 服务。
+ * 统一封装读者预约列表、后台预约管理和预约履约接口。
+ */
 export const reservationService = {
   /**
    * 当前用户的预约分页
@@ -116,6 +126,9 @@ export const reservationService = {
     };
   },
 
+  /**
+   * 获取后台预约状态统计。
+   */
   getReservationStats: async (keyword?: string): Promise<ApiDashboardBreakdownItemDto[]> => {
     const { data } = await apiClient.get<ApiDashboardBreakdownItemDto[]>("/reservations/stats", {
       params: keyword?.trim() ? { keyword: keyword.trim() } : undefined,

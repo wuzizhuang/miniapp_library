@@ -9,6 +9,10 @@ import {
   PageResponse,
 } from "@/types/api";
 
+/**
+ * 反馈与工单接口服务。
+ * 同时覆盖读者提交/追问和管理员回复/统计。
+ */
 export const feedbackService = {
   /**
    * 提交反馈

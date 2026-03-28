@@ -1,8 +1,27 @@
+/**
+ * @file 用户服务
+ * @description 封装用户相关的 API 调用：
+ *   - getMyProfile：获取当前用户资料
+ *   - getMyOverview：获取用户概览统计数据
+ *
+ *   概览数据包含用户的各项统计计数：
+ *   - 在借数量、即将到期借阅
+ *   - 预约数量（含可取书数量）
+ *   - 待付罚款统计
+ *   - 未读通知数量
+ *   - 收藏数量
+ *   - 服务预约统计
+ */
+
 import type { ApiUserOverviewDto, ApiUserProfileDto } from "../types/api";
 import type { UserOverview } from "../types/user";
 import { safeNumber } from "../utils/format";
 import { request } from "./http";
 
+/**
+ * 将后端概览 DTO 映射为前端视图模型
+ * 使用 safeNumber 确保所有数值字段的安全性（null / undefined → 0）
+ */
 function mapOverview(dto: ApiUserOverviewDto): UserOverview {
   return {
     userId: dto.userId,
@@ -29,7 +48,9 @@ function mapOverview(dto: ApiUserOverviewDto): UserOverview {
   };
 }
 
+/** 用户服务对象 */
 export const userService = {
+  /** 获取当前用户资料 */
   async getMyProfile(): Promise<ApiUserProfileDto> {
     return request<ApiUserProfileDto>({
       url: "/users/me/profile",
@@ -37,6 +58,7 @@ export const userService = {
     });
   },
 
+  /** 获取用户概览统计数据（用于"我的"页面概览展示） */
   async getMyOverview(): Promise<UserOverview> {
     const response = await request<ApiUserOverviewDto>({
       url: "/users/me/overview",
@@ -46,4 +68,3 @@ export const userService = {
     return mapOverview(response);
   },
 };
-

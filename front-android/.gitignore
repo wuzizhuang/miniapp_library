@@ -14,3 +14,6 @@ tsconfig.json.*
 android/.gradle
 android/local.properties
 android/app/build
+
+# 分析文档（不上传 Git）
+analysis/

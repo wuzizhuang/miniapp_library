@@ -10,7 +10,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 /**
- * Reader seat reservation record.
+ * 座位预约实体。
+ * 表示用户在指定时间段内对某个座位的预约记录。
  */
 @Entity
 @Table(name = "seat_reservations")
@@ -56,6 +57,7 @@ public class SeatReservation {
     @Column(name = "update_time", nullable = false)
     private LocalDateTime updateTime;
 
+    /** 座位预约状态。 */
     public enum ReservationStatus {
         ACTIVE, CANCELLED, COMPLETED, MISSED
     }

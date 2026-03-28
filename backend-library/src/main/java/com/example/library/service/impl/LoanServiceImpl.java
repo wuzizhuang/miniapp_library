@@ -3,6 +3,7 @@ package com.example.library.service.impl;
 import com.example.library.dto.LoanCreateDto;
 import com.example.library.dto.LoanDto;
 import com.example.library.entity.*;
+import com.example.library.util.NotificationHelper;
 import com.example.library.exception.BadRequestException;
 import com.example.library.exception.ResourceNotFoundException;
 import com.example.library.repository.*;
@@ -27,7 +28,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Default implementation of loan management.
+ * 借阅服务实现类。
+ * 封装借书、还书、续借、遗失登记、逾期检查等核心借阅业务规则。
  */
 @Service
 @RequiredArgsConstructor
@@ -55,7 +57,7 @@ public class LoanServiceImpl implements LoanService {
     private BigDecimal finePerDay;
 
     /**
-     * Returns paged loan records.
+     * 分页查询借阅记录。
      */
     @Override
     @Transactional(readOnly = true)
@@ -74,13 +76,13 @@ public class LoanServiceImpl implements LoanService {
     }
 
     /**
-     * Returns a user's loan records.
+     * 分页查询指定用户的借阅记录。
      */
     @Override
     @Transactional(readOnly = true)
     public Page<LoanDto> getLoansByUser(Integer userId, int page, int size) {
         if (!userRepository.existsById(userId)) {
-            throw new ResourceNotFoundException("User not found with id: " + userId);
+            throw new ResourceNotFoundException("未找到用户，ID: " + userId);
         }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "borrowDate"));
@@ -88,7 +90,7 @@ public class LoanServiceImpl implements LoanService {
     }
 
     /**
-     * Returns a user's active loans (not yet returned), paged.
+     * 分页查询指定用户当前仍在借阅中的记录。
      */
     @Override
     @Transactional(readOnly = true)
@@ -100,44 +102,57 @@ public class LoanServiceImpl implements LoanService {
     }
 
     /**
-     * Returns a loan by id.
+     * 根据借阅单 ID 查询详情。
      */
     @Override
     @Transactional(readOnly = true)
     public LoanDto getLoanById(Integer loanId) {
         Loan loan = loanRepository.findById(loanId)
-                .orElseThrow(() -> new ResourceNotFoundException("Loan not found with id: " + loanId));
+                .orElseThrow(() -> new ResourceNotFoundException("未找到借阅记录，ID: " + loanId));
         return convertToDto(loan);
     }
 
     /**
-     * Creates a new loan.
+     * 创建借阅记录。
+     * 会串联校验图书状态、副本状态、用户欠费、预约队列以及最大借阅数量限制。
      */
     @Override
     @Transactional
     public LoanDto createLoan(LoanCreateDto loanCreateDto) {
-        User user = userRepository.findById(loanCreateDto.getUserId())
+        User user = userRepository.findByIdForUpdate(loanCreateDto.getUserId())
                 .orElseThrow(
-                        () -> new ResourceNotFoundException("User not found with id: " + loanCreateDto.getUserId()));
+                        () -> new ResourceNotFoundException("未找到用户，ID: " + loanCreateDto.getUserId()));
+
+        String confirmUsername = loanCreateDto.getConfirmUsername();
+        if (confirmUsername != null
+                && !confirmUsername.isBlank()
+                && !user.getUsername().equalsIgnoreCase(confirmUsername.trim())) {
+            throw new BadRequestException("复核账号与目标读者不一致，请重新确认读者 ID");
+        }
 
         BookCopy bookCopy = bookCopyRepository.findByCopyIdWithLock(loanCreateDto.getCopyId())
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Book copy not found with id: " + loanCreateDto.getCopyId()));
+                        "未找到图书副本，ID: " + loanCreateDto.getCopyId()));
 
         if (bookCopy.getBook().getStatus() == Book.BookStatus.INACTIVE) {
-            throw new BadRequestException("Cannot borrow an inactive book");
+            throw new BadRequestException("该图书已下架，无法借阅");
         }
 
         if (bookCopy.getStatus() != BookCopy.CopyStatus.AVAILABLE) {
-            throw new BadRequestException("Book copy is not available for borrowing");
+            throw new BadRequestException("该副本当前不可借阅");
         }
 
         Long pendingFinesCount = fineRepository.countPendingFinesForUser(user.getUserId());
         if (pendingFinesCount > 0) {
-            throw new BadRequestException("User has pending fines that must be paid before borrowing");
+            throw new BadRequestException("该用户有未缴罚款，请先缴清后再借阅");
         }
 
         Integer bookId = bookCopy.getBook().getBookId();
+        if (loanRepository.existsActiveLoanForUserAndBook(user.getUserId(), bookId)) {
+            throw new BadRequestException("该用户已有本书的在借记录，不可重复借阅");
+        }
+
+        // 若该书存在预约队列，则只有排在最前面的用户才能优先借走当前副本。
         List<Reservation> pendingReservations = reservationRepository.findPendingReservationsForBook(bookId);
         if (!pendingReservations.isEmpty()) {
             Reservation firstReservation = pendingReservations.get(0);
@@ -148,9 +163,10 @@ public class LoanServiceImpl implements LoanService {
             reservationRepository.save(firstReservation);
         }
 
+        // 借阅落单前再次校验用户当前在借数量，避免超出系统上限。
         Long activeLoansCount = loanRepository.countActiveLoansForUser(user.getUserId());
         if (activeLoansCount >= maxActiveLoans) {
-            throw new BadRequestException("User has reached the maximum number of active loans: " + maxActiveLoans);
+            throw new BadRequestException("该用户在借数量已达上限（" + maxActiveLoans + "本），无法继续借阅");
         }
 
         Loan loan = new Loan();
@@ -175,21 +191,21 @@ public class LoanServiceImpl implements LoanService {
                 "LOAN",
                 String.valueOf(savedLoan.getLoanId()),
                 "/my/loan-tracking",
-                buildBusinessKey("LOAN_BORROW_SUCCESS", savedLoan.getLoanId()));
+                NotificationHelper.buildBusinessKey("LOAN_BORROW_SUCCESS", savedLoan.getLoanId()));
         return convertToDto(savedLoan);
     }
 
     /**
-     * Returns a borrowed copy and applies fines if needed.
+     * 办理还书，并在逾期时自动生成罚款。
      */
     @Override
     @Transactional
     public LoanDto returnLoan(Integer loanId) {
         Loan loan = loanRepository.findById(loanId)
-                .orElseThrow(() -> new ResourceNotFoundException("Loan not found with id: " + loanId));
+                .orElseThrow(() -> new ResourceNotFoundException("未找到借阅记录，ID: " + loanId));
 
         if (loan.getStatus() != Loan.LoanStatus.ACTIVE && loan.getStatus() != Loan.LoanStatus.OVERDUE) {
-            throw new BadRequestException("Loan is already returned or lost");
+            throw new BadRequestException("该借阅记录已归还或已标记遗失");
         }
 
         loan.setReturnDate(LocalDate.now());
@@ -197,6 +213,7 @@ public class LoanServiceImpl implements LoanService {
 
         BookCopy bookCopy = loan.getCopy();
 
+        // 归还后优先尝试把副本分配给排队中的预约用户，减少人工干预。
         boolean allocatedToReservation = reservationService.allocateInventoryForPendingReservations(bookCopy);
 
         if (allocatedToReservation) {
@@ -207,6 +224,7 @@ public class LoanServiceImpl implements LoanService {
 
         bookCopyRepository.save(bookCopy);
 
+        // 超过应还日期则自动生成逾期罚款，并通知用户处理。
         if (loan.getDueDate().isBefore(LocalDate.now())) {
             long daysLate = ChronoUnit.DAYS.between(loan.getDueDate(), LocalDate.now());
             BigDecimal fineAmount = finePerDay.multiply(BigDecimal.valueOf(daysLate));
@@ -215,7 +233,7 @@ public class LoanServiceImpl implements LoanService {
             fine.setLoan(loan);
             fine.setUser(loan.getUser());
             fine.setAmount(fineAmount);
-            fine.setReason("Late return: " + daysLate + " days overdue");
+            fine.setReason("逾期归还：超期 " + daysLate + " 天");
             fine.setDateIssued(LocalDate.now());
             fine.setStatus(Fine.FineStatus.PENDING);
             fineRepository.save(fine);
@@ -229,7 +247,7 @@ public class LoanServiceImpl implements LoanService {
                 "FINE",
                 fine.getFineId() == null ? null : String.valueOf(fine.getFineId()),
                 "/my/fines",
-                buildBusinessKey("FINE_OVERDUE_CREATED", fine.getFineId()));
+                NotificationHelper.buildBusinessKey("FINE_OVERDUE_CREATED", fine.getFineId()));
         }
 
         Loan updatedLoan = loanRepository.save(loan);
@@ -237,34 +255,36 @@ public class LoanServiceImpl implements LoanService {
     }
 
     /**
-     * Renews an active loan.
+     * 续借当前借阅记录。
+     * 仅正常借阅中的记录可以续借，且需要满足未逾期、未超次数、无待缴罚款、无他人排队等条件。
      */
     @Override
     @Transactional
     public LoanDto renewLoan(Integer loanId) {
         Loan loan = loanRepository.findById(loanId)
-                .orElseThrow(() -> new ResourceNotFoundException("Loan not found with id: " + loanId));
+                .orElseThrow(() -> new ResourceNotFoundException("未找到借阅记录，ID: " + loanId));
 
         if (loan.getStatus() != Loan.LoanStatus.ACTIVE) {
-            throw new BadRequestException("Only active loans can be renewed");
+            throw new BadRequestException("仅借阅中的记录可以续借");
         }
 
         if (loan.getDueDate().isBefore(LocalDate.now())) {
-            throw new BadRequestException("Overdue loans cannot be renewed");
+            throw new BadRequestException("已逾期的借阅记录不可续借");
         }
 
         if (loan.getRenewalCount() != null && loan.getRenewalCount() >= maxRenewals) {
-            throw new BadRequestException("Renewal limit reached for this loan");
+            throw new BadRequestException("该借阅记录已达续借次数上限");
         }
 
         Long pendingFinesCount = fineRepository.countPendingFinesForUser(loan.getUser().getUserId());
         if (pendingFinesCount > 0) {
-            throw new BadRequestException("User has pending fines that must be paid before renewing");
+            throw new BadRequestException("该用户有未缴罚款，请先缴清后再续借");
         }
+        // 若其他读者已经在排队预约该书，则不允许继续占用副本。
         if (reservationRepository.existsConflictingActiveReservationForBook(
                 loan.getCopy().getBook().getBookId(),
                 loan.getUser().getUserId())) {
-            throw new BadRequestException("This loan cannot be renewed because another reader is already waiting for the book");
+            throw new BadRequestException("其他读者正在排队预约此书，暂不允许续借");
         }
 
         loan.setDueDate(LocalDate.now().plusDays(defaultLoanDays));
@@ -275,16 +295,16 @@ public class LoanServiceImpl implements LoanService {
     }
 
     /**
-     * Marks a loan as lost and creates a fine.
+     * 将借阅记录标记为遗失，并按副本价格生成赔偿罚款。
      */
     @Override
     @Transactional
     public LoanDto markLoanAsLost(Integer loanId) {
         Loan loan = loanRepository.findById(loanId)
-                .orElseThrow(() -> new ResourceNotFoundException("Loan not found with id: " + loanId));
+                .orElseThrow(() -> new ResourceNotFoundException("未找到借阅记录，ID: " + loanId));
 
         if (loan.getStatus() != Loan.LoanStatus.ACTIVE && loan.getStatus() != Loan.LoanStatus.OVERDUE) {
-            throw new BadRequestException("Loan is already returned or lost");
+            throw new BadRequestException("该借阅记录已归还或已标记遗失");
         }
 
         loan.setStatus(Loan.LoanStatus.LOST);
@@ -297,7 +317,7 @@ public class LoanServiceImpl implements LoanService {
         fine.setLoan(loan);
         fine.setUser(loan.getUser());
         fine.setAmount(bookCopy.getPrice());
-        fine.setReason("Lost book: " + bookCopy.getBook().getTitle());
+        fine.setReason("图书遗失：" + bookCopy.getBook().getTitle());
         fine.setDateIssued(LocalDate.now());
         fine.setStatus(Fine.FineStatus.PENDING);
         fineRepository.save(fine);
@@ -311,25 +331,23 @@ public class LoanServiceImpl implements LoanService {
                 "FINE",
                 fine.getFineId() == null ? null : String.valueOf(fine.getFineId()),
                 "/my/fines",
-                buildBusinessKey("FINE_LOST_CREATED", fine.getFineId()));
+                NotificationHelper.buildBusinessKey("FINE_LOST_CREATED", fine.getFineId()));
 
         Loan updatedLoan = loanRepository.save(loan);
         return convertToDto(updatedLoan);
     }
 
     /**
-     * Checks for overdue loans and updates their status.
+     * 扫描逾期借阅，并将其状态更新为逾期。
      */
     @Override
     @Transactional
     public List<LoanDto> checkForOverdueLoans() {
         List<Loan> overdueLoans = loanRepository.findOverdueLoans(LocalDate.now());
 
-        // Update status of overdue loans
-        overdueLoans.forEach(loan -> {
-            loan.setStatus(Loan.LoanStatus.OVERDUE);
-            loanRepository.save(loan);
-        });
+        // 将数据库中的借阅状态同步为 OVERDUE，便于前后台统一识别。
+        overdueLoans.forEach(loan -> loan.setStatus(Loan.LoanStatus.OVERDUE));
+        loanRepository.saveAll(overdueLoans);
 
         return overdueLoans.stream()
                 .map(this::convertToDto)
@@ -337,7 +355,7 @@ public class LoanServiceImpl implements LoanService {
     }
 
     /**
-     * Returns paged overdue loans (read-only, does not update status).
+     * 分页查询已经标记为逾期的借阅记录。
      */
     @Override
     @Transactional(readOnly = true)
@@ -348,7 +366,7 @@ public class LoanServiceImpl implements LoanService {
     }
 
     /**
-     * 将 Loan 实体转换为 LoanDto
+     * 将借阅实体转换为前端使用的 DTO。
      */
     private LoanDto convertToDto(Loan loan) {
         LoanDto dto = new LoanDto();
@@ -364,7 +382,7 @@ public class LoanServiceImpl implements LoanService {
         dto.setBookCoverUrl(book.getCoverUrl());
         dto.setLocationCode(copy.getLocationCode());
 
-        // Author names (comma-separated)
+        // 作者信息按逗号拼接，便于前端直接展示。
         if (book.getBookAuthors() != null && !book.getBookAuthors().isEmpty()) {
             String authorNames = book.getBookAuthors().stream()
                     .map(ba -> ba.getAuthor().getName())
@@ -372,7 +390,7 @@ public class LoanServiceImpl implements LoanService {
             dto.setBookAuthorNames(authorNames);
         }
 
-        // Category name
+        // 分类名做平铺输出，避免前端再次展开实体关系。
         if (book.getCategory() != null) {
             dto.setCategoryName(book.getCategory().getName());
         }
@@ -389,7 +407,7 @@ public class LoanServiceImpl implements LoanService {
         dto.setCreateTime(loan.getCreateTime());
         dto.setUpdateTime(loan.getUpdateTime());
 
-        // Calculate days overdue / days remaining
+        // 对未归还记录补充剩余天数或逾期天数，方便页面直接展示。
         if (loan.getStatus() == Loan.LoanStatus.ACTIVE || loan.getStatus() == Loan.LoanStatus.OVERDUE) {
             long daysUntilDue = ChronoUnit.DAYS.between(LocalDate.now(), loan.getDueDate());
             if (daysUntilDue < 0) {
@@ -405,7 +423,4 @@ public class LoanServiceImpl implements LoanService {
         return dto;
     }
 
-    private String buildBusinessKey(String prefix, Integer entityId) {
-        return entityId == null ? null : prefix + ":" + entityId;
-    }
 }

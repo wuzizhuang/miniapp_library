@@ -24,7 +24,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Default notification service implementation.
+ * 通知服务实现类。
+ * 负责消息发送、提醒任务、已读维护、删除清理以及通知路由信息推断。
  */
 @Slf4j
 @Service
@@ -36,7 +37,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final LoanRepository loanRepository;
 
     /**
-     * Sends a notification asynchronously.
+     * 异步发送一条基础通知。
      */
     @Override
     @Async
@@ -44,6 +45,9 @@ public class NotificationServiceImpl implements NotificationService {
         sendNotification(userId, type, title, content, null, null, null, null);
     }
 
+    /**
+     * 异步发送一条完整通知，并支持绑定业务对象、前端跳转路由和去重主键。
+     */
     @Override
     @Async
     public void sendNotification(
@@ -58,6 +62,7 @@ public class NotificationServiceImpl implements NotificationService {
         User user = userRepository.findById(userId).orElse(null);
         if (user == null)
             return;
+        // 先做业务主键去重，避免同一事件被重复通知。
         if (businessKey != null
                 && !businessKey.isBlank()
                 && notificationRepository.existsByUserUserIdAndBusinessKey(userId, businessKey)) {
@@ -77,6 +82,7 @@ public class NotificationServiceImpl implements NotificationService {
         notification.setBusinessKey(businessKey);
 
         try {
+            // 数据库唯一约束作为最后一道兜底，避免并发下产生重复消息。
             notificationRepository.save(notification);
             log.info("Notification sent to User {}: {}", userId, title);
         } catch (DataIntegrityViolationException ex) {
@@ -85,7 +91,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     /**
-     * Sends due-date reminders for loans expiring tomorrow.
+     * 发送次日到期提醒。
      */
     @Override
     @Transactional
@@ -115,7 +121,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     /**
-     * Marks a notification as read (with ownership check).
+     * 将单条通知标记为已读，并校验归属人。
      */
     @Override
     @Transactional
@@ -132,7 +138,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     /**
-     * Returns paged notifications for a user.
+     * 分页查询用户通知。
      */
     @Override
     public Page<NotificationDto> getNotificationsByUser(Integer userId, int page, int size) {
@@ -143,7 +149,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     /**
-     * Returns unread notification count for a user.
+     * 统计用户未读通知数量。
      */
     @Override
     public Long getUnreadCount(Integer userId) {
@@ -151,7 +157,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     /**
-     * Marks all notifications as read for a user.
+     * 将用户全部通知批量标记为已读。
      */
     @Override
     @Transactional
@@ -159,6 +165,9 @@ public class NotificationServiceImpl implements NotificationService {
         notificationRepository.markAllAsReadForUser(userId);
     }
 
+    /**
+     * 将通知实体转换为 DTO，并补齐前端跳转和业务定位信息。
+     */
     private NotificationDto convertToDto(Notification notification) {
         NotificationDto dto = new NotificationDto();
         dto.setNotificationId(notification.getNotificationId());
@@ -175,6 +184,9 @@ public class NotificationServiceImpl implements NotificationService {
         return dto;
     }
 
+    /**
+     * 根据通知类型和文案推断目标业务类型。
+     */
     private String resolveTargetType(Notification notification) {
         if (notification.getType() == Notification.NotificationType.ARRIVAL_NOTICE) {
             return "RESERVATION";
@@ -204,10 +216,17 @@ public class NotificationServiceImpl implements NotificationService {
         return null;
     }
 
+    /**
+     * 预留目标业务 ID 推断入口。
+     * 当前优先使用显式写入的 targetId，后续如有需要可在这里扩展文案解析。
+     */
     private String resolveTargetId(Notification notification) {
         return null;
     }
 
+    /**
+     * 根据通知类型推断前端默认跳转路由。
+     */
     private String resolveRouteHint(Notification notification) {
         if (notification.getType() == Notification.NotificationType.ARRIVAL_NOTICE) {
             return "/my/reservations";
@@ -237,6 +256,9 @@ public class NotificationServiceImpl implements NotificationService {
         return null;
     }
 
+    /**
+     * 根据通知类型或文案推断业务主键前缀。
+     */
     private String resolveBusinessKey(Notification notification) {
         if (notification.getType() == Notification.NotificationType.ARRIVAL_NOTICE) {
             return "RESERVATION_ARRIVAL";
@@ -266,10 +288,16 @@ public class NotificationServiceImpl implements NotificationService {
         return notification.getType() == null ? null : notification.getType().name();
     }
 
+    /**
+     * 统一处理空文本，简化文案解析逻辑。
+     */
     private String safeText(String value) {
         return value == null ? "" : value;
     }
 
+    /**
+     * 返回第一个非空白字符串。
+     */
     private String firstNonBlank(String primary, String fallback) {
         if (primary != null && !primary.isBlank()) {
             return primary;
@@ -278,7 +306,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     /**
-     * Deletes a single notification (with ownership check).
+     * 删除单条通知，并校验用户归属。
      */
     @Override
     @Transactional
@@ -292,7 +320,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     /**
-     * Deletes all read notifications for a user.
+     * 删除用户全部已读通知。
      */
     @Override
     @Transactional

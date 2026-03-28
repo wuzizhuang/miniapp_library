@@ -1,3 +1,18 @@
+/**
+ * @file "我的"页面
+ * @description 个人中心屏幕，对应 Web 端"我的中心"。
+ *
+ *   页面结构：
+ *   1. 未登录态：显示引导登录卡片
+ *   2. 已登录态：
+ *     - 个人资料卡片（头像、姓名、邮箱、角色、院系）
+ *     - 账户总览（6 项关键指标网格）
+ *     - 重点提醒（罚款金额 + 即将到期借阅列表）
+ *     - 快捷入口（功能卡片网格）
+ *     - 退出登录按钮
+ *
+ *   数据来源：useMyDashboard() Hook
+ */
 import React from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -14,6 +29,7 @@ import { useAuth } from "../store/auth";
 import { colors, radius, spacing } from "../theme";
 import { formatCurrency } from "../utils/format";
 
+/** 账户总览指标元数据配置 */
 const metricMeta = [
   { key: "activeLoanCount", label: "在借图书", icon: "book-clock-outline" },
   { key: "dueSoonLoanCount", label: "即将到期", icon: "clock-alert-outline" },
@@ -38,14 +54,14 @@ export function MyScreen() {
 
   if (!user) {
     return (
-      <Screen title="我的" subtitle="登录后查看书架、预约、通知、罚款、反馈和服务预约。">
+      <Screen title="我的" subtitle="登录后查看书架、预约、通知等个人服务">
         <Card tone="tinted" style={styles.guestCard}>
           <View style={styles.guestIconWrap}>
             <MaterialCommunityIcons name="account-lock-outline" size={28} color={colors.primaryDark} />
           </View>
           <Text style={styles.emptyTitle}>当前未登录</Text>
           <Text style={styles.emptyText}>
-            Android 端已经接好了认证接口，可以直接使用现有账号登录后查看完整读者中心。
+            登录后即可查看完整的个人中心，包括书架、预约、通知和借阅记录。
           </Text>
           <ActionButton
             label="去登录"
@@ -60,7 +76,7 @@ export function MyScreen() {
   return (
     <Screen
       title="我的"
-      subtitle="对应 Web 端我的中心，聚合个人资料、重点提醒和读者业务入口。"
+      subtitle="个人资料、待办提醒和常用功能入口"
       refreshing={refreshing}
       onRefresh={() => {
         void loadData(true);
@@ -108,7 +124,7 @@ export function MyScreen() {
             <View style={styles.sectionHeader}>
               <View>
                 <SectionTitle>账户总览</SectionTitle>
-                <Text style={styles.sectionHint}>把最常看的业务指标集中在一个面板里</Text>
+                <Text style={styles.sectionHint}>你的阅读核心指标一览</Text>
               </View>
               <InfoPill label="读者中心" tone="success" icon="account-check-outline" />
             </View>
@@ -129,7 +145,7 @@ export function MyScreen() {
             <View style={styles.sectionHeader}>
               <View>
                 <SectionTitle>重点提醒</SectionTitle>
-                <Text style={styles.sectionHint}>优先处理会影响借阅体验的事项</Text>
+                <Text style={styles.sectionHint}>优先处理即将到期和罚款事项</Text>
               </View>
               <InfoPill label={`待缴 ${formatCurrency(overview.pendingFineTotal)}`} tone="warning" icon="cash" />
             </View>
@@ -176,7 +192,7 @@ export function MyScreen() {
         <View style={styles.sectionHeader}>
           <View>
             <SectionTitle>快捷入口</SectionTitle>
-            <Text style={styles.sectionHint}>把个人中心常用操作改成更清晰的卡片网格</Text>
+            <Text style={styles.sectionHint}>常用功能，一键直达</Text>
           </View>
         </View>
         <View style={styles.linkGrid}>
@@ -212,6 +228,7 @@ export function MyScreen() {
   );
 }
 
+/** 指标卡片组件（用于账户总览网格） */
 function Metric({
   label,
   value,

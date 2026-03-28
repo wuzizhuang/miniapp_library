@@ -12,7 +12,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Library seat resource for reader booking.
+ * 座位实体。
+ * 表示图书馆可供读者预约的座位资源。
  */
 @Entity
 @Table(name = "seats")
@@ -70,10 +71,12 @@ public class Seat {
     @ToString.Exclude
     private Set<SeatReservation> reservations = new HashSet<>();
 
+    /** 座位类型。 */
     public enum SeatType {
         STANDARD, COMPUTER, DISCUSSION
     }
 
+    /** 座位可用状态。 */
     public enum SeatStatus {
         AVAILABLE, UNAVAILABLE
     }

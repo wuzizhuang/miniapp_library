@@ -17,6 +17,11 @@ Thumbs.db
 
 # Temporary files
 tmp/
+release/
+__remote_probe__/
+backend-library/direct-run*.log
+backend-library/startup-now.log
+backend-library/startup-test.log
 
 # Miniapp
 miniapp/node_modules/

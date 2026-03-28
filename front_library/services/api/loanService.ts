@@ -4,7 +4,9 @@
 import apiClient from "@/lib/axios";
 import { ApiLoanDto, PageResponse } from "@/types/api";
 
-// ─── 前端视图类型 ────────────────────────────────────────────
+/**
+ * 借阅页使用的前端视图模型。
+ */
 export interface MyLoan {
     loanId: number;
     bookTitle: string;
@@ -25,7 +27,9 @@ export interface MyLoan {
     bookId?: number;
 }
 
-// ─── 工具函数 ────────────────────────────────────────────────
+/**
+ * 将后端借阅状态转换为前端展示状态。
+ */
 function mapLoanStatus(status: ApiLoanDto["status"]): MyLoan["status"] {
     if (status === "ACTIVE") {
         return "BORROWED";
@@ -34,6 +38,9 @@ function mapLoanStatus(status: ApiLoanDto["status"]): MyLoan["status"] {
     return status as Exclude<MyLoan["status"], "BORROWED">;
 }
 
+/**
+ * 将后端借阅 DTO 转换为前端借阅视图对象。
+ */
 function mapApiLoanToMyLoan(dto: ApiLoanDto): MyLoan {
     const MAX_RENEWALS = 2;
     const canRenew =
@@ -61,7 +68,10 @@ function mapApiLoanToMyLoan(dto: ApiLoanDto): MyLoan {
     };
 }
 
-// ─── loanService ─────────────────────────────────────────────
+/**
+ * 借阅 API 服务。
+ * 负责读者借阅列表、借阅详情、续借、归还和发起借阅等请求。
+ */
 export const loanService = {
     /**
      * 获取当前用户的借阅记录

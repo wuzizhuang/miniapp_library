@@ -24,7 +24,8 @@ import java.util.Locale;
 import java.util.stream.IntStream;
 
 /**
- * Default implementation of the book catalog service.
+ * 图书目录服务实现。
+ * 负责图书档案维护、检索排序、作者关联及副本初始化等流程。
  */
 @Service
 @RequiredArgsConstructor
@@ -47,7 +48,7 @@ public class BookServiceImpl implements BookService {
     private final ReservationRepository reservationRepository;
 
     /**
-     * Returns paged book details.
+     * 分页获取图书详情列表。
      */
     @Override
     @Transactional(readOnly = true)
@@ -58,7 +59,7 @@ public class BookServiceImpl implements BookService {
     }
 
     /**
-     * Returns book details by id.
+     * 根据图书主键获取详情。
      */
     @Override
     @Transactional(readOnly = true)
@@ -69,7 +70,7 @@ public class BookServiceImpl implements BookService {
     }
 
     /**
-     * Returns book details by ISBN.
+     * 根据 ISBN 获取图书详情。
      */
     @Override
     @Transactional(readOnly = true)
@@ -80,7 +81,8 @@ public class BookServiceImpl implements BookService {
     }
 
     /**
-     * Searches books by keyword.
+     * 综合检索图书。
+     * 在仓储初筛结果上继续叠加相关度、可借性和近 30 天热度排序。
      */
     @Override
     @Transactional
@@ -132,14 +134,14 @@ public class BookServiceImpl implements BookService {
             try {
                 saveSearchHistoryLog(normalizedKeyword, rankedBooks.size(), userId);
             } catch (Exception e) {
-                // ignore search history errors — don't block main search response
+                // 搜索记录属于附属能力，写入失败不应影响主搜索结果。
             }
         }
         return new PageImpl<>(content, pageable, rankedBooks.size());
     }
 
     /**
-     * Returns books by category.
+     * 按分类分页查询图书。
      */
     @Override
     @Transactional(readOnly = true)
@@ -148,7 +150,7 @@ public class BookServiceImpl implements BookService {
     }
 
     /**
-     * Returns books by author.
+     * 按作者分页查询图书。
      */
     @Override
     @Transactional(readOnly = true)
@@ -157,7 +159,7 @@ public class BookServiceImpl implements BookService {
     }
 
     /**
-     * Returns books by publisher.
+     * 按出版社分页查询图书。
      */
     @Override
     @Transactional(readOnly = true)
@@ -166,7 +168,7 @@ public class BookServiceImpl implements BookService {
     }
 
     /**
-     * Creates a book with authors and copies.
+     * 创建图书，并同步建立作者关联和初始副本。
      */
     @Override
     @Transactional
@@ -196,7 +198,7 @@ public class BookServiceImpl implements BookService {
     }
 
     /**
-     * Updates a book and its author relations.
+     * 更新图书基础信息，并在需要时重建作者关联。
      */
     @Override
     @Transactional
@@ -221,7 +223,8 @@ public class BookServiceImpl implements BookService {
     }
 
     /**
-     * Soft-deletes a book and marks copies as damaged.
+     * 软删除图书。
+     * 为避免前台继续借阅，图书会被置为停用，现有副本也同步标记为不可流通。
      */
     @Override
     @Transactional
@@ -241,6 +244,7 @@ public class BookServiceImpl implements BookService {
     private void updateBasicInfo(Book book, String isbn, String title, String cover,
             Book.ResourceMode resourceMode, String onlineAccessUrl, Book.OnlineAccessType onlineAccessType,
             String desc, Integer pages, Integer year, String lang) {
+        // 先统一解析资源形态，再决定线上资源字段是否应当保留。
         Book.ResourceMode resolvedResourceMode = resolveResourceMode(resourceMode);
         book.setIsbn(isbn);
         book.setTitle(title);
@@ -260,6 +264,7 @@ public class BookServiceImpl implements BookService {
     }
 
     private void updateFieldsIfNotNull(Book book, BookUpdateDto dto) {
+        // 更新接口允许部分字段补丁式修改，因此逐项判断非空再覆盖。
         if (dto.getTitle() != null)
             book.setTitle(dto.getTitle());
         if (dto.getCoverUrl() != null)
@@ -287,6 +292,7 @@ public class BookServiceImpl implements BookService {
     }
 
     private void setBookRelations(Book book, Integer publisherId, Integer categoryId) {
+        // 仅在请求中显式给出关系 id 时才重设关联，避免误伤原有关联。
         if (publisherId != null) {
             book.setPublisher(publisherRepository.findByPublisherIdAndIsDeletedFalse(publisherId)
                     .orElseThrow(() -> new ResourceNotFoundException(MSG_PUBLISHER_NOT_FOUND + publisherId)));
@@ -347,6 +353,7 @@ public class BookServiceImpl implements BookService {
             Book.ResourceMode resourceMode,
             String onlineAccessUrl,
             Book.OnlineAccessType onlineAccessType) {
+        // 数字资源和混合资源必须同时具备访问地址与访问策略。
         String normalizedOnlineAccessUrl = normalizeOnlineAccessUrl(onlineAccessUrl);
 
         if (!requiresOnlineResource(resourceMode)) {
@@ -375,6 +382,7 @@ public class BookServiceImpl implements BookService {
             return;
         }
 
+        // 纯数字资源不允许生成实体副本；实体/混合资源则至少要创建一册。
         if (resourceMode == Book.ResourceMode.DIGITAL_ONLY && copyCount > 0) {
             throw new BadRequestException("Digital-only books cannot create physical copies");
         }
@@ -408,6 +416,9 @@ public class BookServiceImpl implements BookService {
         }
     }
 
+    /**
+     * 按提交顺序保存图书与作者的多对多关系，authorOrder 用于前台稳定展示作者顺序。
+     */
     private void saveBookAuthors(Book book, List<Integer> authorIds) {
         for (int i = 0; i < authorIds.size(); i++) {
             Integer authorId = authorIds.get(i);
@@ -423,6 +434,10 @@ public class BookServiceImpl implements BookService {
         }
     }
 
+    /**
+     * 创建初始副本。
+     * 当前系统约定由图书建档时自动补齐基础副本信息，后续再由管理员细化位置和 RFID。
+     */
     private void createBookCopies(Book book, int count) {
         IntStream.range(0, count).forEach(i -> {
             BookCopy copy = new BookCopy();
@@ -434,6 +449,9 @@ public class BookServiceImpl implements BookService {
         });
     }
 
+    /**
+     * 校验 ISBN 唯一性，编辑场景允许保留自身原有 ISBN。
+     */
     private void validateIsbnUniqueness(Integer bookId, String isbn) {
         bookRepository.findByIsbn(isbn).ifPresent(existing -> {
             if (!existing.getBookId().equals(bookId)) {
@@ -442,6 +460,10 @@ public class BookServiceImpl implements BookService {
         });
     }
 
+    /**
+     * 聚合图书详情 DTO。
+     * 该方法会额外拼装作者、库存与预约数等派生信息。
+     */
     private BookDetailDto convertToDetailDto(Book book) {
         BookDetailDto dto = new BookDetailDto();
         dto.setBookId(book.getBookId());
@@ -484,7 +506,7 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional(readOnly = true)
     public Page<BookDetailDto> getNewArrivals(int limit) {
-        // Last 30 days
+        // 近 30 天入馆图书视为新书。
         java.time.LocalDateTime since = java.time.LocalDateTime.now().minusDays(30);
         return bookRepository.findNewArrivals(since, PageRequest.of(0, limit))
                 .map(this::convertToDetailDto);
@@ -493,20 +515,23 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional(readOnly = true)
     public List<BookDetailDto> getTrendingBooks(int limit) {
-        // Last 30 days
+        // 热门榜基于近 30 天借阅行为统计。
         java.time.LocalDateTime since = java.time.LocalDateTime.now().minusDays(30);
         List<Integer> trendingIds = loanRepository.findTrendingBookIds(since, PageRequest.of(0, limit));
         if (trendingIds.isEmpty())
             return List.of();
 
         List<Book> books = bookRepository.findByIds(trendingIds);
-        // Order by trendingIds sequence
+        // 查询结果可能打乱顺序，这里按热度榜 id 顺序重新排列。
         return trendingIds.stream()
                 .flatMap(id -> books.stream().filter(b -> b.getBookId().equals(id)))
                 .map(this::convertToDetailDto)
                 .toList();
     }
 
+    /**
+     * 记录检索日志，供搜索历史与热词统计复用。
+     */
     private void saveSearchHistoryLog(String keyword, int resultCount, Integer userId) {
         SearchHistory history = new SearchHistory();
         history.setKeyword(keyword);
@@ -522,6 +547,7 @@ public class BookServiceImpl implements BookService {
             String author,
             String publisher,
             LocalDateTime popularitySince) {
+        // 检索结果会综合考虑文本匹配、可借数量和近期借阅热度。
         BookDetailDto dto = convertToDetailDto(book);
         int pendingReservations = dto.getPendingReservationCount() == null ? 0 : dto.getPendingReservationCount();
         int availableCopies = dto.getAvailableCopies() == null ? 0 : dto.getAvailableCopies();

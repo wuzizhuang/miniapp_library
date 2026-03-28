@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Default implementation of user behavior logging.
- * All writes are async so they never block the main HTTP thread.
+ * 用户行为日志服务实现类。
+ * 所有写入均异步执行，避免阻塞主请求线程。
  */
 @Slf4j
 @Service
@@ -20,6 +20,10 @@ public class UserBehaviorLogServiceImpl implements UserBehaviorLogService {
 
     private final UserBehaviorLogRepository userBehaviorLogRepository;
 
+    /**
+     * 记录一条用户行为日志。
+     * 对未知行为类型会直接忽略，避免脏数据进入统计。
+     */
     @Override
     @Async
     @Transactional

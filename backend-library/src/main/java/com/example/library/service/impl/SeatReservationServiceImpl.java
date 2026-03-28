@@ -27,7 +27,8 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * Default seat reservation implementation.
+ * 座位预约服务实现类。
+ * 负责座位可用性查询、预约创建、冲突校验、取消预约和通知发送。
  */
 @Service
 @RequiredArgsConstructor
@@ -42,6 +43,9 @@ public class SeatReservationServiceImpl implements SeatReservationService {
     private final UserRepository userRepository;
     private final NotificationService notificationService;
 
+    /**
+     * 查询座位列表，并根据时间窗计算是否可预约。
+     */
     @Override
     @Transactional
     public List<SeatDto> getSeats(
@@ -62,6 +66,10 @@ public class SeatReservationServiceImpl implements SeatReservationService {
                 .toList();
     }
 
+    /**
+     * 创建座位预约。
+     * 会校验时间窗、座位状态、座位冲突和用户时间冲突。
+     */
     @Override
     @Transactional
     public SeatReservationDto createReservation(Integer userId, SeatReservationCreateDto dto) {
@@ -107,6 +115,9 @@ public class SeatReservationServiceImpl implements SeatReservationService {
         return convertToReservationDto(savedReservation);
     }
 
+    /**
+     * 查询当前用户的座位预约记录。
+     */
     @Override
     @Transactional
     public List<SeatReservationDto> getMyReservations(Integer userId) {
@@ -116,6 +127,9 @@ public class SeatReservationServiceImpl implements SeatReservationService {
                 .toList();
     }
 
+    /**
+     * 取消一条座位预约。
+     */
     @Override
     @Transactional
     public void cancelReservation(Integer userId, Integer reservationId) {
@@ -144,6 +158,9 @@ public class SeatReservationServiceImpl implements SeatReservationService {
         sendCancellationNotification(savedReservation);
     }
 
+    /**
+     * 将座位实体转换为列表展示 DTO。
+     */
     private SeatDto convertToSeatDto(Seat seat, Set<Integer> conflictedSeatIds) {
         SeatDto dto = new SeatDto();
         dto.setSeatId(seat.getSeatId());
@@ -161,6 +178,9 @@ public class SeatReservationServiceImpl implements SeatReservationService {
         return dto;
     }
 
+    /**
+     * 将座位预约实体转换为 DTO。
+     */
     private SeatReservationDto convertToReservationDto(SeatReservation entity) {
         Seat seat = entity.getSeat();
         User user = entity.getUser();
@@ -185,6 +205,10 @@ public class SeatReservationServiceImpl implements SeatReservationService {
         return dto;
     }
 
+    /**
+     * 校验预约时间窗是否合法。
+     * strict=true 时要求开始和结束时间都必须传入。
+     */
     private void validateTimeWindow(LocalDateTime startTime, LocalDateTime endTime, boolean strict) {
         if (startTime == null && endTime == null) {
             return;
@@ -211,6 +235,9 @@ public class SeatReservationServiceImpl implements SeatReservationService {
         }
     }
 
+    /**
+     * 查询在指定时间窗内发生冲突的座位 ID 集合。
+     */
     private Set<Integer> resolveConflictedSeatIds(LocalDateTime startTime, LocalDateTime endTime) {
         if (startTime == null || endTime == null) {
             return new HashSet<>();
@@ -219,10 +246,16 @@ public class SeatReservationServiceImpl implements SeatReservationService {
         return new HashSet<>(seatReservationRepository.findConflictedSeatIds(startTime, endTime));
     }
 
+    /**
+     * 将已结束的预约状态同步为已完成。
+     */
     private void refreshCompletedReservations() {
         seatReservationRepository.markCompletedReservations(LocalDateTime.now());
     }
 
+    /**
+     * 规范化楼层、区域等筛选关键字。
+     */
     private String normalizeKeyword(String keyword) {
         if (keyword == null) {
             return null;
@@ -232,6 +265,9 @@ public class SeatReservationServiceImpl implements SeatReservationService {
         return trimmed.isEmpty() ? null : trimmed;
     }
 
+    /**
+     * 规范化备注字段。
+     */
     private String normalizeNotes(String notes) {
         if (notes == null) {
             return null;
@@ -241,6 +277,9 @@ public class SeatReservationServiceImpl implements SeatReservationService {
         return trimmed.isEmpty() ? null : trimmed;
     }
 
+    /**
+     * 发送座位预约成功通知。
+     */
     private void sendCreationNotification(SeatReservation reservation) {
         String content = String.format(
                 Locale.ROOT,
@@ -260,6 +299,9 @@ public class SeatReservationServiceImpl implements SeatReservationService {
                 buildBusinessKey("SEAT_RESERVATION_CREATED", reservation.getReservationId()));
     }
 
+    /**
+     * 发送座位预约取消通知。
+     */
     private void sendCancellationNotification(SeatReservation reservation) {
         String content = String.format(
                 Locale.ROOT,
@@ -279,6 +321,9 @@ public class SeatReservationServiceImpl implements SeatReservationService {
                 buildBusinessKey("SEAT_RESERVATION_CANCELLED", reservation.getReservationId()));
     }
 
+    /**
+     * 构造通知去重业务主键。
+     */
     private String buildBusinessKey(String prefix, Integer reservationId) {
         return reservationId == null ? null : prefix + ":" + reservationId;
     }

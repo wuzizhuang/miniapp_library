@@ -35,7 +35,12 @@ const NavbarUserMenu = dynamic(
   { ssr: false },
 );
 
-// 1. 定义清晰的导航菜单
+/**
+ * 前台主导航栏。
+ * 统一处理导航菜单、搜索联想、主题切换和用户菜单。
+ */
+
+// 顶部固定导航项，桌面和移动端都会复用。
 const navItems = [
   { href: "/", label: "首页" },
   { href: "/books", label: "馆藏目录" },
@@ -65,6 +70,7 @@ export const Navbar = () => {
     isSearchOpen && !debouncedKeyword.trim() ? "search-hot-keywords" : null,
     () => searchService.getHotKeywords(6),
   );
+  // 输入关键字时展示联想词，输入为空时退回热搜词。
   const suggestionItems = useMemo(
     () => (debouncedKeyword.trim() ? suggestions : hotKeywords),
     [debouncedKeyword, hotKeywords, suggestions],
@@ -78,6 +84,7 @@ export const Navbar = () => {
     };
   }, []);
 
+  // 统一封装搜索提交逻辑，点击联想词和表单回车都走这里。
   const submitSearch = async (rawKeyword?: string) => {
     const keyword = (rawKeyword ?? searchKeyword).trim();
 
@@ -94,6 +101,7 @@ export const Navbar = () => {
     await submitSearch();
   };
 
+  // 搜索框既承担检索入口，也承担热门词/联想词的轻量下拉面板。
   const searchInput = (
     <div className="relative w-full min-w-[260px]">
       <form onSubmit={handleSearchSubmit}>
@@ -160,7 +168,7 @@ export const Navbar = () => {
       maxWidth="xl"
       position="sticky"
     >
-      {/* --- 左侧 Logo 与 菜单 --- */}
+      {/* 左侧区域：Logo 与桌面端主导航。 */}
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand className="gap-3 max-w-fit">
           <NextLink className="flex justify-start items-center gap-1" href="/">
@@ -170,7 +178,7 @@ export const Navbar = () => {
         </NavbarBrand>
         <div className="hidden lg:flex gap-4 justify-start ml-2">
           {navItems.map((item) => {
-            // 3. 动态判断当前激活的菜单项
+            // 通过 pathname 判断当前激活项，给用户明确的导航反馈。
             const isActive = router.pathname === item.href;
 
             return (
@@ -191,7 +199,7 @@ export const Navbar = () => {
         </div>
       </NavbarContent>
 
-      {/* --- 右侧 功能区 --- */}
+      {/* 右侧区域：搜索、主题切换和用户态操作。 */}
       <NavbarContent
         className="hidden sm:flex basis-1/5 items-center gap-2 sm:basis-full"
         justify="end"
@@ -201,7 +209,7 @@ export const Navbar = () => {
           <ThemeSwitch />
         </NavbarItem>
 
-        {/* 4. 根据登录状态切换显示内容 */}
+        {/* 根据登录态切换为用户菜单或登录注册入口。 */}
         {isLoading ? (
           <div className="w-8 h-8 bg-default-200 rounded-full animate-pulse" />
         ) : user ? (
@@ -232,7 +240,7 @@ export const Navbar = () => {
         )}
       </NavbarContent>
 
-      {/* --- 移动端菜单 (保持原样或根据需要简化) --- */}
+      {/* 移动端菜单复用搜索与导航能力，并补充读者常用入口。 */}
       <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
         <ThemeSwitch />
         <NavbarMenuToggle />
@@ -272,6 +280,11 @@ export const Navbar = () => {
               <NavbarMenuItem>
                 <Link color="foreground" href="/my/recommendations" size="lg">
                   推荐动态
+                </Link>
+              </NavbarMenuItem>
+              <NavbarMenuItem>
+                <Link color="foreground" href="/my/personal-recommendations" size="lg">
+                  为您推荐
                 </Link>
               </NavbarMenuItem>
               <NavbarMenuItem>

@@ -2,6 +2,7 @@ package com.example.library.controller;
 
 import com.example.library.dto.LoanCreateDto;
 import com.example.library.dto.LoanDto;
+import com.example.library.exception.BadRequestException;
 import com.example.library.security.UserDetailsImpl;
 import com.example.library.service.LoanService;
 import jakarta.validation.Valid;
@@ -16,7 +17,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Loan management endpoints.
+ * 借阅控制器。
+ * 负责借书、还书、续借、挂失以及借阅记录查询等接口。
  */
 @RestController
 @RequestMapping("/api/loans")
@@ -26,7 +28,8 @@ public class LoanController {
     private final LoanService loanService;
 
     /**
-     * Returns all loans (admin only).
+     * 分页查询全部借阅记录。
+     * 仅管理员或具备借阅管理权限的账号可调用。
      */
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('loan:manage')")
@@ -40,7 +43,7 @@ public class LoanController {
     }
 
     /**
-     * Returns the current user's active (not yet returned) loans.
+     * 查询当前用户仍在借阅中的记录。
      */
     @GetMapping("/my")
     public ResponseEntity<Page<LoanDto>> getMyLoans(
@@ -51,7 +54,7 @@ public class LoanController {
     }
 
     /**
-     * Returns personal loan history (returned/all loans).
+     * 查询当前用户的借阅历史。
      */
     @GetMapping("/history")
     public ResponseEntity<Page<LoanDto>> getMyHistory(
@@ -62,7 +65,8 @@ public class LoanController {
     }
 
     /**
-     * Returns a loan by id (admin or owner).
+     * 根据借阅单 ID 查询详情。
+     * 仅管理员或借阅记录所属用户可访问。
      */
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or @loanSecurityService.isLoanOwner(authentication, #id)")
@@ -71,9 +75,8 @@ public class LoanController {
     }
 
     /**
-     * Creates a new loan.
-     * - Normal users: always borrow for themselves.
-     * - Admin: can specify userId to borrow on behalf of another user.
+     * 创建借阅记录。
+     * 普通用户只能为自己借书，管理员可代替指定用户办理借阅。
      */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('loan:write') or hasAuthority('loan:manage')")
@@ -81,22 +84,29 @@ public class LoanController {
             @Valid @RequestBody LoanCreateDto loanCreateDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = authentication != null && authentication.getAuthorities().stream()
-                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+        boolean canBorrowForOthers = hasAuthority(authentication, "ROLE_ADMIN")
+                || hasAuthority(authentication, "loan:manage");
 
-        // Non-admin users can only borrow for themselves (ignore any userId in request)
-        if (!isAdmin) {
+        // 非后台借阅权限用户只能为自己借阅，请求中即使携带 userId 也会被覆盖。
+        if (!canBorrowForOthers) {
             loanCreateDto.setUserId(userDetails.getId());
         } else if (loanCreateDto.getUserId() == null) {
-            // Admin didn't specify a user — default to self
+            // 未显式指定借阅用户时，默认按当前操作员本人处理。
             loanCreateDto.setUserId(userDetails.getId());
+        }
+
+        // 柜台代借必须完成账号复核，避免只依赖读者 ID 直接放行。
+        if (!loanCreateDto.getUserId().equals(userDetails.getId())
+                && (loanCreateDto.getConfirmUsername() == null
+                || loanCreateDto.getConfirmUsername().isBlank())) {
+            throw new BadRequestException("代借前请先完成读者账号复核");
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(loanService.createLoan(loanCreateDto));
     }
 
     /**
-     * Returns a borrowed copy (admin or owner).
+     * 办理还书。
      */
     @PutMapping("/{id}/return")
     @PreAuthorize("hasRole('ADMIN') or @loanSecurityService.isLoanOwner(authentication, #id)")
@@ -105,7 +115,7 @@ public class LoanController {
     }
 
     /**
-     * Renews a loan (admin or owner).
+     * 办理续借。
      */
     @PutMapping("/{id}/renew")
     @PreAuthorize("hasRole('ADMIN') or @loanSecurityService.isLoanOwner(authentication, #id)")
@@ -114,7 +124,7 @@ public class LoanController {
     }
 
     /**
-     * Marks a loan as lost (admin or owner).
+     * 将借阅记录标记为遗失。
      */
     @PutMapping("/{id}/lost")
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('loan:manage')")
@@ -123,7 +133,7 @@ public class LoanController {
     }
 
     /**
-     * Returns overdue loans (admin only).
+     * 查询逾期借阅记录。
      */
     @GetMapping("/overdue")
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('loan:manage')")
@@ -131,5 +141,11 @@ public class LoanController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.ok(loanService.getOverdueLoans(page, size));
+    }
+
+    private boolean hasAuthority(Authentication authentication, String authority) {
+        return authentication != null
+                && authentication.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> authority.equals(grantedAuthority.getAuthority()));
     }
 }

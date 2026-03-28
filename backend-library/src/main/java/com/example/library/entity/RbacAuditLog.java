@@ -8,7 +8,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 /**
- * Audit log for RBAC management operations.
+ * RBAC 审计日志实体。
+ * 用于记录角色、权限、用户角色绑定等后台权限管理操作。
  */
 @Entity
 @Table(name = "rbac_audit_logs")

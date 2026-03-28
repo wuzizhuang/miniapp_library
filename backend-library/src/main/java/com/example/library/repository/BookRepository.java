@@ -92,4 +92,47 @@ public interface BookRepository extends JpaRepository<Book, Integer> {
             ORDER BY COUNT(b.bookId) DESC
             """)
     List<CategoryBookCountView> countBooksByCategory(@Param("status") Book.BookStatus status);
+
+    // ── 个人推荐所需查询 ──────────────────────────────────────────
+
+    /** 按分类查找用户未读的活跃图书。 */
+    @Query("""
+            SELECT b FROM Book b
+            WHERE b.category.categoryId IN :categoryIds
+              AND b.bookId NOT IN :excludeBookIds
+              AND b.status = 'ACTIVE'
+            ORDER BY b.createTime DESC
+            """)
+    List<Book> findByCategoryIdsExcluding(
+            @Param("categoryIds") List<Integer> categoryIds,
+            @Param("excludeBookIds") List<Integer> excludeBookIds,
+            Pageable pageable);
+
+    /** 按作者查找用户未读的活跃图书。 */
+    @Query("""
+            SELECT DISTINCT b FROM Book b
+            JOIN b.bookAuthors ba
+            WHERE ba.author.authorId IN :authorIds
+              AND b.bookId NOT IN :excludeBookIds
+              AND b.status = 'ACTIVE'
+            ORDER BY b.createTime DESC
+            """)
+    List<Book> findByAuthorIdsExcluding(
+            @Param("authorIds") List<Integer> authorIds,
+            @Param("excludeBookIds") List<Integer> excludeBookIds,
+            Pageable pageable);
+
+    /** 按书名或描述模糊匹配关键词（用于兴趣标签推荐）。 */
+    @Query(value = """
+            SELECT * FROM books b
+            WHERE b.status = 'ACTIVE'
+              AND b.book_id NOT IN (:excludeBookIds)
+              AND (LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                   OR LOWER(b.description) LIKE LOWER(CONCAT('%', :keyword, '%')))
+            ORDER BY b.create_time DESC
+            """, nativeQuery = true)
+    List<Book> findByKeywordExcluding(
+            @Param("keyword") String keyword,
+            @Param("excludeBookIds") List<Integer> excludeBookIds,
+            Pageable pageable);
 }

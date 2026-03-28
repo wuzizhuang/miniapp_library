@@ -18,6 +18,10 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 收藏服务实现类。
+ * 负责收藏增删查以及收藏图书详情转换。
+ */
 @Service
 @RequiredArgsConstructor
 public class FavoriteServiceImpl implements FavoriteService {
@@ -27,6 +31,10 @@ public class FavoriteServiceImpl implements FavoriteService {
     private final BookRepository bookRepository;
     private final BookCopyRepository bookCopyRepository;
 
+    /**
+     * 添加图书到用户收藏夹。
+     * 若已经收藏则直接返回，并通过唯一约束兜底并发重复提交。
+     */
     @Override
     @Transactional
     public void addFavorite(Long userId, Integer bookId) {
@@ -50,12 +58,18 @@ public class FavoriteServiceImpl implements FavoriteService {
         }
     }
 
+    /**
+     * 从用户收藏夹移除图书。
+     */
     @Override
     @Transactional
     public void removeFavorite(Long userId, Integer bookId) {
         favoriteRepository.deleteByUserUserIdAndBookBookId(userId.intValue(), bookId);
     }
 
+    /**
+     * 分页查询用户收藏图书。
+     */
     @Override
     @Transactional(readOnly = true)
     public Page<BookDetailDto> getUserFavorites(Long userId, int page, int size) {
@@ -63,12 +77,18 @@ public class FavoriteServiceImpl implements FavoriteService {
                 .map(fav -> convertToDetailDto(fav.getBook()));
     }
 
+    /**
+     * 判断指定图书是否已被当前用户收藏。
+     */
     @Override
     @Transactional(readOnly = true)
     public boolean isFavorite(Long userId, Integer bookId) {
         return favoriteRepository.existsByUserUserIdAndBookBookId(userId.intValue(), bookId);
     }
 
+    /**
+     * 将图书实体转换为收藏页使用的详情 DTO。
+     */
     private BookDetailDto convertToDetailDto(Book book) {
         BookDetailDto dto = new BookDetailDto();
         dto.setBookId(book.getBookId());

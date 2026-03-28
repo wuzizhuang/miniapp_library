@@ -1,7 +1,7 @@
 package com.example.library.controller;
 
 import com.example.library.dto.NotificationDto;
-import com.example.library.exception.BadRequestException;
+import com.example.library.util.ControllerHelper;
 import com.example.library.security.UserDetailsImpl;
 import com.example.library.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -11,8 +11,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * User notification endpoints.
- * 注意：Spring Security 已在过滤器层保证了认证，userDetails 在此处不会为 null。
+ * 通知控制器。
+ * 负责用户消息列表、已读状态维护和通知清理等接口。
  */
 @RestController
 @RequestMapping("/api/notifications")
@@ -22,68 +22,62 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     /**
-     * Returns the current user's notifications (paged).
+     * 分页查询当前用户的通知列表。
      */
     @GetMapping
     public ResponseEntity<Page<NotificationDto>> getMyNotifications(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(notificationService.getNotificationsByUser(requireUserId(userDetails), page, size));
+        return ResponseEntity.ok(notificationService.getNotificationsByUser(ControllerHelper.requireUserId(userDetails), page, size));
     }
 
     /**
-     * Returns the unread notification count for the current user.
+     * 查询当前用户的未读通知数量。
      */
     @GetMapping("/unread-count")
     public ResponseEntity<Long> getUnreadCount(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return ResponseEntity.ok(notificationService.getUnreadCount(requireUserId(userDetails)));
+        return ResponseEntity.ok(notificationService.getUnreadCount(ControllerHelper.requireUserId(userDetails)));
     }
 
     /**
-     * Marks a single notification as read.
+     * 将单条通知标记为已读。
      */
     @PutMapping("/{id}/read")
     public ResponseEntity<Void> markAsRead(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long id) {
-        notificationService.markAsRead(id, requireUserId(userDetails));
+        notificationService.markAsRead(id, ControllerHelper.requireUserId(userDetails));
         return ResponseEntity.ok().build();
     }
 
     /**
-     * Marks all notifications as read for the current user.
+     * 将当前用户的全部通知标记为已读。
      */
     @PutMapping("/read-all")
     public ResponseEntity<Void> markAllAsRead(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        notificationService.markAllAsRead(requireUserId(userDetails));
+        notificationService.markAllAsRead(ControllerHelper.requireUserId(userDetails));
         return ResponseEntity.ok().build();
     }
 
     /**
-     * Deletes a single notification (user must own it).
+     * 删除单条通知。
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteNotification(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long id) {
-        notificationService.deleteNotification(id, requireUserId(userDetails));
+        notificationService.deleteNotification(id, ControllerHelper.requireUserId(userDetails));
         return ResponseEntity.noContent().build();
     }
 
     /**
-     * Deletes all read notifications for the current user.
+     * 删除当前用户全部已读通知。
      */
     @DeleteMapping("/read")
     public ResponseEntity<Void> deleteAllRead(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        notificationService.deleteAllRead(requireUserId(userDetails));
+        notificationService.deleteAllRead(ControllerHelper.requireUserId(userDetails));
         return ResponseEntity.noContent().build();
     }
 
-    private Integer requireUserId(UserDetailsImpl userDetails) {
-        if (userDetails == null) {
-            throw new BadRequestException("User context is missing");
-        }
-        return userDetails.getId();
-    }
 }

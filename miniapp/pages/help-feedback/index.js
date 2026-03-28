@@ -1,11 +1,30 @@
+/**
+ * @file 帮助反馈页面逻辑
+ * @description 用户反馈管理页面，功能：
+ *   - 查看已提交的反馈列表（含状态：已提交/已回复）
+ *   - 提交新反馈（选择分类：功能建议/问题反馈/服务投诉）
+ *   - 支持从通知跳转后高亮指定反馈项
+ */
+
 const { libraryService } = require('../../services/library')
 
+/**
+ * 反馈分类选项
+ * SUGGESTION: 功能建议
+ * BUG: 问题反馈
+ * SERVICE: 服务投诉
+ */
 const CATEGORY_OPTIONS = [
   { value: 'SUGGESTION', label: '功能建议' },
   { value: 'BUG', label: '问题反馈' },
   { value: 'SERVICE', label: '服务投诉' },
 ]
 
+/**
+ * 装饰反馈数据，补充 UI 展示字段
+ * @param {Object} item - 原始反馈数据
+ * @returns {Object} 含 statusLabel / statusClass / createDate 的装饰对象
+ */
 function decorateFeedback(item) {
   const statusMap = {
     SUBMITTED: '已提交',
@@ -21,6 +40,19 @@ function decorateFeedback(item) {
 }
 
 Page({
+  /**
+   * 页面数据
+   * @property {Object[]} items       - 反馈列表
+   * @property {Object[]} categoryOptions - 分类选项
+   * @property {string} category      - 当前选择的分类
+   * @property {string} subject       - 主题输入
+   * @property {string} content       - 内容输入
+   * @property {boolean} loading      - 加载中
+   * @property {boolean} submitting   - 提交中
+   * @property {string} errorMessage  - 错误信息
+   * @property {number} highlightId   - 需要高亮的反馈 ID（来自通知跳转）
+   * @property {string} highlightAnchor - 高亮锚点（用于 scroll-into-view）
+   */
   data: {
     items: [],
     categoryOptions: CATEGORY_OPTIONS,
@@ -34,6 +66,7 @@ Page({
     highlightAnchor: '',
   },
 
+  /** 页面加载，从路由参数获取高亮 ID */
   onLoad(options) {
     const highlightId = Number((options && options.highlight) || 0)
 
@@ -43,10 +76,12 @@ Page({
     })
   },
 
+  /** 每次显示页面时加载反馈列表 */
   onShow() {
     this.loadFeedback()
   },
 
+  /** 加载反馈列表 */
   async loadFeedback() {
     this.setData({
       loading: true,
@@ -72,25 +107,36 @@ Page({
     }
   },
 
+  /** 选择反馈分类 */
   pickCategory(event) {
     this.setData({
       category: event.currentTarget.dataset.category,
     })
   },
 
+  /** 主题输入事件 */
   onSubjectInput(event) {
     this.setData({
       subject: event.detail.value,
     })
   },
 
+  /** 内容输入事件 */
   onContentInput(event) {
     this.setData({
       content: event.detail.value,
     })
   },
 
+  /**
+   * 提交反馈
+   * 校验主题和内容非空 → 提交 → 清空输入 → 刷新列表
+   */
   async submitFeedback() {
+    if (this.data.submitting) {
+      return
+    }
+
     const subject = String(this.data.subject || '').trim()
     const content = String(this.data.content || '').trim()
 
@@ -118,11 +164,13 @@ Page({
         icon: 'success',
       })
 
+      // 清空输入
       this.setData({
         subject: '',
         content: '',
       })
 
+      // 刷新列表
       await this.loadFeedback()
     } catch (error) {
       wx.showToast({
@@ -134,5 +182,10 @@ Page({
         submitting: false,
       })
     }
+  },
+
+  /** 重试加载反馈列表 */
+  retryLoadFeedback() {
+    this.loadFeedback()
   },
 })

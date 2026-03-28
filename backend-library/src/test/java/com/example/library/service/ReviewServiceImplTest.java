@@ -2,6 +2,7 @@ package com.example.library.service;
 
 import com.example.library.dto.ReviewDto;
 import com.example.library.dto.ReviewResponseDto;
+import com.example.library.dto.ReviewUpdateDto;
 import com.example.library.entity.*;
 import com.example.library.exception.BadRequestException;
 import com.example.library.exception.ResourceNotFoundException;
@@ -229,7 +230,7 @@ class ReviewServiceImplTest {
         @Test
         @DisplayName("updateReview — 成功：内容和评分更新")
         void updateReview_success() {
-            ReviewDto updateDto = new ReviewDto();
+            ReviewUpdateDto updateDto = new ReviewUpdateDto();
             updateDto.setRating(3);
             updateDto.setCommentText("更新后的评论");
 

@@ -1,5 +1,19 @@
-const { libraryService } = require('../../../services/library')
+/**
+ * @file 借阅追踪页面逻辑
+ * @description 展示单笔借阅的详细信息，功能：
+ *   - 查看借阅状态（借阅中/已逾期/已归还）
+ *   - 续借操作
+ *   - 归还操作
+ */
 
+const { libraryService } = require('../../../services/library')
+const { confirmAction } = require('../../../utils/interaction')
+
+/**
+ * 装饰借阅记录，补充状态标签和样式
+ * @param {Object} loan - 原始借阅数据
+ * @returns {Object|null} 装饰后的借阅记录
+ */
 function decorateLoan(loan) {
   if (!loan) {
     return null
@@ -23,6 +37,14 @@ function decorateLoan(loan) {
 }
 
 Page({
+  /**
+   * 页面数据
+   * @property {string} loanId       - 借阅记录 ID
+   * @property {Object|null} loan    - 借阅详情（装饰后）
+   * @property {boolean} loading     - 数据加载中
+   * @property {boolean} actionLoading - 操作（续借/归还）进行中
+   * @property {string} errorMessage - 错误信息
+   */
   data: {
     loanId: '',
     loan: null,
@@ -31,16 +53,19 @@ Page({
     errorMessage: '',
   },
 
+  /** 页面加载，从路由参数获取借阅 ID */
   onLoad(options) {
     this.setData({
       loanId: options.loanId || '',
     })
   },
 
+  /** 每次显示页面时重新加载 */
   onShow() {
     this.loadLoan()
   },
 
+  /** 加载借阅详情 */
   async loadLoan() {
     if (!this.data.loanId) {
       this.setData({
@@ -71,7 +96,25 @@ Page({
     }
   },
 
+  /**
+   * 续借操作
+   * 成功后自动刷新借阅详情（到期日期会延长）
+   */
   async renewLoan() {
+    if (this.data.actionLoading || !this.data.loan) {
+      return
+    }
+
+    const confirmed = await confirmAction({
+      title: '确认续借',
+      content: `确认续借《${this.data.loan.bookTitle || '当前图书'}》吗？系统会重新计算应还日期。`,
+      confirmText: '确认续借',
+    })
+
+    if (!confirmed) {
+      return
+    }
+
     this.setData({
       actionLoading: true,
     })
@@ -95,7 +138,25 @@ Page({
     }
   },
 
+  /**
+   * 归还操作
+   * 成功后自动刷新借阅详情（状态变为已归还）
+   */
   async returnLoan() {
+    if (this.data.actionLoading || !this.data.loan) {
+      return
+    }
+
+    const confirmed = await confirmAction({
+      title: '确认归还',
+      content: `确认归还《${this.data.loan.bookTitle || '当前图书'}》吗？归还后会更新借阅状态。`,
+      confirmText: '确认归还',
+    })
+
+    if (!confirmed) {
+      return
+    }
+
     this.setData({
       actionLoading: true,
     })
@@ -117,5 +178,10 @@ Page({
         actionLoading: false,
       })
     }
+  },
+
+  /** 重试加载借阅追踪 */
+  retryLoadLoan() {
+    this.loadLoan()
   },
 })

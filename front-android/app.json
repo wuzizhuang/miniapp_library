@@ -8,13 +8,6 @@
     ],
     "assetBundlePatterns": [
       "**/*"
-    ],
-    "android": {
-      "package": "com.anonymous.frontandroid",
-      "newArchitecture": false
-    },
-    "plugins": [
-      "expo-asset"
     ]
   }
 }

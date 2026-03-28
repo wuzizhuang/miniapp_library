@@ -2,7 +2,7 @@ package com.example.library.controller;
 
 import com.example.library.dto.FineDto;
 import com.example.library.entity.Fine;
-import com.example.library.exception.UnauthorizedException;
+import com.example.library.util.ControllerHelper;
 import com.example.library.security.UserDetailsImpl;
 import com.example.library.service.FineService;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Fine management endpoints.
+ * 罚款控制器。
+ * 负责读者罚款查询、支付、减免以及后台总览接口。
  */
 @RestController
 @RequestMapping("/api/fines")
@@ -23,20 +24,20 @@ public class FineController {
     private final FineService fineService;
 
     /**
-     * Returns the current user's fines (paginated).
+     * 分页查询当前用户的罚款记录。
      */
     @GetMapping("/me")
     public ResponseEntity<Page<FineDto>> getMyFines(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        UserDetailsImpl authenticatedUser = requireAuthenticatedUser(userDetails);
+        UserDetailsImpl authenticatedUser = ControllerHelper.requireAuthenticated(userDetails);
 
         return ResponseEntity.ok(fineService.getFinesByUser(authenticatedUser.getId(), page, size));
     }
 
     /**
-     * Returns all fines (admin only).
+     * 分页查询全部罚款记录。
      */
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('loan:manage') or hasAuthority('fine:waive')")
@@ -49,7 +50,7 @@ public class FineController {
     }
 
     /**
-     * Returns the total unpaid amount across the system.
+     * 查询系统内当前待支付罚款总额。
      */
     @GetMapping("/pending-total")
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('loan:manage') or hasAuthority('fine:waive')")
@@ -58,7 +59,7 @@ public class FineController {
     }
 
     /**
-     * Returns a fine by ID (admin or fine owner).
+     * 根据罚款 ID 查询详情。
      */
     @GetMapping("/{fineId}")
     @PreAuthorize("hasRole('ADMIN') or @fineSecurityService.isFineOwner(authentication, #fineId)")
@@ -67,7 +68,7 @@ public class FineController {
     }
 
     /**
-     * Returns fines for a specific user (admin only).
+     * 查询指定用户的罚款记录。
      */
     @GetMapping("/user/{userId}")
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('loan:manage')")
@@ -79,7 +80,7 @@ public class FineController {
     }
 
     /**
-     * Pays a fine (admin or fine owner).
+     * 支付罚款。
      */
     @PostMapping("/{fineId}/pay")
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('loan:manage') or @fineSecurityService.isFineOwner(authentication, #fineId)")
@@ -88,19 +89,15 @@ public class FineController {
     }
 
     /**
-     * Waives a fine (admin only).
+     * 减免罚款。
      */
     @PostMapping("/{fineId}/waive")
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('fine:waive')")
-    public ResponseEntity<FineDto> waiveFine(@PathVariable Integer fineId) {
-        return ResponseEntity.ok(fineService.waiveFine(fineId));
+    public ResponseEntity<FineDto> waiveFine(
+            @PathVariable Integer fineId,
+            @RequestBody(required = false) java.util.Map<String, String> body) {
+        String waiveReason = body != null ? body.getOrDefault("reason", null) : null;
+        return ResponseEntity.ok(fineService.waiveFine(fineId, waiveReason));
     }
 
-    private UserDetailsImpl requireAuthenticatedUser(UserDetailsImpl userDetails) {
-        if (userDetails == null) {
-            throw new UnauthorizedException("请先登录后再继续");
-        }
-
-        return userDetails;
-    }
 }

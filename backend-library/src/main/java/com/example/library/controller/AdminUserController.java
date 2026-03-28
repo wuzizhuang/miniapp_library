@@ -15,7 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Admin-only user management endpoints.
+ * 后台用户管理控制器。
+ * 提供管理员修改用户状态和身份类型的接口。
  */
 @RestController
 @RequestMapping("/api/admin/users")
@@ -25,7 +26,7 @@ public class AdminUserController {
     private final UserService userService;
 
     /**
-     * Updates a user's active/inactive status from the admin workflow.
+     * 后台修改用户启用/停用状态。
      */
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('user:manage')")
@@ -36,7 +37,7 @@ public class AdminUserController {
     }
 
     /**
-     * Updates a user's identity type from the admin workflow.
+     * 后台修改用户身份类型。
      */
     @PatchMapping("/{id}/identity")
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('user:manage')")

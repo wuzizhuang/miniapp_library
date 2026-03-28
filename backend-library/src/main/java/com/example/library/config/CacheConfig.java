@@ -17,14 +17,24 @@ import org.springframework.data.redis.serializer.RedisSerializationContext.Seria
 import java.time.Duration;
 import java.util.Map;
 
+/**
+ * 缓存配置类。
+ * 根据配置决定启用 Redis 缓存，还是退化为无操作缓存实现。
+ */
 @Configuration
 @EnableCaching
 public class CacheConfig {
 
+    /** 搜索热词缓存名称。 */
     public static final String SEARCH_HOT_KEYWORDS_CACHE = "searchHotKeywords";
+    /** 仪表盘统计卡片缓存名称。 */
     public static final String DASHBOARD_STATS_CACHE = "dashboardStats";
+    /** 仪表盘分析图表缓存名称。 */
     public static final String DASHBOARD_ANALYTICS_CACHE = "dashboardAnalytics";
 
+    /**
+     * 创建 Redis 缓存管理器，并为不同缓存空间配置独立过期时间。
+     */
     @Bean
     @ConditionalOnProperty(name = "app.cache.redis-enabled", havingValue = "true")
     public CacheManager redisCacheManager(
@@ -53,6 +63,9 @@ public class CacheConfig {
                 .build();
     }
 
+    /**
+     * 当 Redis 缓存关闭时，返回空实现，避免业务代码因缺少缓存组件而报错。
+     */
     @Bean
     @ConditionalOnProperty(name = "app.cache.redis-enabled", havingValue = "false", matchIfMissing = true)
     public CacheManager noOpCacheManager() {

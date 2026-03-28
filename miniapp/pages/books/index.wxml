@@ -1,14 +1,14 @@
 <scroll-view class="page-shell" scroll-y>
   <view class="hero-card">
     <view class="hero-title">馆藏目录</view>
-    <view class="hero-subtitle">搜索馆藏、筛选分类，一步到位</view>
+    <view class="hero-subtitle">先搜索，再筛选，让检索结果更快出现在眼前</view>
     <view class="summary-row" style="margin-top: 24rpx;">
       <view class="summary-item">
         <view class="summary-label">结果总数</view>
         <view class="summary-value">{{catalogSummary.totalCount}}</view>
       </view>
       <view class="summary-item">
-        <view class="summary-label">可借图书</view>
+        <view class="summary-label">本页可借</view>
         <view class="summary-value">{{catalogSummary.availableCount}}</view>
       </view>
       <view class="summary-item">
@@ -16,6 +16,7 @@
         <view class="summary-value catalog-summary-text">{{catalogSummary.selectedCategoryName}}</view>
       </view>
     </view>
+
     <view class="catalog-search">
       <input
         class="search-input catalog-search-input"
@@ -28,33 +29,42 @@
       <view class="catalog-search-actions">
         <view class="button-primary catalog-toolbar-button" bindtap="runSearch">搜索</view>
         <view class="button-ghost catalog-toolbar-button" bindtap="toggleAvailableOnly">
-          {{availableOnly ? '仅看可借中' : '切换可借筛选'}}
+          {{availableOnly ? '查看全部馆藏' : '仅看可借'}}
         </view>
-        <view class="button-secondary catalog-toolbar-button" bindtap="goMy">我的中心</view>
         <view class="button-secondary catalog-toolbar-button" bindtap="clearAllFilters">重置筛选</view>
-        <view wx:if="{{keyword}}" class="button-secondary catalog-toolbar-button" bindtap="clearKeyword">清空关键词</view>
       </view>
     </view>
-  </view>
 
-  <view class="panel">
-    <view class="toolbar-spread">
-      <view>
-        <view class="section-title" style="margin-bottom: 8rpx;">分类筛选</view>
-        <view class="section-subtitle">选择分类查看对应图书</view>
-      </view>
+    <view class="catalog-hero-meta">
+      <view class="chip-primary">关键词：{{catalogSummary.keywordLabel}}</view>
       <view class="chip">{{catalogSummary.availabilityLabel}}</view>
     </view>
-    <view class="chip-row">
-      <view class="pill-item {{selectedCategoryId === 0 ? 'pill-item--active' : ''}}" bindtap="pickCategory" data-category-id="0">全部</view>
-      <view
-        wx:for="{{catalog.categories || []}}"
-        wx:key="categoryId"
-        class="pill-item {{selectedCategoryId === item.categoryId ? 'pill-item--active' : ''}}"
-        bindtap="pickCategory"
-        data-category-id="{{item.categoryId}}"
-      >
-        {{item.name}}
+
+    <view class="catalog-category-section">
+      <view class="catalog-block-title catalog-block-title--hero">分类快筛</view>
+      <scroll-view class="catalog-category-scroll" scroll-x>
+        <view class="catalog-category-track">
+          <view class="pill-item {{selectedCategoryId === 0 ? 'pill-item--active' : ''}}" bindtap="pickCategory" data-category-id="0">全部</view>
+          <view
+            wx:for="{{catalog.categories || []}}"
+            wx:key="categoryId"
+            class="pill-item {{selectedCategoryId === item.categoryId ? 'pill-item--active' : ''}}"
+            bindtap="pickCategory"
+            data-category-id="{{item.categoryId}}"
+          >
+            {{item.name}}
+          </view>
+        </view>
+      </scroll-view>
+
+      <view wx:if="{{displaySuggestions.length || suggestionLoading || (catalog && catalog.hotKeywords && catalog.hotKeywords.length)}}" class="catalog-hero-discovery">
+        <view wx:if="{{suggestionLoading}}" class="catalog-helper-text catalog-helper-text--hero">正在更新联想词...</view>
+        <view wx:if="{{displaySuggestions.length}}" class="chip-row">
+          <view wx:for="{{displaySuggestions}}" wx:key="*this" class="chip-primary" data-keyword="{{item}}" bindtap="applyKeyword">{{item}}</view>
+        </view>
+        <view wx:elif="{{catalog && catalog.hotKeywords && catalog.hotKeywords.length}}" class="chip-row">
+          <view wx:for="{{catalog.hotKeywords}}" wx:key="*this" class="chip" data-keyword="{{item}}" bindtap="applyKeyword">{{item}}</view>
+        </view>
       </view>
     </view>
   </view>
@@ -69,38 +79,11 @@
     </view>
   </view>
 
-  <view wx:if="{{catalog || displaySuggestions.length || suggestionLoading}}" class="panel">
-    <view class="section-title">搜索发现</view>
-    <view class="section-subtitle">热门搜索和联想词帮你更快找到好书</view>
-    <view wx:if="{{suggestionLoading}}" class="catalog-helper-text">正在更新联想词...</view>
-    <view wx:if="{{displaySuggestions.length}}" class="catalog-block">
-      <view class="catalog-block-title">联想词</view>
-      <view class="chip-row">
-        <view wx:for="{{displaySuggestions}}" wx:key="*this" class="chip-primary" data-keyword="{{item}}" bindtap="applyKeyword">{{item}}</view>
-      </view>
-    </view>
-    <view wx:if="{{catalog && catalog.hotKeywords && catalog.hotKeywords.length}}" class="catalog-block">
-      <view class="catalog-block-title">热门搜索</view>
-      <view class="chip-row">
-        <view wx:for="{{catalog.hotKeywords}}" wx:key="*this" class="chip" data-keyword="{{item}}" bindtap="applyKeyword">{{item}}</view>
-      </view>
-    </view>
-    <view wx:if="{{catalog && catalog.searchHistory && catalog.searchHistory.length}}" class="catalog-block">
-      <view class="catalog-block-title">最近搜索</view>
-      <view class="chip-row">
-        <view wx:for="{{catalog.searchHistory}}" wx:key="*this" class="tag-outline" data-keyword="{{item}}" bindtap="applyKeyword">{{item}}</view>
-      </view>
-    </view>
-    <view wx:if="{{catalog && (!catalog.searchHistory || !catalog.searchHistory.length)}}" class="catalog-helper-text">
-      登录后检索过的关键词会出现在这里，方便你快速回到上次的查找轨迹。
-    </view>
-  </view>
-
   <view class="panel">
     <view class="toolbar-spread">
       <view>
         <view class="section-title" style="margin-bottom: 8rpx;">检索结果</view>
-        <view class="section-subtitle">共 {{catalogSummary.totalCount}} 本，点卡片即可进入详情页。</view>
+        <view class="section-subtitle">共 {{catalogSummary.totalCount}} 本，当前第 {{currentPage}} / {{pageCount}} 页。</view>
       </view>
       <view class="chip-primary">{{catalogSummary.selectedCategoryName}}</view>
     </view>
@@ -140,20 +123,44 @@
           <view class="catalog-card-link">查看详情</view>
         </view>
       </view>
+
+      <view wx:if="{{pageCount > 1}}" class="catalog-pagination">
+        <view class="button-row catalog-pagination-row">
+          <view class="{{currentPage <= 1 || loading ? 'button-ghost is-disabled' : 'button-ghost'}}" bindtap="prevPage">上一页</view>
+          <view class="catalog-pagination-meta">
+            <view class="muted-text">第 {{currentPage}} / {{pageCount}} 页</view>
+            <view class="catalog-helper-text">每页 {{pageSize}} 本，共 {{catalogSummary.totalCount}} 本</view>
+          </view>
+          <view class="{{currentPage >= pageCount || loading ? 'button-ghost is-disabled' : 'button-ghost'}}" bindtap="nextPage">下一页</view>
+        </view>
+      </view>
     </block>
   </view>
 
-  <view class="panel catalog-tail-panel">
-    <view class="section-title">继续探索</view>
-    <view class="section-subtitle">更多馆藏等你发现</view>
-    <view class="chip-row" style="margin-bottom: 18rpx;">
-      <view class="chip">关键词：{{catalogSummary.keywordLabel}}</view>
-      <view class="chip">{{catalogSummary.availabilityLabel}}</view>
-      <view class="chip">{{catalogSummary.selectedCategoryName}}</view>
+  <view wx:if="{{catalog || displaySuggestions.length || suggestionLoading}}" class="panel catalog-discovery-panel">
+    <view class="section-title">搜索发现</view>
+    <view class="section-subtitle">热门搜索和历史关键词放在结果区后面，方便继续细化检索。</view>
+    <view wx:if="{{suggestionLoading}}" class="catalog-helper-text">正在更新联想词...</view>
+    <view wx:if="{{displaySuggestions.length}}" class="catalog-block">
+      <view class="catalog-block-title">联想词</view>
+      <view class="chip-row">
+        <view wx:for="{{displaySuggestions}}" wx:key="*this" class="chip-primary" data-keyword="{{item}}" bindtap="applyKeyword">{{item}}</view>
+      </view>
     </view>
-    <view class="button-row">
-      <view class="button-primary" bindtap="goMy">前往我的中心</view>
-      <view class="button-ghost" bindtap="clearAllFilters">清空筛选继续看</view>
+    <view wx:if="{{catalog && catalog.hotKeywords && catalog.hotKeywords.length}}" class="catalog-block">
+      <view class="catalog-block-title">热门搜索</view>
+      <view class="chip-row">
+        <view wx:for="{{catalog.hotKeywords}}" wx:key="*this" class="chip" data-keyword="{{item}}" bindtap="applyKeyword">{{item}}</view>
+      </view>
+    </view>
+    <view wx:if="{{catalog && catalog.searchHistory && catalog.searchHistory.length}}" class="catalog-block">
+      <view class="catalog-block-title">最近搜索</view>
+      <view class="chip-row">
+        <view wx:for="{{catalog.searchHistory}}" wx:key="*this" class="tag-outline" data-keyword="{{item}}" bindtap="applyKeyword">{{item}}</view>
+      </view>
+    </view>
+    <view wx:if="{{catalog && (!catalog.searchHistory || !catalog.searchHistory.length)}}" class="catalog-helper-text">
+      登录后检索过的关键词会出现在这里，方便你快速回到上次的查找轨迹。
     </view>
   </view>
 </scroll-view>

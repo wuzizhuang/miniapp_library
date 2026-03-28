@@ -5,7 +5,9 @@ import apiClient from "@/lib/axios";
 import { ApiAuthorDto, ApiBookDto, ApiPublisherDto, PageResponse } from "@/types/api";
 import { Author, Book, Category, BookQueryParams, Publisher } from "@/types/book";
 
-// ── 字段映射：将后端 ApiBookDto 转换为前端 UI 使用的 Book 类型 ────────────
+/**
+ * 字段映射：将后端 ApiBookDto 转换为前端 UI 使用的 Book 类型。
+ */
 function mapApiBookToBook(dto: ApiBookDto): Book {
     return {
         bookId: dto.bookId,
@@ -20,16 +22,20 @@ function mapApiBookToBook(dto: ApiBookDto): Book {
         publishYear: dto.publishedYear,
         publisherName: dto.publisherName,
         categoryId: dto.categoryId,
-        // 后端 categoryName (单字符串) → 前端 categoryNames (数组)
+        // 后端 categoryName 是单值，这里统一转成前端使用的数组结构。
         categoryNames: dto.categoryName ? [dto.categoryName] : [],
-        // 后端 authors (对象数组) → 前端 authorNames (字符串数组)
+        // 作者对象数组在列表场景下只保留姓名数组，简化渲染层处理。
         authorNames: dto.authors?.map((a) => a.name) ?? [],
         inventoryCount: dto.totalCopies ?? dto.availableCopies ?? 0,
-        // 关键映射: availableCopies → availableCount
+        // 把后端 availableCopies 统一映射到前端 availableCount 字段。
         availableCount: dto.availableCopies ?? 0,
     };
 }
 
+/**
+ * 图书目录相关 API 服务。
+ * 统一封装图书列表、详情以及分类/作者/出版社元数据请求。
+ */
 export const bookService = {
     /**
      * 获取图书列表（支持关键词搜索和分类筛选）

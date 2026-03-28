@@ -12,7 +12,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Book entity.
+ * 图书实体。
+ * 描述图书基础书目数据，以及与出版社、分类、作者、副本之间的关联关系。
  */
 @Entity
 @Table(name = "books")
@@ -35,13 +36,16 @@ public class Book {
     @Column(name = "cover_url")
     private String coverUrl;
 
+    /** 图书资源形态，例如仅纸质、仅电子或纸电混合。 */
     @Enumerated(EnumType.STRING)
     @Column(name = "resource_mode", length = 20)
     private ResourceMode resourceMode = ResourceMode.PHYSICAL_ONLY;
 
+    /** 电子资源访问地址。 */
     @Column(name = "online_access_url", length = 500)
     private String onlineAccessUrl;
 
+    /** 电子资源访问方式。 */
     @Enumerated(EnumType.STRING)
     @Column(name = "online_access_type", length = 30)
     private OnlineAccessType onlineAccessType;
@@ -93,14 +97,17 @@ public class Book {
     @Column(name = "status", nullable = false)
     private BookStatus status = BookStatus.ACTIVE;
 
+    /** 图书记录状态。 */
     public enum BookStatus {
         ACTIVE, INACTIVE
     }
 
+    /** 图书资源形态枚举。 */
     public enum ResourceMode {
         PHYSICAL_ONLY, DIGITAL_ONLY, HYBRID
     }
 
+    /** 电子资源访问权限类型。 */
     public enum OnlineAccessType {
         OPEN_ACCESS, CAMPUS_ONLY, LICENSED_ACCESS
     }

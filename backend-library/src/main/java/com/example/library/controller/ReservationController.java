@@ -18,7 +18,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Reservation endpoints for requesting and managing holds.
+ * 预约控制器。
+ * 负责读者预约、预约取消、管理员履约以及预约统计等接口。
  */
 @RestController
 @RequestMapping("/api/reservations")
@@ -28,7 +29,7 @@ public class ReservationController {
     private final ReservationService reservationService;
 
     /**
-     * Creates a reservation for the current user.
+     * 为当前登录用户创建预约。
      */
     @PostMapping
     public ResponseEntity<ReservationDto> createReservation(
@@ -39,7 +40,7 @@ public class ReservationController {
     }
 
     /**
-     * Returns the current user's reservations (paginated).
+     * 分页查询当前用户的预约记录。
      */
     @GetMapping("/me")
     public ResponseEntity<Page<ReservationDto>> getMyReservations(
@@ -51,7 +52,7 @@ public class ReservationController {
     }
 
     /**
-     * Returns all reservations for admin.
+     * 分页查询全部预约记录。
      */
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('reservation:manage')")
@@ -68,7 +69,8 @@ public class ReservationController {
     }
 
     /**
-     * Returns reservation status statistics for the admin dashboard.
+     * 查询预约状态统计数据。
+     * 供后台看板展示不同预约状态的分布情况。
      */
     @GetMapping("/stats")
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('reservation:manage')")
@@ -78,7 +80,8 @@ public class ReservationController {
     }
 
     /**
-     * Cancels a reservation (admin or reservation owner only).
+     * 取消预约。
+     * 仅管理员、预约管理角色或预约本人可操作。
      */
     @PutMapping("/{reservationId}/cancel")
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('reservation:manage') or @reservationSecurityService.isReservationOwner(authentication, #reservationId)")
@@ -88,7 +91,8 @@ public class ReservationController {
     }
 
     /**
-     * Forces a reservation to be fulfilled (admin only).
+     * 将预约直接履约为借阅。
+     * 仅管理员或预约管理角色可操作。
      */
     @PutMapping("/{reservationId}/fulfill")
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('reservation:manage')")

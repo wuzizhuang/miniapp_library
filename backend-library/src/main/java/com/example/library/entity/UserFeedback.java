@@ -12,7 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * User feedback ticket entity.
+ * 用户反馈实体。
+ * 表示一条完整反馈工单，包含主题、状态、管理员回复及消息会话。
  */
 @Entity
 @Table(name = "user_feedbacks")
@@ -72,14 +73,19 @@ public class UserFeedback {
     @Column(name = "update_time", nullable = false)
     private LocalDateTime updateTime;
 
+    /** 反馈分类。 */
     public enum FeedbackCategory {
         BOOK_INFO, SYSTEM_BUG, SERVICE_EXPERIENCE, SUGGESTION, OTHER
     }
 
+    /** 反馈处理状态。 */
     public enum FeedbackStatus {
         SUBMITTED, IN_PROGRESS, RESOLVED, REJECTED
     }
 
+    /**
+     * 为工单追加一条会话消息，并维护双向关联。
+     */
     public void addMessage(UserFeedbackMessage message) {
         messages.add(message);
         message.setFeedback(this);

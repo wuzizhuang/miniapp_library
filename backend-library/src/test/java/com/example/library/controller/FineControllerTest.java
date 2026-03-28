@@ -114,7 +114,7 @@ public class FineControllerTest {
         FineDto waived = new FineDto();
         waived.setFineId(1);
         waived.setStatus(Fine.FineStatus.WAIVED);
-        when(fineService.waiveFine(1)).thenReturn(waived);
+        when(fineService.waiveFine(Integer.valueOf(1), (String) null)).thenReturn(waived);
 
         mockMvc.perform(post("/api/fines/1/waive"))
                 .andExpect(status().isOk())
@@ -135,7 +135,7 @@ public class FineControllerTest {
         FineDto waived = new FineDto();
         waived.setFineId(1);
         waived.setStatus(Fine.FineStatus.WAIVED);
-        when(fineService.waiveFine(1)).thenReturn(waived);
+        when(fineService.waiveFine(Integer.valueOf(1), (String) null)).thenReturn(waived);
 
         mockMvc.perform(post("/api/fines/1/waive"))
                 .andExpect(status().isOk())

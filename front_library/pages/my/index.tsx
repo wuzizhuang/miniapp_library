@@ -17,10 +17,17 @@ import { useAuth } from "@/config/authContext";
 import { getApiErrorMessage } from "@/lib/apiError";
 import { userService } from "@/services/api/userService";
 
+/**
+ * 个人中心中的到期日期格式化工具。
+ */
 function formatDueDate(value: string) {
   return new Date(value).toLocaleDateString();
 }
 
+/**
+ * 我的中心首页。
+ * 聚合展示借阅、预约、通知、罚款和快捷入口等读者核心状态。
+ */
 export default function MyOverviewPage() {
   const { user } = useAuth();
 
@@ -28,11 +35,13 @@ export default function MyOverviewPage() {
     "my-overview",
     userService.getMyOverview,
   );
+  // 到期借阅列表单独 memo，避免页面其他状态更新时重复创建数组引用。
   const dueSoonLoans = useMemo(
     () => overview?.dueSoonLoans ?? [],
     [overview?.dueSoonLoans],
   );
 
+  // 顶部统计卡片统一由后端 overview 数据驱动。
   const overviewStats = [
     {
       label: "当前借阅",
@@ -92,7 +101,14 @@ export default function MyOverviewPage() {
     },
   ];
 
+  // 个人中心右侧快捷入口覆盖读者最常用的功能页面。
   const quickLinks = [
+    {
+      label: "为您推荐",
+      desc: "基于您的阅读行为智能推荐图书",
+      href: "/my/personal-recommendations",
+      icon: "solar:lightbulb-bolt-bold-duotone",
+    },
     {
       label: "我的书架",
       desc: "查看收藏、当前借阅和历史借阅",
@@ -193,6 +209,7 @@ export default function MyOverviewPage() {
             ))}
         </div>
 
+        {/* 左侧重点展示快到期借阅，右侧提供功能导航。 */}
         <div className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <Card className="border border-default-100 shadow-sm">
             <CardHeader className="flex items-center justify-between px-5 pt-5 pb-0">

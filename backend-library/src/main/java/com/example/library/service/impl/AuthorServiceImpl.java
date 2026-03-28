@@ -12,7 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Default author service implementation.
+ * 作者服务实现类。
+ * 负责作者的增删改查、搜索以及实体转换。
  */
 @Service
 @RequiredArgsConstructor
@@ -21,7 +22,7 @@ public class AuthorServiceImpl implements AuthorService {
     private final AuthorRepository authorRepository;
 
     /**
-     * Returns an author by id.
+     * 根据作者 ID 查询详情。
      */
     @Override
     public AuthorDto getAuthorById(Integer authorId) {
@@ -34,7 +35,7 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     /**
-     * Creates an author.
+     * 创建作者。
      */
     @Override
     @Transactional
@@ -45,7 +46,7 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     /**
-     * Updates an author.
+     * 更新作者信息。
      */
     @Override
     @Transactional
@@ -60,7 +61,8 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     /**
-     * Soft-deletes an author.
+     * 软删除作者。
+     * 通过标记删除并改名的方式避免唯一索引冲突。
      */
     @Override
     @Transactional
@@ -73,7 +75,7 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     /**
-     * Returns paged authors.
+     * 分页查询未删除作者。
      */
     @Override
     @Transactional(readOnly = true)
@@ -82,7 +84,7 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     /**
-     * Searches authors by name.
+     * 按姓名模糊搜索作者。
      */
     @Override
     @Transactional(readOnly = true)
@@ -92,7 +94,7 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     /**
-     * Maps entity to DTO.
+     * 将作者实体转换为 DTO。
      */
     private AuthorDto convertToDto(Author author) {
         AuthorDto dto = new AuthorDto();
@@ -105,7 +107,7 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     /**
-     * Maps DTO to entity.
+     * 将 DTO 转换为作者实体。
      */
     private Author convertToEntity(AuthorDto dto) {
         Author author = new Author();

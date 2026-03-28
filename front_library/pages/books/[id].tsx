@@ -32,6 +32,9 @@ import { favoriteService } from "@/services/api/favoriteService";
 import { loanService } from "@/services/api/loanService";
 import { reservationService } from "@/services/api/reservationService";
 
+/**
+ * 将后端或网络错误翻译成更贴近读者语言的操作提示。
+ */
 function getActionErrorMessage(error: any, fallback: string): string {
   const rawMessage = getApiErrorMessage(error, fallback).trim();
 
@@ -58,6 +61,10 @@ function getActionErrorMessage(error: any, fallback: string): string {
   return rawMessage;
 }
 
+/**
+ * 图书详情页。
+ * 负责展示图书详情、馆藏地图、评论，以及借阅/预约/收藏等动作。
+ */
 export default function BookDetailPage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -69,6 +76,7 @@ export default function BookDetailPage() {
   const loggedBookIdRef = useRef<number | null>(null);
 
   const numericId = Number(id);
+  // SWR key 按数据域拆分，便于单独刷新详情、副本、收藏状态等局部数据。
   const detailKey =
     router.isReady && Number.isFinite(numericId) ? ["book-detail", numericId] : null;
   const copiesKey =
@@ -170,6 +178,9 @@ export default function BookDetailPage() {
           ? "目前在馆"
           : "已借出";
 
+  /**
+   * 未登录时统一带上当前详情页地址，登录后可以原路返回。
+   */
   const redirectToLogin = async () => {
     await router.push({
       pathname: "/auth/login",
@@ -177,6 +188,9 @@ export default function BookDetailPage() {
     });
   };
 
+  /**
+   * 优先返回站内来源页，缺失时回退到图书目录。
+   */
   const handleBack = async () => {
     if (typeof window !== "undefined" && document.referrer) {
       try {
@@ -195,6 +209,10 @@ export default function BookDetailPage() {
     await router.push("/books");
   };
 
+  /**
+   * 刷新图书详情页相关依赖。
+   * 借阅、预约、收藏成功后，会把多个读者中心与首页卡片一起重新校验。
+   */
   const refreshDetailDependencies = async () => {
     await Promise.all([
       mutateBook(),
@@ -234,6 +252,7 @@ export default function BookDetailPage() {
       return;
     }
 
+    // 只在首次进入该图书详情时记录一次浏览行为，避免重复刷新造成脏数据。
     loggedBookIdRef.current = book.bookId;
     void behaviorLogService.logBookAction({
       bookId: book.bookId,
@@ -241,6 +260,9 @@ export default function BookDetailPage() {
     }).catch(() => undefined);
   }, [book?.bookId]);
 
+  /**
+   * 借阅当前图书的一个可借副本。
+   */
   const handleBorrow = async () => {
     if (!user) {
       toast.info("请先登录后再借阅");
@@ -271,6 +293,9 @@ export default function BookDetailPage() {
     }
   };
 
+  /**
+   * 切换收藏状态。
+   */
   const handleToggleFavorite = async () => {
     if (!user) {
       toast.info("请先登录后再收藏");
@@ -303,6 +328,9 @@ export default function BookDetailPage() {
     }
   };
 
+  /**
+   * 打开预约确认弹窗。
+   */
   const openReservationModal = async () => {
     if (!user) {
       toast.info("请先登录后再预约");
@@ -314,6 +342,9 @@ export default function BookDetailPage() {
     setIsReserveModalOpen(true);
   };
 
+  /**
+   * 确认提交预约。
+   */
   const handleConfirmReservation = async () => {
     try {
       setIsSubmittingReservation(true);
@@ -471,6 +502,7 @@ export default function BookDetailPage() {
                   ) : null}
 
                   <div className="mb-6 grid grid-cols-2 gap-4 rounded-[22px] border border-white/10 bg-[linear-gradient(135deg,rgba(15,23,42,0.78),rgba(30,41,59,0.62))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_18px_40px_-30px_rgba(15,23,42,0.85)] backdrop-blur md:grid-cols-4">
+                    {/* 核心书目信息浓缩成四张信息卡，方便移动端快速扫描。 */}
                     <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
                       <p className="text-[11px] uppercase font-semibold tracking-[0.16em] text-slate-400">
                         ISBN
@@ -503,6 +535,7 @@ export default function BookDetailPage() {
 
                   <div className="mb-6 rounded-[22px] border border-white/10 bg-[linear-gradient(135deg,rgba(15,23,42,0.82),rgba(17,24,39,0.72))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_18px_40px_-30px_rgba(15,23,42,0.8)]">
                     <h3 className="mb-3 text-base font-semibold text-slate-100">线上与馆藏联动</h3>
+                    {/* 同时展示实体馆藏与线上访问入口，帮助读者快速判断借阅或在线阅读路径。 */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                       <div className="flex items-center gap-2 rounded-2xl border border-white/8 bg-white/[0.03] px-3 py-3">
                         <Icon

@@ -26,7 +26,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Default refresh token service with rotation.
+ * 刷新令牌服务实现。
+ * 采用轮换策略发放和吊销 refresh token，避免长期复用同一个令牌。
  */
 @Service
 @RequiredArgsConstructor
@@ -58,6 +59,10 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                 persisted.getExpiresAt());
     }
 
+    /**
+     * 刷新会话。
+     * 当前令牌验证通过后会立即作废，并签发一组新的 access/refresh token。
+     */
     @Override
     @Transactional
     public JwtResponseDto refreshSession(String rawRefreshToken) {
@@ -72,6 +77,9 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         return issueSession(refreshToken.getUser().getUserId(), refreshToken.getUser().getUsername());
     }
 
+    /**
+     * 吊销单个刷新令牌。
+     */
     @Override
     @Transactional
     public void revokeRefreshToken(String rawRefreshToken) {
@@ -87,12 +95,18 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         });
     }
 
+    /**
+     * 吊销用户当前全部有效刷新令牌。
+     */
     @Override
     @Transactional
     public void revokeAllUserTokens(Integer userId) {
         refreshTokenRepository.revokeActiveTokensForUser(userId, LocalDateTime.now());
     }
 
+    /**
+     * 加载并校验处于启用状态的用户。
+     */
     private User resolveActiveUser(Integer userId, String username) {
         User user;
         if (userId != null) {
@@ -111,6 +125,9 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         return user;
     }
 
+    /**
+     * 持久化 refresh token，仅保存哈希值。
+     */
     private RefreshToken persistRefreshToken(User user, String rawRefreshToken) {
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setUser(user);
@@ -119,6 +136,9 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         return refreshTokenRepository.save(refreshToken);
     }
 
+    /**
+     * 校验 refresh token 是否被吊销、是否过期，以及是否早于用户令牌失效时间。
+     */
     private void validateRefreshToken(RefreshToken refreshToken) {
         if (refreshToken.getRevokedAt() != null) {
             throw new UnauthorizedException("刷新令牌已被吊销，请重新登录");
@@ -137,12 +157,18 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         }
     }
 
+    /**
+     * 生成原始 refresh token 字符串。
+     */
     private String generateRawRefreshToken() {
         byte[] bytes = new byte[48];
         new java.security.SecureRandom().nextBytes(bytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
+    /**
+     * 对 refresh token 做哈希，数据库中不保存明文。
+     */
     private String hashToken(String rawRefreshToken) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -153,6 +179,9 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         }
     }
 
+    /**
+     * 提取所有角色，统一为大写形式，便于前端权限判断。
+     */
     private List<String> extractRoles(UserDetailsImpl userDetails) {
         return userDetails.getAuthorities().stream()
                 .map(authority -> authority.getAuthority())
@@ -163,6 +192,9 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                 .toList();
     }
 
+    /**
+     * 提取非角色型权限字符串。
+     */
     private List<String> extractPermissions(UserDetailsImpl userDetails) {
         return userDetails.getAuthorities().stream()
                 .map(authority -> authority.getAuthority())
@@ -170,6 +202,10 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                 .toList();
     }
 
+    /**
+     * 推导主角色。
+     * 若同时拥有多个角色，后台默认优先展示 ADMIN。
+     */
     private String resolvePrimaryRole(UserDetailsImpl userDetails) {
         Set<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)

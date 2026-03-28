@@ -1,3 +1,21 @@
+/**
+ * @file 首页屏幕
+ * @description 应用首页，聚合展示馆藏概览、个人快照、推荐书目、新书上架和快捷入口。
+ *
+ *   页面结构：
+ *   1. 欢迎横幅 - 根据登录状态展示个性化 / 访客文案
+ *   2. 馆藏速览 - 从 public/home 接口获取全局统计数据
+ *   3. 我的快照 - 已登录时展示个人借阅/预约/罚款/通知概览
+ *   4. 推荐图书 - 精选推荐列表，点击进入详情
+ *   5. 新书上架 - 横向滚动书架
+ *   6. 分类概览 - 分类标签云
+ *   7. 快捷入口 - 常用功能卡片网格
+ *
+ *   数据来源：
+ *   - useHomeData() Hook 聚合 public/home 和 users/me/overview 两个接口
+ *   - 支持下拉刷新
+ */
+
 import React from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -15,6 +33,7 @@ import type { MainTabParamList, RootStackParamList } from "../navigation/types";
 
 type AppIcon = React.ComponentProps<typeof MaterialCommunityIcons>["name"];
 
+/** 个人快照卡片的元数据配置 */
 const snapshotMeta: Array<{
   key: "activeLoanCount" | "readyReservationCount" | "unreadNotificationCount" | "pendingFineCount";
   label: string;
@@ -27,6 +46,7 @@ const snapshotMeta: Array<{
 ];
 
 export function HomeScreen() {
+  // 复合导航类型：支持 Tab 内部切换 + Stack 层级跳转
   const navigation = useNavigation<
     CompositeNavigationProp<
       BottomTabNavigationProp<MainTabParamList, "HomeTab">,
@@ -34,27 +54,31 @@ export function HomeScreen() {
     >
   >();
   const { user, signOut } = useAuth();
+
+  // 聚合首页数据
   const { homeData, overview, loading, refreshing, errorMessage, loadData } = useHomeData({
     user,
     signOut,
   });
 
+  // 根据登录状态生成欢迎文案
   const welcomeTitle = user
     ? `欢迎回来，${user.fullName || user.username}`
-    : "先浏览图书，再登录查看个人数据";
+    : "探索智慧图书馆";
   const welcomeCopy = user
-    ? "首页已聚合你的借阅、通知、预约与馆藏推荐，可以直接从这里继续常用操作。"
-    : "你可以先浏览真实馆藏数据，登录后再解锁书架、预约、通知和借阅快照。";
+    ? "你的借阅、通知、预约与馆藏推荐已为你准备就绪。"
+    : "先浏览馆藏图书，登录后即可使用书架、预约和借阅等功能。";
 
   return (
     <Screen
       title="首页"
-      subtitle="聚合基础读者能力：馆藏概览、推荐书目、上新书单和个人借阅快照。"
+      subtitle="馆藏检索 · 推荐书目 · 借阅快照，一站式阅读服务"
       refreshing={refreshing}
       onRefresh={() => {
         void loadData(true);
       }}
     >
+      {/* ── 1. 欢迎横幅 ── */}
       <Card tone="tinted" style={styles.welcomeCard}>
         <View style={styles.welcomeTop}>
           <View style={styles.welcomeBody}>
@@ -71,19 +95,8 @@ export function HomeScreen() {
           </View>
         </View>
 
-        <View style={styles.heroHighlightRow}>
-          <HeroHighlight
-            icon="database-eye-outline"
-            title="真实数据"
-            description="沿用 public/home 与 users/me/overview"
-          />
-          <HeroHighlight
-            icon="gesture-tap-button"
-            title="高频入口"
-            description="馆藏浏览、书架、通知和预约直达"
-          />
-        </View>
 
+        {/* 主操作按钮 */}
         <View style={styles.bannerActions}>
           <ActionButton
             label="浏览馆藏"
@@ -108,12 +121,14 @@ export function HomeScreen() {
         </View>
       </Card>
 
+      {/* 加载态 */}
       {loading ? (
         <Card tone="muted">
           <Text style={styles.loadingText}>正在加载首页数据...</Text>
         </Card>
       ) : null}
 
+      {/* 错误态 */}
       {!loading && errorMessage ? (
         <ErrorCard
           message={errorMessage}
@@ -123,13 +138,15 @@ export function HomeScreen() {
         />
       ) : null}
 
+      {/* ── 数据加载完成后展示各区块 ── */}
       {!loading && !errorMessage && homeData ? (
         <>
+          {/* ── 2. 馆藏速览 ── */}
           <Card style={styles.sectionCard}>
             <View style={styles.sectionHeader}>
               <View>
                 <SectionTitle>馆藏速览</SectionTitle>
-                <Text style={styles.sectionHint}>用更醒目的方式看全局数据</Text>
+                <Text style={styles.sectionHint}>全馆实时统计数据一览</Text>
               </View>
               <InfoPill label="实时概览" tone="primary" icon="chart-donut" />
             </View>
@@ -151,16 +168,18 @@ export function HomeScreen() {
             </View>
           </Card>
 
+          {/* ── 3. 我的快照（仅登录后显示） ── */}
           {overview ? (
             <Card style={styles.sectionCard}>
               <View style={styles.sectionHeader}>
                 <View>
                   <SectionTitle>我的快照</SectionTitle>
-                  <Text style={styles.sectionHint}>把当前需要处理的个人事项放到首屏</Text>
+                  <Text style={styles.sectionHint}>你的借阅与待办事项概览</Text>
                 </View>
                 <InfoPill label="已登录" tone="success" icon="check-decagram-outline" />
               </View>
 
+              {/* 快照数据网格 */}
               <View style={styles.snapshotGrid}>
                 {snapshotMeta.map((item) => (
                   <View key={item.key} style={styles.snapshotCard}>
@@ -173,6 +192,7 @@ export function HomeScreen() {
                 ))}
               </View>
 
+              {/* 到期提醒条 */}
               <View style={styles.reminderStrip}>
                 <MaterialCommunityIcons name="clock-alert-outline" size={18} color={colors.accent} />
                 <Text style={styles.reminderText}>
@@ -182,6 +202,7 @@ export function HomeScreen() {
                 </Text>
               </View>
 
+              {/* 快捷操作按钮 */}
               <View style={styles.quickActionRow}>
                 <ActionButton
                   label="我的书架"
@@ -201,11 +222,12 @@ export function HomeScreen() {
             </Card>
           ) : null}
 
+          {/* ── 4. 推荐图书 ── */}
           <Card style={styles.sectionCard}>
             <View style={styles.sectionHeader}>
               <View>
                 <SectionTitle>推荐图书</SectionTitle>
-                <Text style={styles.sectionHint}>基于首页接口返回的精选推荐</Text>
+                <Text style={styles.sectionHint}>为你精选的优质读物</Text>
               </View>
               <InfoPill label="精选" tone="warning" icon="star-four-points-outline" />
             </View>
@@ -247,12 +269,13 @@ export function HomeScreen() {
             )}
           </Card>
 
+          {/* ── 5. 新书上架（横向滚动） ── */}
           {homeData.newArrivals.length > 0 ? (
             <Card style={styles.sectionCard}>
               <View style={styles.sectionHeader}>
                 <View>
                   <SectionTitle>新书上架</SectionTitle>
-                  <Text style={styles.sectionHint}>适合横向浏览的一组近期上新</Text>
+                  <Text style={styles.sectionHint}>近期新入库的热门图书</Text>
                 </View>
                 <InfoPill label="上新" tone="success" icon="book-plus-outline" />
               </View>
@@ -284,11 +307,12 @@ export function HomeScreen() {
             </Card>
           ) : null}
 
+          {/* ── 6. 分类概览（标签云） ── */}
           <Card style={styles.sectionCard}>
             <View style={styles.sectionHeader}>
               <View>
                 <SectionTitle>分类概览</SectionTitle>
-                <Text style={styles.sectionHint}>把热门馆藏分布压缩成更轻巧的标签云</Text>
+                <Text style={styles.sectionHint}>按分类快速浏览馆藏分布</Text>
               </View>
             </View>
             <View style={styles.categoryWrap}>
@@ -302,11 +326,12 @@ export function HomeScreen() {
             </View>
           </Card>
 
+          {/* ── 7. 快捷入口（功能卡片网格） ── */}
           <Card style={styles.sectionCard}>
             <View style={styles.sectionHeader}>
               <View>
                 <SectionTitle>快捷入口</SectionTitle>
-                <Text style={styles.sectionHint}>把常去的读者操作做成清晰的入口卡片</Text>
+                <Text style={styles.sectionHint}>常用功能，一键直达</Text>
               </View>
             </View>
             <View style={styles.entryGrid}>
@@ -345,6 +370,7 @@ export function HomeScreen() {
   );
 }
 
+/** Hero 区域亮点行组件 */
 function HeroHighlight({
   icon,
   title,
@@ -367,6 +393,11 @@ function HeroHighlight({
   );
 }
 
+/**
+ * 根据统计标签文本自动匹配图标和色调
+ * 按关键词（图书/读者/借/预约）做语义匹配，
+ * 未匹配到则使用 index 取模降级
+ */
 function getStatMeta(label: string, index: number) {
   if (label.includes("图书") || label.includes("馆藏")) {
     return {
@@ -400,6 +431,7 @@ function getStatMeta(label: string, index: number) {
     };
   }
 
+  // 降级：使用 index 取模选择图标
   const fallbackIcons = [
     "chart-arc",
     "chart-bar-stacked",
@@ -414,313 +446,131 @@ function getStatMeta(label: string, index: number) {
   };
 }
 
+// ─── 样式定义 ─────────────────────────────────
+
 const styles = StyleSheet.create({
-  welcomeCard: {
-    gap: spacing.md,
-  },
-  welcomeTop: {
-    flexDirection: "row",
-    gap: spacing.md,
-  },
-  welcomeBody: {
-    flex: 1,
-    gap: spacing.sm,
-  },
+  // ── 欢迎横幅 ──
+  welcomeCard: { gap: spacing.md },
+  welcomeTop: { flexDirection: "row", gap: spacing.md },
+  welcomeBody: { flex: 1, gap: spacing.sm },
   heroBadge: {
-    width: 64,
-    height: 64,
-    borderRadius: 24,
+    width: 64, height: 64, borderRadius: 24,
     backgroundColor: colors.primarySoft,
-    alignItems: "center",
-    justifyContent: "center",
-    alignSelf: "flex-start",
+    alignItems: "center", justifyContent: "center", alignSelf: "flex-start",
   },
-  welcomeTitle: {
-    color: colors.text,
-    fontSize: 24,
-    fontWeight: "800",
-    lineHeight: 32,
-  },
-  welcomeText: {
-    color: colors.textMuted,
-    fontSize: 14,
-    lineHeight: 22,
-  },
-  heroHighlightRow: {
-    gap: spacing.sm,
-  },
+  welcomeTitle: { color: colors.text, fontSize: 24, fontWeight: "800", lineHeight: 32 },
+  welcomeText: { color: colors.textMuted, fontSize: 14, lineHeight: 22 },
+  heroHighlightRow: { gap: spacing.sm },
   heroHighlightCard: {
-    borderRadius: radius.md,
-    backgroundColor: colors.surfaceElevated,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.sm,
-    flexDirection: "row",
-    gap: spacing.sm,
+    borderRadius: radius.md, backgroundColor: colors.surfaceElevated,
+    borderWidth: 1, borderColor: colors.border,
+    padding: spacing.sm, flexDirection: "row", gap: spacing.sm,
   },
   heroHighlightIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.primarySoft,
-    alignItems: "center",
-    justifyContent: "center",
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: colors.primarySoft, alignItems: "center", justifyContent: "center",
   },
-  heroHighlightBody: {
-    flex: 1,
-    gap: 2,
-  },
-  heroHighlightTitle: {
-    color: colors.text,
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  heroHighlightDescription: {
-    color: colors.textMuted,
-    fontSize: 13,
-    lineHeight: 20,
-  },
-  bannerActions: {
-    flexDirection: "row",
-    gap: spacing.sm,
-  },
-  bannerAction: {
-    flex: 1,
-  },
-  loadingText: {
-    color: colors.textMuted,
-    lineHeight: 22,
-  },
-  sectionCard: {
-    gap: spacing.md,
-  },
+  heroHighlightBody: { flex: 1, gap: 2 },
+  heroHighlightTitle: { color: colors.text, fontSize: 14, fontWeight: "700" },
+  heroHighlightDescription: { color: colors.textMuted, fontSize: 13, lineHeight: 20 },
+  bannerActions: { flexDirection: "row", gap: spacing.sm },
+  bannerAction: { flex: 1 },
+  loadingText: { color: colors.textMuted, lineHeight: 22 },
+
+  // ── 通用章节 ──
+  sectionCard: { gap: spacing.md },
   sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    gap: spacing.sm,
+    flexDirection: "row", justifyContent: "space-between",
+    alignItems: "flex-start", gap: spacing.sm,
   },
-  sectionHint: {
-    color: colors.textMuted,
-    fontSize: 13,
-    lineHeight: 20,
-    marginTop: 4,
-  },
-  statGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-  },
+  sectionHint: { color: colors.textMuted, fontSize: 13, lineHeight: 20, marginTop: 4 },
+
+  // ── 馆藏速览统计 ──
+  statGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   statCard: {
-    flexBasis: "47%",
-    flexGrow: 1,
-    minWidth: 132,
-    backgroundColor: colors.surfaceAlt,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    gap: spacing.xs,
+    flexBasis: "47%", flexGrow: 1, minWidth: 132,
+    backgroundColor: colors.surfaceAlt, borderRadius: radius.md,
+    padding: spacing.md, gap: spacing.xs,
   },
   statIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 2,
+    width: 36, height: 36, borderRadius: 18,
+    alignItems: "center", justifyContent: "center", marginBottom: 2,
   },
-  statValue: {
-    color: colors.text,
-    fontSize: 28,
-    fontWeight: "800",
-  },
-  statLabel: {
-    color: colors.textMuted,
-    fontSize: 13,
-  },
-  snapshotGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-  },
+  statValue: { color: colors.text, fontSize: 28, fontWeight: "800" },
+  statLabel: { color: colors.textMuted, fontSize: 13 },
+
+  // ── 我的快照 ──
+  snapshotGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   snapshotCard: {
-    flexBasis: "47%",
-    flexGrow: 1,
-    minWidth: 132,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    gap: spacing.xs,
-    backgroundColor: colors.surface,
+    flexBasis: "47%", flexGrow: 1, minWidth: 132,
+    borderWidth: 1, borderColor: colors.border, borderRadius: radius.md,
+    padding: spacing.md, gap: spacing.xs, backgroundColor: colors.surface,
   },
   snapshotIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.primarySoft,
-    alignItems: "center",
-    justifyContent: "center",
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: colors.primarySoft, alignItems: "center", justifyContent: "center",
   },
-  snapshotValue: {
-    color: colors.primaryDark,
-    fontSize: 24,
-    fontWeight: "800",
-  },
-  snapshotLabel: {
-    color: colors.textMuted,
-    fontSize: 13,
-  },
+  snapshotValue: { color: colors.primaryDark, fontSize: 24, fontWeight: "800" },
+  snapshotLabel: { color: colors.textMuted, fontSize: 13 },
   reminderStrip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    borderRadius: radius.md,
-    backgroundColor: colors.accentSoft,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    flexDirection: "row", alignItems: "center", gap: spacing.sm,
+    borderRadius: radius.md, backgroundColor: colors.accentSoft,
+    paddingHorizontal: spacing.md, paddingVertical: spacing.sm,
   },
-  reminderText: {
-    flex: 1,
-    color: colors.text,
-    lineHeight: 21,
-  },
-  quickActionRow: {
-    flexDirection: "row",
-    gap: spacing.sm,
-  },
-  quickActionButton: {
-    flex: 1,
-  },
+  reminderText: { flex: 1, color: colors.text, lineHeight: 21 },
+  quickActionRow: { flexDirection: "row", gap: spacing.sm },
+  quickActionButton: { flex: 1 },
+
+  // ── 推荐图书 ──
   featuredBookCard: {
-    flexDirection: "row",
-    gap: spacing.md,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
+    flexDirection: "row", gap: spacing.md, borderRadius: radius.md,
+    borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface,
     padding: spacing.sm,
   },
-  featuredBookCover: {
-    width: 72,
-    height: 104,
-  },
-  featuredBookBody: {
-    flex: 1,
-    justifyContent: "space-between",
-    gap: spacing.sm,
-  },
-  featuredBookHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: spacing.sm,
-  },
-  featuredBookTitleWrap: {
-    flex: 1,
-    gap: 4,
-  },
-  bookTitle: {
-    color: colors.text,
-    fontSize: 16,
-    fontWeight: "800",
-    lineHeight: 22,
-  },
-  bookMeta: {
-    color: colors.textMuted,
-    fontSize: 14,
-  },
-  featuredBookFooter: {
-    gap: spacing.xs,
-  },
-  featuredBookHint: {
-    color: colors.textSoft,
-    fontSize: 12,
-  },
-  arrivalShelf: {
-    gap: spacing.sm,
-    paddingRight: spacing.sm,
-  },
+  featuredBookCover: { width: 72, height: 104 },
+  featuredBookBody: { flex: 1, justifyContent: "space-between", gap: spacing.sm },
+  featuredBookHeader: { flexDirection: "row", justifyContent: "space-between", gap: spacing.sm },
+  featuredBookTitleWrap: { flex: 1, gap: 4 },
+  bookTitle: { color: colors.text, fontSize: 16, fontWeight: "800", lineHeight: 22 },
+  bookMeta: { color: colors.textMuted, fontSize: 14 },
+  featuredBookFooter: { gap: spacing.xs },
+  featuredBookHint: { color: colors.textSoft, fontSize: 12 },
+
+  // ── 新书上架（横向滚动） ──
+  arrivalShelf: { gap: spacing.sm, paddingRight: spacing.sm },
   arrivalCard: {
-    width: 148,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    padding: spacing.sm,
-    gap: spacing.sm,
+    width: 148, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border,
+    backgroundColor: colors.surface, padding: spacing.sm, gap: spacing.sm,
   },
-  arrivalCover: {
-    width: "100%",
-    height: 164,
-  },
-  arrivalTitle: {
-    color: colors.text,
-    fontSize: 15,
-    fontWeight: "700",
-    lineHeight: 21,
-  },
-  arrivalMeta: {
-    color: colors.textMuted,
-    fontSize: 13,
-  },
-  categoryWrap: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-  },
+  arrivalCover: { width: "100%", height: 164 },
+  arrivalTitle: { color: colors.text, fontSize: 15, fontWeight: "700", lineHeight: 21 },
+  arrivalMeta: { color: colors.textMuted, fontSize: 13 },
+
+  // ── 分类概览 ──
+  categoryWrap: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   categoryChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: colors.surfaceAlt,
-    borderRadius: 999,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 10,
+    flexDirection: "row", alignItems: "center", gap: 6,
+    backgroundColor: colors.surfaceAlt, borderRadius: 999,
+    paddingHorizontal: spacing.md, paddingVertical: 10,
   },
-  categoryLabel: {
-    color: colors.text,
-    fontWeight: "600",
-  },
-  categoryCount: {
-    color: colors.primaryDark,
-    fontWeight: "800",
-  },
-  entryGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-  },
+  categoryLabel: { color: colors.text, fontWeight: "600" },
+  categoryCount: { color: colors.primaryDark, fontWeight: "800" },
+
+  // ── 快捷入口 ──
+  entryGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   entryCard: {
-    flexBasis: "47%",
-    flexGrow: 1,
-    minWidth: 148,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    backgroundColor: colors.surface,
-    gap: spacing.xs,
+    flexBasis: "47%", flexGrow: 1, minWidth: 148,
+    borderWidth: 1, borderColor: colors.border, borderRadius: radius.md,
+    padding: spacing.md, backgroundColor: colors.surface, gap: spacing.xs,
   },
   entryIconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.primarySoft,
-    alignItems: "center",
-    justifyContent: "center",
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: colors.primarySoft, alignItems: "center", justifyContent: "center",
     marginBottom: 2,
   },
-  entryTitle: {
-    color: colors.text,
-    fontWeight: "800",
-    fontSize: 15,
-  },
-  entryDescription: {
-    color: colors.textMuted,
-    fontSize: 12,
-    lineHeight: 19,
-  },
-  pressedCard: {
-    opacity: 0.88,
-    transform: [{ scale: 0.99 }],
-  },
+  entryTitle: { color: colors.text, fontWeight: "800", fontSize: 15 },
+  entryDescription: { color: colors.textMuted, fontSize: 12, lineHeight: 19 },
+
+  // ── 交互反馈 ──
+  pressedCard: { opacity: 0.88, transform: [{ scale: 0.99 }] },
 });
