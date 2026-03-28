@@ -24,6 +24,7 @@ import type { RouteProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { Card, Screen, SectionTitle } from "../components/Screen";
+import { SummaryHeroCard } from "../components/SummaryHeroCard";
 import { ActionButton, CoverImage, EmptyCard, ErrorCard, InfoPill, LoginPromptCard } from "../components/Ui";
 import type { RootStackParamList } from "../navigation/types";
 import { getErrorMessage } from "../services/http";
@@ -116,23 +117,17 @@ export function ReservationsScreen() {
         void loadData(true);
       }}
     >
-      <Card tone="tinted" style={styles.summaryCard}>
-        <View style={styles.summaryHeader}>
-          <View style={styles.summaryIconWrap}>
-            <MaterialCommunityIcons name="calendar-clock-outline" size={26} color={colors.primaryDark} />
-          </View>
-          <View style={styles.summaryBody}>
-            <InfoPill label="预约进度" tone="primary" icon="calendar-check-outline" />
-            <Text style={styles.summaryTitle}>追踪排队与待取状态</Text>
-            <Text style={styles.summaryText}>当图书没有可借副本时，可以在详情页发起预约，并在这里跟进排队进度。</Text>
-          </View>
-        </View>
-        <View style={styles.statRow}>
-          <StatCard icon="timer-sand" value={pending.length} label="进行中" />
-          <StatCard icon="package-variant-closed" value={pending.filter((item) => item.status === "AWAITING_PICKUP").length} label="待取" />
-          <StatCard icon="history" value={history.length} label="历史预约" />
-        </View>
-      </Card>
+      <SummaryHeroCard
+        icon="calendar-clock-outline"
+        pill={{ label: "预约进度", tone: "primary", icon: "calendar-check-outline" }}
+        title="追踪排队与待取状态"
+        description="当图书没有可借副本时，可以在详情页发起预约，并在这里跟进排队进度。"
+        stats={[
+          { icon: "timer-sand", value: pending.length, label: "进行中" },
+          { icon: "package-variant-closed", value: pending.filter((item) => item.status === "AWAITING_PICKUP").length, label: "待取" },
+          { icon: "history", value: history.length, label: "历史预约" },
+        ]}
+      />
 
       {loading ? (
         <Card tone="muted">
@@ -244,23 +239,7 @@ function ReservationCard({
   );
 }
 
-function StatCard({
-  icon,
-  value,
-  label,
-}: {
-  icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
-  value: number;
-  label: string;
-}) {
-  return (
-    <View style={styles.statCard}>
-      <MaterialCommunityIcons name={icon} size={18} color={colors.primaryDark} />
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
-  );
-}
+
 
 /** 预约状态元数据映射 */
 function getReservationMeta(status: ReservationStatus) {
@@ -279,57 +258,6 @@ function getReservationMeta(status: ReservationStatus) {
 }
 
 const styles = StyleSheet.create({
-  summaryCard: {
-    gap: spacing.md,
-  },
-  summaryHeader: {
-    flexDirection: "row",
-    gap: spacing.md,
-  },
-  summaryIconWrap: {
-    width: 60,
-    height: 60,
-    borderRadius: 22,
-    backgroundColor: colors.primarySoft,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  summaryBody: {
-    flex: 1,
-    gap: spacing.xs,
-  },
-  summaryTitle: {
-    color: colors.text,
-    fontSize: 22,
-    fontWeight: "800",
-  },
-  summaryText: {
-    color: colors.textMuted,
-    lineHeight: 22,
-  },
-  statRow: {
-    flexDirection: "row",
-    gap: spacing.sm,
-  },
-  statCard: {
-    flex: 1,
-    minWidth: 0,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    backgroundColor: colors.surfaceElevated,
-    padding: spacing.md,
-    gap: 4,
-  },
-  statValue: {
-    color: colors.primaryDark,
-    fontSize: 24,
-    fontWeight: "800",
-  },
-  statLabel: {
-    color: colors.textMuted,
-    fontSize: 12,
-  },
   helperText: {
     color: colors.textMuted,
     lineHeight: 21,

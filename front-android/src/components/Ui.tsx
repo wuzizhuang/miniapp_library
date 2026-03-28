@@ -20,9 +20,11 @@
  *   - TextField：文本输入框（支持标签、图标、多行）
  */
 
-import React from "react";
+import React, { useRef, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
+  ActivityIndicator,
+  Animated,
   Image,
   Pressable,
   StyleSheet,
@@ -95,6 +97,7 @@ export function ActionButton({
         styleMap[tone],
         disabled ? styles.disabledButton : undefined,
         pressed && !disabled ? styles.pressedButton : undefined,
+        pressed && !disabled ? { opacity: 0.85 } : undefined,
         style,
       ]}
       onPress={onPress}
@@ -158,16 +161,72 @@ export function InfoPill({
   );
 }
 
+/**
+ * 可选中的过滤胶囊标签
+ * 用于 Tab 切换、分类筛选等场景
+ */
+export function FilterChip({
+  label,
+  icon,
+  active,
+  onPress,
+}: {
+  label: string;
+  icon?: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+  active: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      style={[styles.filterChip, active ? styles.filterChipActive : undefined]}
+      onPress={onPress}
+    >
+      {icon ? (
+        <MaterialCommunityIcons
+          name={icon}
+          size={16}
+          color={active ? colors.white : colors.textMuted}
+        />
+      ) : null}
+      <Text style={active ? styles.filterChipActiveText : styles.filterChipText}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+/**
+ * 加载状态卡片
+ * 替代各页面内联的 "正在加载..." 纯文字，统一为 ActivityIndicator + 文本
+ */
+export function LoadingCard({ message = "正在加载..." }: { message?: string }) {
+  return (
+    <View style={[styles.messageCard, styles.loadingCard]}>
+      <ActivityIndicator size="small" color={colors.primary} />
+      <Text style={styles.loadingText}>{message}</Text>
+    </View>
+  );
+}
+
 /** 空状态提示卡片 */
 export function EmptyCard({
   title,
   description,
+  icon,
 }: {
   title: string;
   description?: string;
+  icon?: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
 }) {
   return (
     <View style={styles.messageCard}>
+      <View style={styles.emptyIconWrap}>
+        <MaterialCommunityIcons
+          name={icon ?? "inbox-outline"}
+          size={32}
+          color={colors.textSoft}
+        />
+      </View>
       <Text style={styles.messageTitle}>{title}</Text>
       {description ? <Text style={styles.messageDescription}>{description}</Text> : null}
     </View>
@@ -189,9 +248,12 @@ export function LoginPromptCard({
 }) {
   return (
     <View style={styles.messageCard}>
+      <View style={styles.loginIconWrap}>
+        <MaterialCommunityIcons name="shield-account-outline" size={32} color={colors.primaryDark} />
+      </View>
       <Text style={styles.messageTitle}>{title}</Text>
       <Text style={styles.messageDescription}>{description}</Text>
-      <ActionButton label="去登录" onPress={onLogin} />
+      <ActionButton label="去登录" onPress={onLogin} icon="login" />
     </View>
   );
 }
@@ -209,6 +271,9 @@ export function ErrorCard({
 }) {
   return (
     <View style={[styles.messageCard, styles.errorCard]}>
+      <View style={styles.errorIconWrap}>
+        <MaterialCommunityIcons name="alert-circle-outline" size={28} color={colors.danger} />
+      </View>
       <Text style={styles.errorTitle}>加载失败</Text>
       <Text style={styles.errorMessage}>{message}</Text>
       {onRetry ? <ActionButton label="重试" onPress={onRetry} tone="secondary" icon="refresh" /> : null}
@@ -218,7 +283,7 @@ export function ErrorCard({
 
 /**
  * 图书封面图片组件
- * 有封面 URL 时显示图片；无封面时显示首字母降级展示
+ * 有封面 URL 时渐显加载图片；无封面时显示首字母降级展示
  */
 export function CoverImage({
   title,
@@ -229,8 +294,31 @@ export function CoverImage({
   uri?: string;
   style?: StyleProp<ImageStyle>;
 }) {
-  if (uri) {
-    return <Image source={{ uri }} style={[styles.coverImage, style]} resizeMode="cover" />;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [failed, setFailed] = useState(false);
+
+  if (uri && !failed) {
+    return (
+      <View style={[styles.coverImage, style]}>
+        {/* 加载占位 */}
+        <View style={styles.coverPlaceholder}>
+          <MaterialCommunityIcons name="book-open-variant" size={18} color={colors.textSoft} />
+        </View>
+        <Animated.Image
+          source={{ uri }}
+          style={[styles.coverImageInner, { opacity: fadeAnim }]}
+          resizeMode="cover"
+          onLoad={() => {
+            Animated.timing(fadeAnim, {
+              toValue: 1,
+              duration: 200,
+              useNativeDriver: true,
+            }).start();
+          }}
+          onError={() => setFailed(true)}
+        />
+      </View>
+    );
   }
 
   // 无封面降级：显示书名首字 + 图书图标
@@ -397,6 +485,31 @@ const styles = StyleSheet.create({
   pillTextDanger: { color: colors.danger },
   pillTextSuccess: { color: colors.primaryDark },
 
+  // ── 过滤胶囊标签样式 ──
+  filterChip: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 999,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 9,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: colors.surface,
+  },
+  filterChipActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  filterChipText: {
+    color: colors.text,
+    fontWeight: "600",
+  },
+  filterChipActiveText: {
+    color: colors.white,
+    fontWeight: "700",
+  },
+
   // ── 消息卡片样式 ──
   /** 消息卡片基础样式 */
   messageCard: {
@@ -405,23 +518,64 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceElevated,
     borderRadius: radius.md,
     padding: spacing.lg,
-    gap: spacing.xs,
+    gap: spacing.sm,
+    alignItems: "center",
     ...shadows.card,
   },
   messageTitle: {
     color: colors.text,
     fontSize: 18,
     fontWeight: "800",
+    textAlign: "center",
   },
   messageDescription: {
     color: colors.textMuted,
     fontSize: 14,
     lineHeight: 21,
+    textAlign: "center",
+  },
+  /** 加载卡片 */
+  loadingCard: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: spacing.sm,
+    backgroundColor: colors.surfaceAlt,
+    borderColor: colors.border,
+  },
+  loadingText: {
+    color: colors.textMuted,
+    fontSize: 14,
+  },
+  /** 空状态图标容器 */
+  emptyIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.surfaceAlt,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  /** 登录提示图标容器 */
+  loginIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.primarySoft,
+    alignItems: "center",
+    justifyContent: "center",
   },
   /** 错误卡片变体 */
   errorCard: {
-    borderColor: "#efb7ae",
-    backgroundColor: "#fff4f2",
+    borderColor: colors.dangerSoft,
+    backgroundColor: colors.dangerSoft,
+  },
+  errorIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.surfaceElevated,
+    alignItems: "center",
+    justifyContent: "center",
   },
   errorTitle: {
     color: colors.danger,
@@ -431,16 +585,30 @@ const styles = StyleSheet.create({
   errorMessage: {
     color: colors.danger,
     lineHeight: 21,
+    textAlign: "center",
   },
 
   // ── 封面图片样式 ──
-  /** 封面图片 */
+  /** 封面图片容器 */
   coverImage: {
     width: 64,
     height: 92,
     borderRadius: radius.sm,
     backgroundColor: colors.surfaceAlt,
+    overflow: "hidden",
     ...shadows.soft,
+  },
+  /** 封面加载占位 */
+  coverPlaceholder: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.surfaceAlt,
+  },
+  /** 封面图片（绝对定位，覆盖占位层） */
+  coverImageInner: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: radius.sm,
   },
   /** 封面降级展示容器 */
   coverFallback: {

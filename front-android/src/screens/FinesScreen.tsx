@@ -24,6 +24,7 @@ import type { RouteProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { Card, Screen, SectionTitle } from "../components/Screen";
+import { SummaryHeroCard } from "../components/SummaryHeroCard";
 import { ActionButton, EmptyCard, ErrorCard, InfoPill, LoginPromptCard } from "../components/Ui";
 import type { RootStackParamList } from "../navigation/types";
 import { fineService, type MyFine } from "../services/fine";
@@ -114,23 +115,19 @@ export function FinesScreen() {
         void loadData(true);
       }}
     >
-      <Card tone="tinted" style={styles.summaryCard}>
-        <View style={styles.summaryHeader}>
-          <View style={styles.summaryIconWrap}>
-            <MaterialCommunityIcons name="cash-multiple" size={26} color={colors.danger} />
-          </View>
-          <View style={styles.summaryBody}>
-            <InfoPill label="罚款中心" tone="warning" icon="cash-lock" />
-            <Text style={styles.summaryTitle}>及时处理借阅费用</Text>
-            <Text style={styles.summaryText}>逾期、遗失或损坏产生的费用会汇总在这里，处理完成后会同步更新总览与通知。</Text>
-          </View>
-        </View>
-        <View style={styles.statRow}>
-          <StatCard icon="alert-circle-outline" value={pending.length} label="待处理" />
-          <StatCard icon="cash" valueLabel={formatCurrency(pendingTotal)} label="待缴总额" danger />
-          <StatCard icon="history" value={history.length} label="历史记录" />
-        </View>
-      </Card>
+      <SummaryHeroCard
+        icon="cash-multiple"
+        iconColor={colors.danger}
+        iconBg={colors.dangerSoft}
+        pill={{ label: "罚款中心", tone: "warning", icon: "cash-lock" }}
+        title="及时处理借阅费用"
+        description="逾期、遗失或损坏产生的费用会汇总在这里，处理完成后会同步更新总览与通知。"
+        stats={[
+          { icon: "alert-circle-outline", value: pending.length, label: "待处理" },
+          { icon: "cash", value: formatCurrency(pendingTotal), label: "待缴总额", danger: true },
+          { icon: "history", value: history.length, label: "历史记录" },
+        ]}
+      />
 
       {loading ? (
         <Card tone="muted">
@@ -232,27 +229,7 @@ function FineCard({
   );
 }
 
-function StatCard({
-  icon,
-  value,
-  valueLabel,
-  label,
-  danger = false,
-}: {
-  icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
-  value?: number;
-  valueLabel?: string;
-  label: string;
-  danger?: boolean;
-}) {
-  return (
-    <View style={styles.statCard}>
-      <MaterialCommunityIcons name={icon} size={18} color={danger ? colors.danger : colors.primaryDark} />
-      <Text style={[styles.statValue, danger ? styles.statValueDanger : undefined]}>{valueLabel ?? value ?? 0}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
-  );
-}
+
 
 /** 根据罚款状态和类型返回元数据（标题、图标、状态文案、色调） */
 function getFineMeta(itemStatus: MyFine["status"], type: MyFine["type"]) {
@@ -283,60 +260,6 @@ function getFineMeta(itemStatus: MyFine["status"], type: MyFine["type"]) {
 }
 
 const styles = StyleSheet.create({
-  summaryCard: {
-    gap: spacing.md,
-  },
-  summaryHeader: {
-    flexDirection: "row",
-    gap: spacing.md,
-  },
-  summaryIconWrap: {
-    width: 60,
-    height: 60,
-    borderRadius: 22,
-    backgroundColor: colors.dangerSoft,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  summaryBody: {
-    flex: 1,
-    gap: spacing.xs,
-  },
-  summaryTitle: {
-    color: colors.text,
-    fontSize: 22,
-    fontWeight: "800",
-  },
-  summaryText: {
-    color: colors.textMuted,
-    lineHeight: 22,
-  },
-  statRow: {
-    flexDirection: "row",
-    gap: spacing.sm,
-  },
-  statCard: {
-    flex: 1,
-    minWidth: 0,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    backgroundColor: colors.surfaceElevated,
-    padding: spacing.md,
-    gap: 4,
-  },
-  statValue: {
-    color: colors.primaryDark,
-    fontSize: 20,
-    fontWeight: "800",
-  },
-  statValueDanger: {
-    color: colors.danger,
-  },
-  statLabel: {
-    color: colors.textMuted,
-    fontSize: 12,
-  },
   helperText: {
     color: colors.textMuted,
     lineHeight: 21,

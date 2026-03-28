@@ -18,6 +18,7 @@ import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { Card, Screen, SectionTitle } from "../components/Screen";
+import { SummaryHeroCard } from "../components/SummaryHeroCard";
 import { CoverImage, EmptyCard, ErrorCard, InfoPill, LoginPromptCard, ActionButton, TextField } from "../components/Ui";
 import type { RootStackParamList } from "../navigation/types";
 import { favoriteService } from "../services/favorite";
@@ -221,23 +222,17 @@ export function ShelfScreen() {
         void loadData(true);
       }}
     >
-      <Card tone="tinted" style={styles.summaryCard}>
-        <View style={styles.summaryHeader}>
-          <View style={styles.summaryIconWrap}>
-            <MaterialCommunityIcons name="bookshelf" size={26} color={colors.primaryDark} />
-          </View>
-          <View style={styles.summaryBody}>
-            <InfoPill label="阅读中心" tone="primary" icon="book-open-page-variant-outline" />
-            <Text style={styles.summaryTitle}>把你的阅读资产集中起来</Text>
-            <Text style={styles.summaryText}>收藏、当前借阅和历史借阅在这里统一管理，方便继续阅读或回看记录。</Text>
-          </View>
-        </View>
-        <View style={styles.statRow}>
-          <StatCard icon="heart-outline" value={favorites.length} label="收藏" />
-          <StatCard icon="bookmark-check-outline" value={activeLoans.length} label="当前借阅" />
-          <StatCard icon="history" value={historyLoans.length} label="历史借阅" />
-        </View>
-      </Card>
+      <SummaryHeroCard
+        icon="bookshelf"
+        pill={{ label: "阅读中心", tone: "primary", icon: "book-open-page-variant-outline" }}
+        title="把你的阅读资产集中起来"
+        description="收藏、当前借阅和历史借阅在这里统一管理，方便继续阅读或回看记录。"
+        stats={[
+          { icon: "heart-outline", value: favorites.length, label: "收藏" },
+          { icon: "bookmark-check-outline", value: activeLoans.length, label: "当前借阅" },
+          { icon: "history", value: historyLoans.length, label: "历史借阅" },
+        ]}
+      />
 
       <Card style={styles.filterCard}>
         <TextField
@@ -336,77 +331,9 @@ export function ShelfScreen() {
   );
 }
 
-/** 统计卡片组件（收藏/当前借阅/历史借阅数量展示） */
-function StatCard({
-  icon,
-  value,
-  label,
-}: {
-  icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
-  value: number;
-  label: string;
-}) {
-  return (
-    <View style={styles.statCard}>
-      <MaterialCommunityIcons name={icon} size={18} color={colors.primaryDark} />
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
-  );
-}
+
 
 const styles = StyleSheet.create({
-  summaryCard: {
-    gap: spacing.md,
-  },
-  summaryHeader: {
-    flexDirection: "row",
-    gap: spacing.md,
-  },
-  summaryIconWrap: {
-    width: 60,
-    height: 60,
-    borderRadius: 22,
-    backgroundColor: colors.primarySoft,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  summaryBody: {
-    flex: 1,
-    gap: spacing.xs,
-  },
-  summaryTitle: {
-    color: colors.text,
-    fontSize: 22,
-    fontWeight: "800",
-  },
-  summaryText: {
-    color: colors.textMuted,
-    lineHeight: 22,
-  },
-  statRow: {
-    flexDirection: "row",
-    gap: spacing.sm,
-  },
-  statCard: {
-    flex: 1,
-    minWidth: 0,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    backgroundColor: colors.surfaceElevated,
-    padding: spacing.md,
-    gap: 4,
-  },
-  statValue: {
-    color: colors.primaryDark,
-    fontSize: 24,
-    fontWeight: "800",
-  },
-  statLabel: {
-    color: colors.textMuted,
-    fontSize: 12,
-  },
   filterCard: {
     gap: spacing.md,
   },

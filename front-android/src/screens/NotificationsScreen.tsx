@@ -18,6 +18,7 @@ import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { Card, Screen, SectionTitle } from "../components/Screen";
+import { SummaryHeroCard } from "../components/SummaryHeroCard";
 import { ActionButton, EmptyCard, ErrorCard, InfoPill, LoginPromptCard } from "../components/Ui";
 import type { RootStackParamList } from "../navigation/types";
 import {
@@ -227,23 +228,17 @@ export function NotificationsScreen() {
         void loadData(true);
       }}
     >
-      <Card tone="tinted" style={styles.summaryCard}>
-        <View style={styles.summaryHeader}>
-          <View style={styles.summaryIconWrap}>
-            <MaterialCommunityIcons name="bell-badge-outline" size={26} color={colors.primaryDark} />
-          </View>
-          <View style={styles.summaryBody}>
-            <InfoPill label="消息中心" tone="primary" icon="message-badge-outline" />
-            <Text style={styles.summaryTitle}>统一处理阅读提醒</Text>
-            <Text style={styles.summaryText}>到馆待取、逾期提醒和系统消息都会沉淀在这里，方便集中处理。</Text>
-          </View>
-        </View>
-        <View style={styles.statRow}>
-          <StatCard icon="email-open-outline" value={readCount} label="已读" />
-          <StatCard icon="email-outline" value={unreadCount} label="未读" />
-          <StatCard icon="message-processing-outline" value={items.length} label="总消息" />
-        </View>
-      </Card>
+      <SummaryHeroCard
+        icon="bell-badge-outline"
+        pill={{ label: "消息中心", tone: "primary", icon: "message-badge-outline" }}
+        title="统一处理阅读提醒"
+        description="到馆待取、逾期提醒和系统消息都会沉淀在这里，方便集中处理。"
+        stats={[
+          { icon: "email-open-outline", value: readCount, label: "已读" },
+          { icon: "email-outline", value: unreadCount, label: "未读" },
+          { icon: "message-processing-outline", value: items.length, label: "总消息" },
+        ]}
+      />
 
       {loading ? (
         <Card tone="muted">
@@ -376,23 +371,7 @@ export function NotificationsScreen() {
   );
 }
 
-function StatCard({
-  icon,
-  value,
-  label,
-}: {
-  icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
-  value: number;
-  label: string;
-}) {
-  return (
-    <View style={styles.statCard}>
-      <MaterialCommunityIcons name={icon} size={18} color={colors.primaryDark} />
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
-  );
-}
+
 
 /** 根据通知类型返回对应的图标、文案和色调 */
 function getNotificationMeta(type: NotificationItem["type"]) {
@@ -409,57 +388,6 @@ function getNotificationMeta(type: NotificationItem["type"]) {
 }
 
 const styles = StyleSheet.create({
-  summaryCard: {
-    gap: spacing.md,
-  },
-  summaryHeader: {
-    flexDirection: "row",
-    gap: spacing.md,
-  },
-  summaryIconWrap: {
-    width: 60,
-    height: 60,
-    borderRadius: 22,
-    backgroundColor: colors.primarySoft,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  summaryBody: {
-    flex: 1,
-    gap: spacing.xs,
-  },
-  summaryTitle: {
-    color: colors.text,
-    fontSize: 22,
-    fontWeight: "800",
-  },
-  summaryText: {
-    color: colors.textMuted,
-    lineHeight: 22,
-  },
-  statRow: {
-    flexDirection: "row",
-    gap: spacing.sm,
-  },
-  statCard: {
-    flex: 1,
-    minWidth: 0,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    backgroundColor: colors.surfaceElevated,
-    padding: spacing.md,
-    gap: 4,
-  },
-  statValue: {
-    color: colors.primaryDark,
-    fontSize: 24,
-    fontWeight: "800",
-  },
-  statLabel: {
-    color: colors.textMuted,
-    fontSize: 12,
-  },
   helperText: {
     color: colors.textMuted,
     lineHeight: 21,
