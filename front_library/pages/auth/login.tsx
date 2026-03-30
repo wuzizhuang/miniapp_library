@@ -111,22 +111,22 @@ export default function LoginPage() {
 
   return (
     <DefaultLayout>
-      <div className="flex h-full w-full items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="flex h-full w-full items-center justify-center py-8">
         {/* 包裹动画容器 */}
         <motion.div
           animate={controls} // 绑定动画控制器
-          className="rounded-xl flex w-full max-w-md flex-col gap-6 bg-white p-10 shadow-lg dark:bg-gray-800"
+          className="flex w-full max-w-md flex-col gap-6 rounded-[28px] border border-slate-200/80 bg-white/90 p-10 shadow-[0_28px_70px_-44px_rgba(148,163,184,0.28)] backdrop-blur-xl dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.92),rgba(15,23,42,0.82))] dark:shadow-[0_28px_70px_-44px_rgba(2,6,23,0.9)]"
         >
           <div className="text-center">
             <Icon
               className="text-primary-500 mx-auto mb-4 text-5xl"
               icon="solar:book-2-bold"
             />
-            <p className="pb-1 text-4xl font-bold text-gray-900 dark:text-white">
+            <p className="pb-1 text-4xl font-bold text-slate-900 dark:text-white">
               图书馆入口
             </p>
-            <p className="text-md text-gray-500 dark:text-gray-400">
-              请登录以访问您的图书馆资源。
+            <p className="text-md text-slate-500 dark:text-slate-400">
+              请登录以访问图书馆资源。
             </p>
           </div>
 

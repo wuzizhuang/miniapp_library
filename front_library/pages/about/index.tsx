@@ -81,247 +81,255 @@ const governanceCards = [
     title: "统一规则中心",
     desc: "借阅上限、预约履约、归还审核、逾期罚款和通知策略都由后端规则统一控制，不依赖页面临时判断。",
     icon: "solar:shield-check-bold-duotone",
-    accent: "from-sky-500/25 to-cyan-400/10",
+    accent: "from-sky-500/15 to-cyan-400/5 dark:from-sky-500/25 dark:to-cyan-400/10",
+    iconColor: "text-sky-600 dark:text-sky-200",
   },
   {
     title: "真实业务闭环",
     desc: "不是单页演示，而是把读者端和后台管理真正串成一条可运行的业务链，方便演示也方便继续扩展。",
     icon: "solar:repeat-bold-duotone",
-    accent: "from-amber-500/25 to-orange-400/10",
+    accent: "from-amber-500/15 to-orange-400/5 dark:from-amber-500/25 dark:to-orange-400/10",
+    iconColor: "text-amber-600 dark:text-amber-200",
   },
   {
     title: "前后台一体协作",
     desc: "同一套图书、借阅、副本和通知数据，同时服务读者体验与馆员运营，减少重复维护和信息断层。",
     icon: "solar:layers-bold-duotone",
-    accent: "from-emerald-500/25 to-teal-400/10",
+    accent: "from-emerald-500/15 to-teal-400/5 dark:from-emerald-500/25 dark:to-teal-400/10",
+    iconColor: "text-emerald-600 dark:text-emerald-200",
   },
 ];
 
 export default function AboutPage() {
   return (
     <DefaultLayout>
-      <section className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.14),transparent_24%),radial-gradient(circle_at_82%_18%,rgba(251,191,36,0.1),transparent_18%),linear-gradient(180deg,#07101c_0%,#0b1525_45%,#111827_100%)] text-white">
-        <div className="mx-auto max-w-7xl px-4 py-12">
-          <div className="overflow-hidden rounded-[36px] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.9),rgba(8,15,30,0.82))] p-6 shadow-[0_32px_90px_-42px_rgba(2,6,23,0.9)] md:p-8">
-            <div className="grid gap-8 xl:grid-cols-[1.05fr_0.95fr] xl:items-start">
-              <div className="space-y-6">
-                <Chip
-                  className="border border-sky-400/20 bg-sky-400/10 text-sky-200"
-                  radius="sm"
-                  variant="flat"
-                >
-                  Library System Overview
-                </Chip>
+      <section className="mx-auto max-w-7xl py-6">
+        {/* ═══ 顶部 Hero 卡片 ═══ */}
+        <div className="overflow-hidden rounded-[36px] border border-slate-200/80 bg-[linear-gradient(145deg,rgba(255,255,255,0.94),rgba(240,247,255,0.96))] p-6 shadow-[0_32px_90px_-42px_rgba(148,163,184,0.28)] md:p-8 dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.9),rgba(8,15,30,0.82))] dark:shadow-[0_32px_90px_-42px_rgba(2,6,23,0.9)]">
+          <div className="grid gap-8 xl:grid-cols-[1.05fr_0.95fr] xl:items-start">
+            <div className="space-y-6">
+              <Chip
+                className="border border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-400/20 dark:bg-sky-400/10 dark:text-sky-200"
+                radius="sm"
+                variant="flat"
+              >
+                Library System Overview
+              </Chip>
 
-                <div className="space-y-4">
-                  <h1 className="max-w-3xl text-4xl font-black tracking-tight text-white md:text-6xl md:leading-[1.02]">
-                    面向读者与馆员的统一智慧图书馆系统
-                  </h1>
-                  <p className="max-w-2xl text-base leading-8 text-slate-300 md:text-lg">
-                    这套系统把馆藏检索、预约借阅、归还审核、罚款处理、消息通知、评论审核和后台运营分析放进同一条真实业务链路里，目标是让读者体验更顺滑，也让馆员管理更集中。
+              <div className="space-y-4">
+                <h1 className="max-w-3xl text-4xl font-black tracking-tight text-slate-900 md:text-6xl md:leading-[1.02] dark:text-white">
+                  面向读者与馆员的统一智慧图书馆系统
+                </h1>
+                <p className="max-w-2xl text-base leading-8 text-slate-600 md:text-lg dark:text-slate-300">
+                  这套系统把馆藏检索、预约借阅、归还审核、罚款处理、消息通知、评论审核和后台运营分析放进同一条真实业务链路里，目标是让读者体验更顺滑，也让馆员管理更集中。
+                </p>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                {highlights.map((item) => (
+                  <div
+                    key={item}
+                    className="rounded-2xl border border-slate-200/80 bg-white/60 px-4 py-3 text-sm text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-200 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-[24px] border border-sky-200/60 bg-sky-50/60 p-4 dark:border-sky-400/20 dark:bg-[linear-gradient(135deg,rgba(14,165,233,0.15),rgba(14,165,233,0.05))]">
+                  <p className="text-xs uppercase tracking-[0.24em] text-sky-600 dark:text-sky-200">Reader Side</p>
+                  <p className="mt-2 text-xl font-semibold text-slate-900 dark:text-white">从检索到归还跟踪的一站式体验</p>
+                  <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">
+                    读者可以完成搜索、收藏、借阅、预约、评论、查看通知、支付罚款与提交反馈。
+                  </p>
+                </div>
+                <div className="rounded-[24px] border border-amber-200/60 bg-amber-50/60 p-4 dark:border-amber-300/20 dark:bg-[linear-gradient(135deg,rgba(245,158,11,0.16),rgba(245,158,11,0.06))]">
+                  <p className="text-xs uppercase tracking-[0.24em] text-amber-600 dark:text-amber-200">Admin Side</p>
+                  <p className="mt-2 text-xl font-semibold text-slate-900 dark:text-white">从馆藏维护到运营治理的统一后台</p>
+                  <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">
+                    馆员和管理员可以围绕图书、副本、借阅、预约、审核、反馈和权限完成日常运营。
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 右侧信息面板 */}
+            <div className="relative overflow-hidden rounded-[32px] border border-slate-200/80 bg-[linear-gradient(160deg,rgba(255,255,255,0.92),rgba(240,248,255,0.88))] p-6 shadow-[0_30px_80px_-40px_rgba(148,163,184,0.3)] dark:border-white/10 dark:bg-[linear-gradient(160deg,rgba(3,7,18,0.92),rgba(12,27,52,0.84)_58%,rgba(11,37,67,0.78)_100%)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_30px_80px_-40px_rgba(15,23,42,0.95)]">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/40 to-transparent dark:via-sky-300/70" />
+              <div className="space-y-6">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.34em] text-sky-600 dark:text-sky-300">System Scope</p>
+                  <p className="mt-3 text-3xl font-bold leading-tight text-slate-900 dark:text-white">
+                    从图书入库到读者归还的完整闭环
+                  </p>
+                  <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
+                    不只是静态页面集合，而是围绕馆藏数据、借阅规则和审核流真正串起来的可运行系统。
                   </p>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {highlights.map((item) => (
+                <div className="grid gap-4">
+                  {[
+                    {
+                      title: "读者自助服务",
+                      desc: "支持检索、收藏、预约、借阅跟踪、罚款处理、通知查看与反馈提交。",
+                      icon: "solar:user-rounded-bold-duotone",
+                    },
+                    {
+                      title: "馆员运营后台",
+                      desc: "覆盖图书、副本、借阅、预约、评论审核、反馈处理与权限配置。",
+                      icon: "solar:shield-user-bold-duotone",
+                    },
+                    {
+                      title: "统一业务规则",
+                      desc: "借阅上限、逾期罚款、预约履约、通知深链与审核流全部由后端规则控制。",
+                      icon: "solar:clipboard-check-bold-duotone",
+                    },
+                  ].map((item) => (
                     <div
-                      key={item}
-                      className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-slate-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                      key={item.title}
+                      className="rounded-[24px] border border-slate-200/80 bg-white/60 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] dark:border-white/10 dark:bg-white/[0.05] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
                     >
-                      {item}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-[24px] border border-sky-400/20 bg-[linear-gradient(135deg,rgba(14,165,233,0.15),rgba(14,165,233,0.05))] p-4">
-                    <p className="text-xs uppercase tracking-[0.24em] text-sky-200">Reader Side</p>
-                    <p className="mt-2 text-xl font-semibold text-white">从检索到归还跟踪的一站式体验</p>
-                    <p className="mt-2 text-sm leading-7 text-slate-300">
-                      读者可以完成搜索、收藏、借阅、预约、评论、查看通知、支付罚款与提交反馈。
-                    </p>
-                  </div>
-                  <div className="rounded-[24px] border border-amber-300/20 bg-[linear-gradient(135deg,rgba(245,158,11,0.16),rgba(245,158,11,0.06))] p-4">
-                    <p className="text-xs uppercase tracking-[0.24em] text-amber-200">Admin Side</p>
-                    <p className="mt-2 text-xl font-semibold text-white">从馆藏维护到运营治理的统一后台</p>
-                    <p className="mt-2 text-sm leading-7 text-slate-300">
-                      馆员和管理员可以围绕图书、副本、借阅、预约、审核、反馈和权限完成日常运营。
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-[linear-gradient(160deg,rgba(3,7,18,0.92),rgba(12,27,52,0.84)_58%,rgba(11,37,67,0.78)_100%)] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_30px_80px_-40px_rgba(15,23,42,0.95)]">
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/70 to-transparent" />
-                <div className="space-y-6">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.34em] text-sky-300">System Scope</p>
-                    <p className="mt-3 text-3xl font-bold leading-tight text-white">
-                      从图书入库到读者归还的完整闭环
-                    </p>
-                    <p className="mt-3 text-sm leading-7 text-slate-300">
-                      不只是静态页面集合，而是围绕馆藏数据、借阅规则和审核流真正串起来的可运行系统。
-                    </p>
-                  </div>
-
-                  <div className="grid gap-4">
-                    {[
-                      {
-                        title: "读者自助服务",
-                        desc: "支持检索、收藏、预约、借阅跟踪、罚款处理、通知查看与反馈提交。",
-                        icon: "solar:user-rounded-bold-duotone",
-                      },
-                      {
-                        title: "馆员运营后台",
-                        desc: "覆盖图书、副本、借阅、预约、评论审核、反馈处理与权限配置。",
-                        icon: "solar:shield-user-bold-duotone",
-                      },
-                      {
-                        title: "统一业务规则",
-                        desc: "借阅上限、逾期罚款、预约履约、通知深链与审核流全部由后端规则控制。",
-                        icon: "solar:clipboard-check-bold-duotone",
-                      },
-                    ].map((item) => (
-                      <div
-                        key={item.title}
-                        className="rounded-[24px] border border-white/10 bg-white/[0.05] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
-                      >
-                        <div className="flex items-start gap-4">
-                          <div className="rounded-2xl bg-white/10 p-3 text-sky-200">
-                            <Icon icon={item.icon} width={24} />
-                          </div>
-                          <div>
-                            <p className="text-xl font-semibold text-white">{item.title}</p>
-                            <p className="mt-2 text-sm leading-7 text-slate-300">{item.desc}</p>
-                          </div>
+                      <div className="flex items-start gap-4">
+                        <div className="rounded-2xl bg-sky-50 p-3 text-sky-600 dark:bg-white/10 dark:text-sky-200">
+                          <Icon icon={item.icon} width={24} />
+                        </div>
+                        <div>
+                          <p className="text-xl font-semibold text-slate-900 dark:text-white">{item.title}</p>
+                          <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">{item.desc}</p>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {metrics.map((item) => (
-              <div
-                key={item.label}
-                className="rounded-[28px] border border-white/10 bg-white/[0.05] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-slate-400">{item.label}</p>
-                    <p className="mt-3 text-3xl font-black text-white">{item.value}</p>
-                  </div>
-                  <div className="rounded-2xl bg-white/[0.06] p-3 text-sky-200">
-                    <Icon icon={item.icon} width={24} />
+        {/* ═══ 指标卡片 ═══ */}
+        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {metrics.map((item) => (
+            <div
+              key={item.label}
+              className="rounded-[28px] border border-slate-200/80 bg-white/80 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur dark:border-white/10 dark:bg-white/[0.05] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-slate-400 dark:text-slate-400">{item.label}</p>
+                  <p className="mt-3 text-3xl font-black text-slate-900 dark:text-white">{item.value}</p>
+                </div>
+                <div className="rounded-2xl bg-sky-50 p-3 text-sky-600 dark:bg-white/[0.06] dark:text-sky-200">
+                  <Icon icon={item.icon} width={24} />
+                </div>
+              </div>
+              <p className="mt-4 text-sm leading-7 text-slate-600 dark:text-slate-300">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* ═══ 业务链路 + 能力面板 ═══ */}
+        <div className="mt-8 grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+          {/* 核心业务链路 */}
+          <div className="rounded-[32px] border border-slate-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.82),rgba(248,250,252,0.7))] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.78),rgba(15,23,42,0.58))] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.28em] text-slate-400 dark:text-slate-400">Service Journey</p>
+                <h2 className="mt-3 text-2xl font-bold text-slate-900 dark:text-white">核心业务链路</h2>
+              </div>
+              <div className="rounded-full border border-slate-200/80 bg-white/60 px-4 py-2 text-sm text-slate-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300">
+                真实流程，不是静态原型
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-4">
+              {journey.map((item) => (
+                <div
+                  key={item.step}
+                  className="rounded-[26px] border border-slate-200/80 bg-white/60 p-5 dark:border-white/10 dark:bg-white/[0.04]"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="flex flex-col items-center gap-3">
+                      <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-50 text-sm font-bold text-sky-600 dark:bg-sky-400/12 dark:text-sky-200">
+                        {item.step}
+                      </span>
+                      <div className="hidden h-10 w-px bg-gradient-to-b from-sky-300/40 to-transparent last:hidden md:block" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-2xl bg-slate-50 p-3 text-slate-500 dark:bg-white/[0.05] dark:text-slate-200">
+                          <Icon icon={item.icon} width={22} />
+                        </div>
+                        <h3 className="text-xl font-semibold text-slate-900 dark:text-white">{item.title}</h3>
+                      </div>
+                      <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">{item.desc}</p>
+                    </div>
                   </div>
                 </div>
-                <p className="mt-4 text-sm leading-7 text-slate-300">{item.desc}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
-          <div className="mt-8 grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-            <div className="rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.78),rgba(15,23,42,0.58))] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.28em] text-slate-400">Service Journey</p>
-                  <h2 className="mt-3 text-2xl font-bold text-white">核心业务链路</h2>
-                </div>
-                <div className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-slate-300">
-                  真实流程，不是静态原型
-                </div>
-              </div>
-
-              <div className="mt-6 grid gap-4">
-                {journey.map((item) => (
+          {/* 能力面板 */}
+          <div className="space-y-6">
+            <div className="rounded-[32px] border border-sky-200/40 bg-sky-50/30 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] dark:border-sky-300/12 dark:bg-[linear-gradient(180deg,rgba(10,18,32,0.84),rgba(8,15,28,0.68))] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+              <p className="text-xs uppercase tracking-[0.28em] text-sky-600 dark:text-sky-300">For Readers</p>
+              <h2 className="mt-3 text-2xl font-bold text-slate-900 dark:text-white">读者端能力</h2>
+              <div className="mt-5 space-y-3">
+                {readerFeatures.map((item) => (
                   <div
-                    key={item.step}
-                    className="rounded-[26px] border border-white/10 bg-white/[0.04] p-5"
+                    key={item}
+                    className="flex items-start gap-3 rounded-2xl border border-slate-200/80 bg-white/60 px-4 py-3 dark:border-white/10 dark:bg-white/[0.04]"
                   >
-                    <div className="flex items-start gap-4">
-                      <div className="flex flex-col items-center gap-3">
-                        <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-400/12 text-sm font-bold text-sky-200">
-                          {item.step}
-                        </span>
-                        <div className="hidden h-10 w-px bg-gradient-to-b from-sky-300/40 to-transparent last:hidden md:block" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3">
-                          <div className="rounded-2xl bg-white/[0.05] p-3 text-slate-200">
-                            <Icon icon={item.icon} width={22} />
-                          </div>
-                          <h3 className="text-xl font-semibold text-white">{item.title}</h3>
-                        </div>
-                        <p className="mt-3 text-sm leading-7 text-slate-300">{item.desc}</p>
-                      </div>
-                    </div>
+                    <Icon
+                      className="mt-0.5 shrink-0 text-sky-500 dark:text-sky-300"
+                      icon="solar:check-circle-bold"
+                      width={18}
+                    />
+                    <p className="text-sm leading-7 text-slate-700 dark:text-slate-200">{item}</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="space-y-6">
-              <div className="rounded-[32px] border border-sky-300/12 bg-[linear-gradient(180deg,rgba(10,18,32,0.84),rgba(8,15,28,0.68))] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
-                <p className="text-xs uppercase tracking-[0.28em] text-sky-300">For Readers</p>
-                <h2 className="mt-3 text-2xl font-bold text-white">读者端能力</h2>
-                <div className="mt-5 space-y-3">
-                  {readerFeatures.map((item) => (
-                    <div
-                      key={item}
-                      className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3"
-                    >
-                      <Icon
-                        className="mt-0.5 shrink-0 text-sky-300"
-                        icon="solar:check-circle-bold"
-                        width={18}
-                      />
-                      <p className="text-sm leading-7 text-slate-200">{item}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="rounded-[32px] border border-amber-300/12 bg-[linear-gradient(180deg,rgba(27,18,10,0.78),rgba(22,17,14,0.68))] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
-                <p className="text-xs uppercase tracking-[0.28em] text-amber-200">For Librarians</p>
-                <h2 className="mt-3 text-2xl font-bold text-white">馆员与管理员端能力</h2>
-                <div className="mt-5 space-y-3">
-                  {adminFeatures.map((item) => (
-                    <div
-                      key={item}
-                      className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3"
-                    >
-                      <Icon
-                        className="mt-0.5 shrink-0 text-amber-200"
-                        icon="solar:check-circle-bold"
-                        width={18}
-                      />
-                      <p className="text-sm leading-7 text-slate-200">{item}</p>
-                    </div>
-                  ))}
-                </div>
+            <div className="rounded-[32px] border border-amber-200/40 bg-amber-50/30 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] dark:border-amber-300/12 dark:bg-[linear-gradient(180deg,rgba(27,18,10,0.78),rgba(22,17,14,0.68))] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+              <p className="text-xs uppercase tracking-[0.28em] text-amber-600 dark:text-amber-200">For Librarians</p>
+              <h2 className="mt-3 text-2xl font-bold text-slate-900 dark:text-white">馆员与管理员端能力</h2>
+              <div className="mt-5 space-y-3">
+                {adminFeatures.map((item) => (
+                  <div
+                    key={item}
+                    className="flex items-start gap-3 rounded-2xl border border-slate-200/80 bg-white/60 px-4 py-3 dark:border-white/10 dark:bg-white/[0.04]"
+                  >
+                    <Icon
+                      className="mt-0.5 shrink-0 text-amber-500 dark:text-amber-200"
+                      icon="solar:check-circle-bold"
+                      width={18}
+                    />
+                    <p className="text-sm leading-7 text-slate-700 dark:text-slate-200">{item}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="mt-8 grid gap-4 lg:grid-cols-3">
-            {governanceCards.map((item) => (
+        {/* ═══ 治理卡片 ═══ */}
+        <div className="mt-8 grid gap-4 lg:grid-cols-3">
+          {governanceCards.map((item) => (
+            <div
+              key={item.title}
+              className="rounded-[30px] border border-slate-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.82),rgba(248,250,252,0.68))] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.76),rgba(15,23,42,0.58))] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+            >
               <div
-                key={item.title}
-                className={`rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.76),rgba(15,23,42,0.58))] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]`}
+                className={`inline-flex rounded-2xl bg-gradient-to-br ${item.accent} p-3 ${item.iconColor}`}
               >
-                <div
-                  className={`inline-flex rounded-2xl bg-gradient-to-br ${item.accent} p-3 text-white`}
-                >
-                  <Icon icon={item.icon} width={24} />
-                </div>
-                <h3 className="mt-4 text-xl font-semibold text-white">{item.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-slate-300">{item.desc}</p>
+                <Icon icon={item.icon} width={24} />
               </div>
-            ))}
-          </div>
+              <h3 className="mt-4 text-xl font-semibold text-slate-900 dark:text-white">{item.title}</h3>
+              <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">{item.desc}</p>
+            </div>
+          ))}
         </div>
       </section>
     </DefaultLayout>

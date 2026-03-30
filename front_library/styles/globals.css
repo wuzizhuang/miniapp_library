@@ -1,3 +1,87 @@
 @import "tailwindcss";
 
-@config "../tailwind.config.js"
+@config "../tailwind.config.js";
+
+/* ═══════════════════════════════════════════
+   Reader Theme Tokens
+   用于读者端页面的统一语义表面系统
+   ═══════════════════════════════════════════ */
+
+:root {
+  /* ── hero 区域 ── */
+  --reader-hero-bg: linear-gradient(135deg, #e8f0fe 0%, #dbeafe 30%, #eff6ff 100%);
+  --reader-hero-text: #0f172a;
+  --reader-hero-text-muted: #475569;
+  --reader-hero-accent: #4f46e5;
+  --reader-hero-surface: rgba(255, 255, 255, 0.82);
+  --reader-hero-surface-border: rgba(148, 163, 184, 0.25);
+
+  /* ── 通用表面层 ── */
+  --reader-surface: rgba(255, 255, 255, 0.88);
+  --reader-surface-hover: rgba(255, 255, 255, 0.95);
+  --reader-surface-border: rgba(148, 163, 184, 0.25);
+  --reader-surface-shadow: 0 28px 70px -44px rgba(148, 163, 184, 0.28);
+  --reader-surface-elevated: linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(240, 247, 255, 0.96));
+
+  /* ── 文本层级 ── */
+  --reader-text-primary: #0f172a;
+  --reader-text-secondary: #334155;
+  --reader-text-tertiary: #64748b;
+  --reader-text-muted: #94a3b8;
+
+  /* ── 表单 / auth 卡片 ── */
+  --reader-auth-surface: rgba(255, 255, 255, 0.92);
+  --reader-auth-border: rgba(148, 163, 184, 0.3);
+  --reader-auth-shadow: 0 24px 60px -28px rgba(148, 163, 184, 0.32);
+
+  /* ── 菜单 / 弹出层 ── */
+  --reader-popup-bg: rgba(255, 255, 255, 0.96);
+  --reader-popup-border: rgba(148, 163, 184, 0.2);
+}
+
+.dark {
+  --reader-hero-bg: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.88) 50%, rgba(15, 23, 42, 0.95));
+  --reader-hero-text: #f1f5f9;
+  --reader-hero-text-muted: #94a3b8;
+  --reader-hero-accent: #818cf8;
+  --reader-hero-surface: rgba(15, 23, 42, 0.82);
+  --reader-hero-surface-border: rgba(255, 255, 255, 0.1);
+
+  --reader-surface: rgba(15, 23, 42, 0.88);
+  --reader-surface-hover: rgba(15, 23, 42, 0.95);
+  --reader-surface-border: rgba(255, 255, 255, 0.1);
+  --reader-surface-shadow: 0 28px 70px -44px rgba(2, 6, 23, 0.85);
+  --reader-surface-elevated: linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.92));
+
+  --reader-text-primary: #f1f5f9;
+  --reader-text-secondary: #cbd5e1;
+  --reader-text-tertiary: #94a3b8;
+  --reader-text-muted: #64748b;
+
+  --reader-auth-surface: rgba(15, 23, 42, 0.92);
+  --reader-auth-border: rgba(255, 255, 255, 0.1);
+  --reader-auth-shadow: 0 24px 60px -28px rgba(2, 6, 23, 0.85);
+
+  --reader-popup-bg: rgba(15, 23, 42, 0.96);
+  --reader-popup-border: rgba(255, 255, 255, 0.1);
+}
+
+/* ── 语义工具类 ── */
+.reader-surface {
+  background: var(--reader-surface);
+  border: 1px solid var(--reader-surface-border);
+  box-shadow: var(--reader-surface-shadow);
+}
+
+.reader-surface-elevated {
+  background: var(--reader-surface-elevated);
+  border: 1px solid var(--reader-surface-border);
+  box-shadow: var(--reader-surface-shadow);
+}
+
+.reader-auth-card {
+  background: var(--reader-auth-surface);
+  border: 1px solid var(--reader-auth-border);
+  box-shadow: var(--reader-auth-shadow);
+  backdrop-filter: blur(20px);
+}
