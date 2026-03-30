@@ -1,0 +1,32 @@
+<scroll-view class="page-shell" scroll-y>
+  <view class="panel">
+    <view class="toolbar-spread">
+      <view>
+        <view class="section-title">通知中心</view>
+        <view class="section-subtitle">管理通知消息，快速定位待办事项</view>
+      </view>
+      <view class="button-row">
+        <view class="button-secondary" bindtap="markAllRead">全部已读</view>
+        <view class="button-ghost" bindtap="clearRead">清空已读</view>
+      </view>
+    </view>
+
+    <view wx:if="{{loading}}" class="empty-card">正在加载通知...</view>
+    <view wx:elif="{{errorMessage}}" class="empty-card danger-text">{{errorMessage}}</view>
+    <view wx:elif="{{!items.length}}" class="empty-card">当前没有通知消息。</view>
+
+    <view wx:for="{{items}}" wx:key="notificationId" class="notice-card {{item.isRead ? '' : 'notice-card--unread'}}">
+      <view class="toolbar-spread">
+        <view class="notice-title">{{item.title}}</view>
+        <view class="{{item.isRead ? 'chip' : 'chip-primary'}}">{{item.typeLabel}}</view>
+      </view>
+      <view class="notice-content">{{item.content}}</view>
+      <view class="notice-meta">{{item.createDate}}</view>
+      <view class="inline-actions">
+        <view wx:if="{{!item.isRead}}" class="button-secondary" data-notification-id="{{item.notificationId}}" bindtap="markRead">标记已读</view>
+        <view wx:if="{{item.targetUrl}}" class="button-primary" data-notification-id="{{item.notificationId}}" bindtap="openTarget">{{item.actionLabel}}</view>
+        <view class="button-ghost" data-notification-id="{{item.notificationId}}" bindtap="deleteOne">删除</view>
+      </view>
+    </view>
+  </view>
+</scroll-view>

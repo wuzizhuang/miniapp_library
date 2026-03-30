@@ -1,0 +1,15 @@
+.login-notice {
+  margin-top: 16rpx;
+  padding: 18rpx 22rpx;
+  border-radius: 16rpx;
+  background: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+.login-submit-button {
+  margin-top: 8rpx;
+  min-height: 88rpx;
+  font-size: 32rpx;
+}

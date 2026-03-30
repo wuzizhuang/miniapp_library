@@ -1,0 +1,31 @@
+<scroll-view class="page-shell" scroll-y scroll-into-view="{{highlightAnchor}}">
+  <view class="panel">
+    <view class="section-title">我的预约</view>
+    <view class="section-subtitle">查看排队中、待取书和已取消的预约</view>
+
+    <view wx:if="{{loading}}" class="empty-card">正在加载预约...</view>
+    <view wx:elif="{{errorMessage}}" class="empty-card danger-text">{{errorMessage}}</view>
+    <view wx:elif="{{!items.length}}" class="empty-card">当前没有预约记录。</view>
+
+    <view
+      wx:for="{{items}}"
+      wx:key="reservationId"
+      id="reservation-{{item.reservationId}}"
+      class="list-card {{item.isHighlighted ? 'list-card--highlight' : ''}}"
+    >
+      <image class="book-cover book-cover--small" src="{{item.coverUrl}}" mode="aspectFill" data-book-id="{{item.bookId}}" bindtap="openBook"></image>
+      <view class="book-info">
+        <view class="book-title">{{item.bookTitle}}</view>
+        <view class="book-meta">预约日期 {{item.reservationDate}}</view>
+        <view wx:if="{{item.expiryDate}}" class="book-meta">保留截止 {{item.expiryDate}}</view>
+        <view wx:if="{{item.queuePosition}}" class="book-meta">当前排队 {{item.queuePosition}} 位</view>
+        <view class="chip-row" style="margin-top: 12rpx;">
+          <view class="{{item.statusClass}}">{{item.statusLabel}}</view>
+        </view>
+        <view wx:if="{{item.status === 'PENDING'}}" class="inline-actions">
+          <view class="button-secondary" bindtap="cancelReservation" data-reservation-id="{{item.reservationId}}">取消预约</view>
+        </view>
+      </view>
+    </view>
+  </view>
+</scroll-view>

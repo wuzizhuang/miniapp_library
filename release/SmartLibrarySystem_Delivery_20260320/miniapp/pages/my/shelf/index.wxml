@@ -1,0 +1,106 @@
+<scroll-view class="page-shell" scroll-y>
+  <view class="hero-card">
+    <view class="hero-title">我的书架</view>
+    <view class="hero-subtitle">把收藏、当前借阅和历史借阅放到一个更完整的读者入口里。</view>
+    <view class="summary-row" style="margin-top: 24rpx;">
+      <view class="summary-item">
+        <view class="summary-label">收藏</view>
+        <view class="summary-value">{{summary.favoriteCount}}</view>
+      </view>
+      <view class="summary-item">
+        <view class="summary-label">当前借阅</view>
+        <view class="summary-value">{{summary.activeLoanCount}}</view>
+      </view>
+      <view class="summary-item">
+        <view class="summary-label">逾期</view>
+        <view class="summary-value">{{summary.overdueCount}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="panel">
+    <view class="section-title">我的书架</view>
+    <view class="pill-switch">
+      <view class="pill-item {{section === 'favorites' ? 'pill-item--active' : ''}}" data-section="favorites" bindtap="pickSection">收藏</view>
+      <view class="pill-item {{section === 'active' ? 'pill-item--active' : ''}}" data-section="active" bindtap="pickSection">当前借阅</view>
+      <view class="pill-item {{section === 'history' ? 'pill-item--active' : ''}}" data-section="history" bindtap="pickSection">历史借阅</view>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="panel">
+    <view class="empty-card">正在加载书架...</view>
+  </view>
+
+  <view wx:elif="{{errorMessage}}" class="panel">
+    <view class="empty-card danger-text">
+      <view>{{errorMessage}}</view>
+      <view class="inline-actions">
+        <view class="button-secondary" bindtap="retryLoadShelf">重新加载</view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:elif="{{section === 'favorites'}}" class="panel">
+    <view class="section-title">我的收藏</view>
+    <view wx:if="{{!visibleItems.length}}" class="empty-card">
+      <view>你还没有收藏图书，可以先去馆藏目录挑几本感兴趣的书。</view>
+      <view class="inline-actions">
+        <view class="button-secondary" bindtap="goCatalog">去看馆藏目录</view>
+      </view>
+    </view>
+    <view wx:for="{{visibleItems}}" wx:key="bookId" class="list-card" data-book-id="{{item.bookId}}" bindtap="openBook">
+      <image wx:if="{{item.hasCover}}" class="book-cover book-cover--small" src="{{item.coverUrl}}" mode="aspectFill"></image>
+      <view wx:else class="book-cover book-cover--small shelf-cover-placeholder">暂无封面</view>
+      <view class="book-info">
+        <view class="book-title">{{item.title}}</view>
+        <view class="book-meta">{{item.authorText}}</view>
+        <view class="chip-row" style="margin-top: 12rpx;">
+          <view class="{{item.statusClass}}">{{item.statusLabel}}</view>
+          <view class="chip">{{item.categoryLabel}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:elif="{{section === 'active'}}" class="panel">
+    <view class="section-title">当前借阅</view>
+    <view wx:if="{{!visibleItems.length}}" class="empty-card">当前没有正在借阅的图书。</view>
+    <view wx:for="{{visibleItems}}" wx:key="loanId" class="list-card" data-loan-id="{{item.loanId}}" bindtap="openLoan">
+      <image wx:if="{{item.hasCover}}" class="book-cover book-cover--small" src="{{item.bookCover}}" mode="aspectFill"></image>
+      <view wx:else class="book-cover book-cover--small shelf-cover-placeholder">暂无封面</view>
+      <view class="book-info">
+        <view class="book-title">{{item.bookTitle}}</view>
+        <view class="book-meta">{{item.bookAuthorNames}}</view>
+        <view class="book-meta">到期日 {{item.dueDate}} · 馆藏位置 {{item.locationCode}}</view>
+        <view class="chip-row" style="margin-top: 12rpx;">
+          <view class="{{item.statusClass}}">{{item.statusLabel}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:else class="panel">
+    <view class="section-title">历史借阅</view>
+    <view wx:if="{{!visibleItems.length}}" class="empty-card">当前没有历史借阅记录。</view>
+    <view wx:for="{{visibleItems}}" wx:key="loanId" class="list-card" data-loan-id="{{item.loanId}}" bindtap="openLoan">
+      <image wx:if="{{item.hasCover}}" class="book-cover book-cover--small" src="{{item.bookCover}}" mode="aspectFill"></image>
+      <view wx:else class="book-cover book-cover--small shelf-cover-placeholder">暂无封面</view>
+      <view class="book-info">
+        <view class="book-title">{{item.bookTitle}}</view>
+        <view class="book-meta">{{item.bookAuthorNames}}</view>
+        <view class="book-meta">借出 {{item.borrowDate}} · 归还 {{item.returnDate}}</view>
+        <view class="chip-row" style="margin-top: 12rpx;">
+          <view class="{{item.statusClass}}">{{item.statusLabel}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{pageCount > 1}}" class="panel" style="text-align: center;">
+    <view class="button-row">
+      <view class="{{currentPage <= 1 ? 'button-ghost disabled' : 'button-ghost'}}" bindtap="prevPage">上一页</view>
+      <view class="muted-text">{{currentPage}} / {{pageCount}}</view>
+      <view class="{{currentPage >= pageCount ? 'button-ghost disabled' : 'button-ghost'}}" bindtap="nextPage">下一页</view>
+    </view>
+  </view>
+</scroll-view>

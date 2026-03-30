@@ -1,0 +1,33 @@
+<scroll-view class="page-shell" scroll-y>
+  <view wx:if="{{loading}}" class="panel">
+    <view class="empty-card">正在加载借阅追踪...</view>
+  </view>
+
+  <view wx:elif="{{errorMessage}}" class="panel">
+    <view class="empty-card danger-text">{{errorMessage}}</view>
+  </view>
+
+  <view wx:elif="{{loan}}" class="panel">
+    <view class="section-title">{{loan.bookTitle}}</view>
+    <view class="book-meta">{{loan.bookAuthorNames}} · {{loan.categoryName}}</view>
+    <view class="chip-row" style="margin-top: 16rpx;">
+      <view class="{{loan.statusClass}}">{{loan.statusLabel}}</view>
+      <view wx:if="{{loan.canRenew}}" class="chip-primary">可续借</view>
+      <view wx:if="{{loan.daysRemaining}}" class="chip">{{loan.daysRemaining}} 天</view>
+    </view>
+
+    <view class="divider"></view>
+    <view class="meta-list">
+      <view class="meta-item">借出日期：{{loan.borrowDate}}</view>
+      <view class="meta-item">到期日期：{{loan.dueDate}}</view>
+      <view class="meta-item">馆藏位置：{{loan.locationCode}}</view>
+      <view class="meta-item">续借次数：{{loan.renewalCount}}</view>
+      <view wx:if="{{loan.returnDate}}" class="meta-item">归还日期：{{loan.returnDate}}</view>
+    </view>
+
+    <view wx:if="{{loan.status !== 'RETURNED'}}" class="inline-actions">
+      <view wx:if="{{loan.canRenew}}" class="button-primary" bindtap="renewLoan">{{actionLoading ? '处理中...' : '续借'}}</view>
+      <view class="button-secondary" bindtap="returnLoan">归还</view>
+    </view>
+  </view>
+</scroll-view>

@@ -1,0 +1,62 @@
+<scroll-view class="page-shell" scroll-y scroll-into-view="{{highlightAnchor}}">
+  <view class="hero-card">
+    <view class="hero-title">罚款中心</view>
+    <view class="hero-subtitle">当前待支付罚款合计</view>
+    <view class="summary-row" style="margin-top: 20rpx;">
+      <view class="summary-item">
+        <view class="summary-label">待支付金额</view>
+        <view class="summary-value">¥{{summary.totalPendingAmount}}</view>
+      </view>
+      <view class="summary-item">
+        <view class="summary-label">待支付</view>
+        <view class="summary-value">{{summary.pendingCount}}</view>
+      </view>
+      <view class="summary-item">
+        <view class="summary-label">已支付</view>
+        <view class="summary-value">{{summary.paidCount}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="panel">
+    <view class="pill-switch">
+      <view class="pill-item {{section === 'pending' ? 'pill-item--active' : ''}}" data-section="pending" bindtap="pickSection">待支付</view>
+      <view class="pill-item {{section === 'paid' ? 'pill-item--active' : ''}}" data-section="paid" bindtap="pickSection">已支付</view>
+      <view class="pill-item {{section === 'all' ? 'pill-item--active' : ''}}" data-section="all" bindtap="pickSection">全部</view>
+    </view>
+  </view>
+
+  <view class="panel">
+    <view class="section-title">罚款记录</view>
+    <view wx:if="{{loading}}" class="empty-card">正在加载罚款记录...</view>
+    <view wx:elif="{{errorMessage}}" class="empty-card danger-text">
+      <view>{{errorMessage}}</view>
+      <view class="inline-actions">
+        <view class="button-secondary" bindtap="retryLoadFines">重新加载</view>
+      </view>
+    </view>
+    <view wx:elif="{{!visibleItems.length}}" class="empty-card">当前筛选下没有罚款记录。</view>
+
+    <view
+      wx:for="{{visibleItems}}"
+      wx:key="fineId"
+      id="fine-{{item.fineId}}"
+      class="notice-card {{item.isHighlighted ? 'notice-card--highlight' : ''}}"
+    >
+      <view class="toolbar-spread">
+        <view class="notice-title">{{item.bookTitle}}</view>
+        <view class="{{item.statusClass}}">{{item.statusLabel}}</view>
+      </view>
+      <view class="amount-text">¥{{item.amountText}}</view>
+      <view class="notice-content">{{item.reason}}</view>
+      <view class="notice-meta">生成日期 {{item.createTime}}</view>
+      <view wx:if="{{item.paidTime}}" class="notice-meta">支付日期 {{item.paidTime}}</view>
+      <view class="inline-actions">
+        <view wx:if="{{item.loanId}}" class="button-secondary" bindtap="openLoan" data-loan-id="{{item.loanId}}">查看借阅</view>
+        <view wx:if="{{item.status === 'PENDING'}}" class="button-danger" bindtap="payFine" data-fine-id="{{item.fineId}}">
+          {{payingFineId === item.fineId ? '支付中...' : '立即支付'}}
+        </view>
+      </view>
+    </view>
+  </view>
+</scroll-view>

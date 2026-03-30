@@ -1,0 +1,11 @@
+.shelf-cover-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, #eadfce 0%, #d8cab0 100%);
+  color: #6f6559;
+  font-size: 22rpx;
+  text-align: center;
+  padding: 0 10rpx;
+  box-sizing: border-box;
+}

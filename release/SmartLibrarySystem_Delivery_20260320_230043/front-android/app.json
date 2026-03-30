@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "front-android",
+    "slug": "front-android",
+    "version": "1.0.0",
+    "platforms": [
+      "android"
+    ],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "android": {
+      "package": "com.anonymous.frontandroid",
+      "newArchitecture": false
+    },
+    "plugins": [
+      "expo-asset"
+    ]
+  }
+}

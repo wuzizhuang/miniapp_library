@@ -1,0 +1,58 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/books/index",
+    "pages/my/index",
+    "pages/login/index",
+    "pages/register/index",
+    "pages/forgot-password/index",
+    "pages/books/detail/index",
+    "pages/my/shelf/index",
+    "pages/my/loan-tracking/index",
+    "pages/my/reservations/index",
+    "pages/my/fines/index",
+    "pages/my/notifications/index",
+    "pages/help-feedback/index",
+    "pages/my/profile/index",
+    "pages/my/appointments/index",
+    "pages/my/seat-reservations/index",
+    "pages/my/recommendations/index",
+    "pages/my/reviews/index",
+    "pages/my/search-history/index"
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "智慧图书馆",
+    "navigationBarBackgroundColor": "#ffffff"
+  },
+  "tabBar": {
+    "color": "#6f6559",
+    "selectedColor": "#0d8a72",
+    "backgroundColor": "#fffaf2",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "assets/tab_home.png",
+        "selectedIconPath": "assets/tab_home_active.png"
+      },
+      {
+        "pagePath": "pages/books/index",
+        "text": "馆藏",
+        "iconPath": "assets/tab_books.png",
+        "selectedIconPath": "assets/tab_books_active.png"
+      },
+      {
+        "pagePath": "pages/my/index",
+        "text": "我的",
+        "iconPath": "assets/tab_my.png",
+        "selectedIconPath": "assets/tab_my_active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "componentFramework": "glass-easel",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

@@ -1,0 +1,4 @@
+library:
+  business:
+    default-admin-username: "admin"
+    default-admin-password: "admin123"

@@ -1,0 +1,16 @@
+/* Index page local styles */
+
+.index-info-row {
+  display: flex;
+  gap: 16rpx;
+  flex-wrap: wrap;
+}
+
+.index-info-item {
+  padding: 10rpx 18rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 24rpx;
+  line-height: 1;
+}

@@ -1,0 +1,46 @@
+<scroll-view class="page-shell" scroll-y scroll-into-view="{{highlightAnchor}}">
+  <view class="panel">
+    <view class="section-title">提交反馈</view>
+    <view class="section-subtitle">有建议、问题或投诉？在这里告诉我们</view>
+    <view class="field-stack">
+      <view class="chip-row">
+        <view
+          wx:for="{{categoryOptions}}"
+          wx:key="value"
+          class="pill-item {{category === item.value ? 'pill-item--active' : ''}}"
+          data-category="{{item.value}}"
+          bindtap="pickCategory"
+        >
+          {{item.label}}
+        </view>
+      </view>
+      <input class="text-input" placeholder="反馈主题" value="{{subject}}" bindinput="onSubjectInput" />
+      <textarea class="textarea" placeholder="详细描述你的建议或问题" value="{{content}}" bindinput="onContentInput"></textarea>
+      <view class="button-primary" bindtap="submitFeedback">{{submitting ? '提交中...' : '提交反馈'}}</view>
+    </view>
+  </view>
+
+  <view class="panel">
+    <view class="section-title">历史反馈</view>
+    <view wx:if="{{loading}}" class="empty-card">正在加载反馈记录...</view>
+    <view wx:elif="{{errorMessage}}" class="empty-card danger-text">{{errorMessage}}</view>
+    <view wx:elif="{{!items.length}}" class="empty-card">还没有提交过反馈。</view>
+    <view
+      wx:for="{{items}}"
+      wx:key="feedbackId"
+      id="feedback-{{item.feedbackId}}"
+      class="feed-card {{item.isHighlighted ? 'feed-card--highlight' : ''}}"
+    >
+      <view class="feed-header">
+        <view>
+          <view class="feed-author">{{item.subject}}</view>
+          <view class="feed-meta">{{item.createDate}}</view>
+        </view>
+        <view class="{{item.statusClass}}">{{item.statusLabel}}</view>
+      </view>
+      <view class="feed-content">{{item.content}}</view>
+      <view wx:if="{{item.adminReply}}" class="divider"></view>
+      <view wx:if="{{item.adminReply}}" class="muted-text">管理员回复：{{item.adminReply}}</view>
+    </view>
+  </view>
+</scroll-view>

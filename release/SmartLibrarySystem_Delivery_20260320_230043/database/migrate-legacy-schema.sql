@@ -1,0 +1,115 @@
+-- One-time schema alignment script for databases created from older versions
+-- of backend-library/create.sql. Run this against the target database before
+-- switching to strict schema validation.
+
+CREATE DATABASE IF NOT EXISTS library_management
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
+USE library_management;
+
+ALTER TABLE users MODIFY COLUMN role VARCHAR(20) NOT NULL DEFAULT 'USER';
+ALTER TABLE users MODIFY COLUMN status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS department VARCHAR(100);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS major VARCHAR(100);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS identity_type VARCHAR(20) DEFAULT 'STUDENT';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS enrollment_year INT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS interest_tags LONGTEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_token_hash VARCHAR(128);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_requested_at DATETIME;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_expires_at DATETIME;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_used_at DATETIME;
+UPDATE users
+SET role = UPPER(role),
+    status = UPPER(status),
+    identity_type = CASE
+        WHEN identity_type IS NULL OR identity_type = '' THEN 'STUDENT'
+        ELSE UPPER(identity_type)
+    END;
+
+ALTER TABLE books ADD COLUMN IF NOT EXISTS resource_mode ENUM('PHYSICAL_ONLY', 'DIGITAL_ONLY', 'HYBRID') NOT NULL DEFAULT 'PHYSICAL_ONLY';
+ALTER TABLE books ADD COLUMN IF NOT EXISTS online_access_url VARCHAR(500);
+ALTER TABLE books ADD COLUMN IF NOT EXISTS online_access_type ENUM('OPEN_ACCESS', 'CAMPUS_ONLY', 'LICENSED_ACCESS');
+ALTER TABLE books ADD COLUMN IF NOT EXISTS status ENUM('ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'ACTIVE';
+UPDATE books
+SET resource_mode = 'PHYSICAL_ONLY'
+WHERE resource_mode IS NULL;
+UPDATE books
+SET status = 'ACTIVE'
+WHERE status IS NULL;
+
+ALTER TABLE book_copies ADD COLUMN IF NOT EXISTS location_code VARCHAR(50);
+ALTER TABLE book_copies ADD COLUMN IF NOT EXISTS rfid_tag VARCHAR(64) UNIQUE;
+ALTER TABLE book_copies ADD COLUMN IF NOT EXISTS floor_plan_id INT;
+ALTER TABLE book_copies MODIFY COLUMN status VARCHAR(20) NOT NULL DEFAULT 'AVAILABLE';
+UPDATE book_copies SET status = UPPER(status);
+ALTER TABLE book_copies MODIFY COLUMN status ENUM('AVAILABLE', 'BORROWED', 'RESERVED', 'LOST', 'DAMAGED') NOT NULL DEFAULT 'AVAILABLE';
+
+ALTER TABLE loans ADD COLUMN IF NOT EXISTS renewal_count INT NOT NULL DEFAULT 0;
+ALTER TABLE loans MODIFY COLUMN status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE';
+UPDATE loans SET status = UPPER(status);
+ALTER TABLE loans MODIFY COLUMN status ENUM('ACTIVE', 'RETURNED', 'OVERDUE', 'LOST') NOT NULL DEFAULT 'ACTIVE';
+
+ALTER TABLE reservations MODIFY COLUMN status VARCHAR(20) NOT NULL DEFAULT 'PENDING';
+UPDATE reservations SET status = UPPER(status);
+ALTER TABLE reservations ADD COLUMN IF NOT EXISTS allocated_copy_id INT;
+ALTER TABLE reservations ADD COLUMN IF NOT EXISTS pickup_deadline DATETIME;
+ALTER TABLE reservations ADD COLUMN IF NOT EXISTS notification_sent BOOLEAN NOT NULL DEFAULT FALSE;
+UPDATE reservations
+SET notification_sent = FALSE
+WHERE notification_sent IS NULL;
+ALTER TABLE reservations MODIFY COLUMN status ENUM('PENDING', 'AWAITING_PICKUP', 'FULFILLED', 'CANCELLED', 'EXPIRED') NOT NULL DEFAULT 'PENDING';
+
+ALTER TABLE fines MODIFY COLUMN status VARCHAR(20) NOT NULL DEFAULT 'PENDING';
+UPDATE fines SET status = UPPER(status);
+ALTER TABLE fines MODIFY COLUMN status ENUM('PENDING', 'PAID', 'WAIVED') NOT NULL DEFAULT 'PENDING';
+
+ALTER TABLE notifications MODIFY COLUMN type VARCHAR(30) NOT NULL;
+UPDATE notifications SET type = UPPER(type);
+ALTER TABLE notifications
+    ADD COLUMN IF NOT EXISTS target_type VARCHAR(30),
+    ADD COLUMN IF NOT EXISTS target_id VARCHAR(50),
+    ADD COLUMN IF NOT EXISTS route_hint VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS business_key VARCHAR(80);
+ALTER TABLE notifications MODIFY COLUMN type ENUM('DUE_REMINDER', 'ARRIVAL_NOTICE', 'NEW_BOOK_RECOMMEND', 'SYSTEM') NOT NULL;
+
+ALTER TABLE user_behavior_logs MODIFY COLUMN action_type VARCHAR(30) NOT NULL;
+UPDATE user_behavior_logs SET action_type = UPPER(action_type);
+ALTER TABLE user_behavior_logs MODIFY COLUMN action_type ENUM('VIEW_DETAIL', 'ADD_TO_SHELF', 'CLICK_PREVIEW', 'SHARE', 'BORROW_BOOK', 'RESERVE_BOOK') NOT NULL;
+
+ALTER TABLE book_reviews ADD COLUMN IF NOT EXISTS update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+ALTER TABLE book_reviews MODIFY COLUMN status VARCHAR(20) NOT NULL DEFAULT 'PENDING';
+UPDATE book_reviews SET status = UPPER(status);
+ALTER TABLE book_reviews MODIFY COLUMN status ENUM('PENDING', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'PENDING';
+
+CREATE TABLE IF NOT EXISTS user_favorites (
+    favorite_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    book_id INT NOT NULL,
+    create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_user_favorite_user
+        FOREIGN KEY (user_id) REFERENCES users(user_id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_user_favorite_book
+        FOREIGN KEY (book_id) REFERENCES books(book_id)
+        ON DELETE CASCADE,
+    CONSTRAINT uk_user_favorite_user_book UNIQUE (user_id, book_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS service_appointments (
+    appointment_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    loan_id INT,
+    service_type ENUM('RETURN_BOOK', 'PICKUP_BOOK', 'CONSULTATION') NOT NULL,
+    scheduled_time DATETIME NOT NULL,
+    method ENUM('COUNTER', 'SMART_LOCKER') NOT NULL DEFAULT 'COUNTER',
+    status ENUM('PENDING', 'COMPLETED', 'CANCELLED', 'MISSED') NOT NULL DEFAULT 'PENDING',
+    notes TEXT,
+    create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_service_appointment_user
+        FOREIGN KEY (user_id) REFERENCES users(user_id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_service_appointment_loan
+        FOREIGN KEY (loan_id) REFERENCES loans(loan_id)
+        ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

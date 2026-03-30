@@ -1,0 +1,47 @@
+.picker-stack {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16rpx;
+}
+
+.picker-field {
+  width: 100%;
+  min-height: 82rpx;
+  padding: 20rpx 22rpx;
+  background: #ffffff;
+  border: 1rpx solid #ddceb8;
+  border-radius: 18rpx;
+  box-sizing: border-box;
+  color: #1f1a14;
+  line-height: 1.5;
+}
+
+.picker-field--placeholder {
+  color: #8c8276;
+}
+
+.field-helper-text {
+  color: #6f6559;
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+.helper-card {
+  padding: 20rpx 22rpx;
+  border-radius: 18rpx;
+  background: #f8f1e5;
+  border: 1rpx solid #efe4d2;
+}
+
+.helper-card__title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #123c38;
+}
+
+.helper-card__text {
+  margin-top: 8rpx;
+  color: #6f6559;
+  font-size: 24rpx;
+  line-height: 1.6;
+}
